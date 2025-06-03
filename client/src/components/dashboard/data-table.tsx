@@ -185,7 +185,7 @@ export default function DataTable() {
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-muted border-b border-border">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <Checkbox
@@ -196,29 +196,29 @@ export default function DataTable() {
                     onCheckedChange={handleSelectAll}
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   內容
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   作者
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   發布時間
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   互動數
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   狀態
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   操作
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-slate-200">
+            <tbody className="bg-card divide-y divide-border">
               {collectedData?.data?.map((item: CollectedDataItem) => (
-                <tr key={item.id} className="hover:bg-slate-50">
+                <tr key={item.id} className="hover:bg-muted">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Checkbox
                       checked={selectedItems.has(item.id)}
@@ -227,33 +227,33 @@ export default function DataTable() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-start space-x-3">
-                      <div className="w-12 h-12 bg-slate-200 rounded-lg flex-shrink-0"></div>
+                      <div className="w-12 h-12 bg-muted rounded-lg flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800 line-clamp-2">
+                        <p className="text-sm font-medium text-card-foreground line-clamp-2">
                           {item.content}
                         </p>
-                        <p className="text-xs text-slate-500 mt-1">貼文內容</p>
+                        <p className="text-xs text-muted-foreground mt-1">貼文內容</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                        <span className="text-primary-foreground text-sm font-medium">
                           {item.author.avatar}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-800">{item.author.name}</p>
-                        <p className="text-xs text-slate-500">{item.author.followers} 追蹤者</p>
+                        <p className="text-sm font-medium text-card-foreground">{item.author.name}</p>
+                        <p className="text-xs text-muted-foreground">{item.author.followers} 追蹤者</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {formatDate(item.publishTime)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-4 text-sm text-slate-600">
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                       <span className="flex items-center">
                         <Heart className="h-4 w-4 text-red-500 mr-1" />
                         {item.interactions.likes}
