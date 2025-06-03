@@ -358,30 +358,37 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCollectedData(limit = 10, offset = 0, search?: string): Promise<{ data: CollectedData[], total: number }> {
-    let query = db.select().from(collectedData);
-    let countQuery = db.select({ count: count() }).from(collectedData);
-    
     if (search) {
-      const searchCondition = or(
-        ilike(collectedData.content, `%${search}%`),
-        ilike(collectedData.author, `%${search}%`)
-      );
-      query = query.where(searchCondition);
-      countQuery = countQuery.where(searchCondition);
+      const searchCondition = ilike(collectedData.content, `%${search}%`);
+      
+      const [data, totalResult] = await Promise.all([
+        db.select().from(collectedData)
+          .where(searchCondition)
+          .orderBy(desc(collectedData.createdAt))
+          .limit(limit)
+          .offset(offset),
+        db.select({ count: count() }).from(collectedData)
+          .where(searchCondition)
+      ]);
+
+      return { 
+        data, 
+        total: totalResult[0]?.count || 0 
+      };
+    } else {
+      const [data, totalResult] = await Promise.all([
+        db.select().from(collectedData)
+          .orderBy(desc(collectedData.createdAt))
+          .limit(limit)
+          .offset(offset),
+        db.select({ count: count() }).from(collectedData)
+      ]);
+
+      return { 
+        data, 
+        total: totalResult[0]?.count || 0 
+      };
     }
-
-    const [data, totalResult] = await Promise.all([
-      query
-        .orderBy(desc(collectedData.createdAt))
-        .limit(limit)
-        .offset(offset),
-      countQuery
-    ]);
-
-    return { 
-      data, 
-      total: totalResult[0]?.count || 0 
-    };
   }
 
   async getCollectedDataByTask(taskId: number): Promise<CollectedData[]> {
