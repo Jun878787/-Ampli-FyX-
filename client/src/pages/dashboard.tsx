@@ -1,0 +1,77 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Header from "@/components/layout/header";
+import StatsCards from "@/components/dashboard/stats-cards";
+import CollectionPanel from "@/components/dashboard/collection-panel";
+import RealTimeStatus from "@/components/dashboard/real-time-status";
+import DataTable from "@/components/dashboard/data-table";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+export default function Dashboard() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: stats } = useQuery({
+    queryKey: ["/api/stats"],
+    refetchInterval: 5000,
+  });
+
+  const { data: tasks } = useQuery({
+    queryKey: ["/api/tasks"],
+  });
+
+  const startCollectionMutation = useMutation({
+    mutationFn: async () => {
+      // Find the most recent pending task and start it
+      const pendingTask = tasks?.find((task: any) => task.status === "pending");
+      if (!pendingTask) {
+        throw new Error("沒有待執行的任務");
+      }
+      
+      const response = await apiRequest("POST", `/api/tasks/${pendingTask.id}/start`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "開始數據採集",
+        description: "數據採集任務已啟動",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "啟動失敗",
+        description: error.message || "無法啟動數據採集",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const isCollecting = tasks?.some((task: any) => task.status === "running") || false;
+
+  return (
+    <>
+      <Header
+        title="數據採集控制台"
+        description="管理和監控 Facebook 數據收集任務"
+        onStartCollection={() => startCollectionMutation.mutate()}
+        isCollecting={isCollecting}
+      />
+      
+      <main className="flex-1 overflow-auto p-6">
+        {stats && <StatsCards stats={stats} />}
+        
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
+          <div className="xl:col-span-2">
+            <CollectionPanel />
+          </div>
+          <div>
+            <RealTimeStatus />
+          </div>
+        </div>
+        
+        <DataTable />
+      </main>
+    </>
+  );
+}
