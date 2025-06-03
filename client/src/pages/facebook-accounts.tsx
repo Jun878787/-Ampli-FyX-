@@ -26,7 +26,7 @@ export default function FacebookAccounts() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: accounts = [], isLoading } = useQuery({
+  const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/accounts"],
   });
 

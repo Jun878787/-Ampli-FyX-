@@ -12,7 +12,7 @@ import ExportData from "@/pages/export-data";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import FacebookAccounts from "@/pages/facebook-accounts";
-import FacebookFriends from "@/pages/facebook-friends";
+
 import FacebookBatchManagement from "@/pages/facebook-batch-management";
 import FacebookAccountGeneration from "@/pages/facebook-account-generation";
 import AutoMessaging from "@/pages/auto-messaging";
@@ -33,7 +33,7 @@ function Router() {
             <Route path="/analytics" component={Analytics} />
             <Route path="/settings" component={Settings} />
             <Route path="/facebook-accounts" component={FacebookAccounts} />
-            <Route path="/facebook-friends" component={FacebookFriends} />
+
             <Route path="/facebook-account-generation" component={FacebookAccountGeneration} />
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
             <Route path="/auto-messaging" component={AutoMessaging} />

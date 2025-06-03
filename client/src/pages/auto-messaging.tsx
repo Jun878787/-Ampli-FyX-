@@ -47,15 +47,15 @@ export default function AutoMessaging() {
   const [isRuleDialogOpen, setIsRuleDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: messageTemplates = [], isLoading: templatesLoading } = useQuery({
+  const { data: messageTemplates = [], isLoading: templatesLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/message-templates"],
   });
 
-  const { data: autoReplyRules = [], isLoading: rulesLoading } = useQuery({
+  const { data: autoReplyRules = [], isLoading: rulesLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/auto-reply-rules"],
   });
 
-  const { data: accounts = [] } = useQuery({
+  const { data: accounts = [] } = useQuery<any[]>({
     queryKey: ["/api/facebook/accounts"],
   });
 

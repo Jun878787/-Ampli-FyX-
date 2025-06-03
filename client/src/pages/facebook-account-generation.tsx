@@ -53,7 +53,7 @@ export default function FacebookAccountGeneration() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: creationTasks = [], isLoading: tasksLoading } = useQuery({
+  const { data: creationTasks = [], isLoading: tasksLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/generation-tasks"],
   });
 

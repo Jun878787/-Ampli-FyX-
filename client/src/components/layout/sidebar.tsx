@@ -29,7 +29,6 @@ const navigation = [
 
 const facebookNavigation = [
   { name: "帳號管理", href: "/facebook-accounts", icon: User },
-  { name: "好友管理", href: "/facebook-friends", icon: Users },
   { name: "批量產號", href: "/facebook-account-generation", icon: UserPlus },
   { name: "批量養號", href: "/facebook-batch-management", icon: Zap },
   { name: "自動訊息", href: "/auto-messaging", icon: MessageSquare },
