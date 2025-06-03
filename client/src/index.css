@@ -79,6 +79,26 @@
     color: inherit;
   }
   
+  /* 確保滾輪功能正常 */
+  html, body {
+    overflow: auto;
+    height: 100%;
+  }
+  
+  /* 移除全局overflow限制 */
+  
+  .overflow-auto {
+    overflow: auto !important;
+  }
+  
+  .overflow-y-auto {
+    overflow-y: auto !important;
+  }
+  
+  .overflow-x-hidden {
+    overflow-x: hidden !important;
+  }
+  
   h1, h2, h3, h4, h5, h6 {
     color: hsl(var(--foreground));
   }
