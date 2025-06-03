@@ -40,22 +40,22 @@ export default function Sidebar() {
   const [location] = useLocation();
 
   return (
-    <div className="w-64 bg-white shadow-lg flex-shrink-0">
-      <div className="p-6 border-b border-slate-200">
+    <div className="w-64 bg-card shadow-lg flex-shrink-0">
+      <div className="p-6 border-b border-border">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-fb-blue rounded-lg flex items-center justify-center">
-            <SiFacebook className="text-white text-lg" />
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <SiFacebook className="text-primary-foreground text-lg" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-800">North™Sea</h1>
-            <p className="text-sm text-slate-500">北金國際 數據採集</p>
+            <h1 className="text-lg font-bold text-card-foreground">North™Sea</h1>
+            <p className="text-sm text-muted-foreground">北金國際 數據採集</p>
           </div>
         </div>
       </div>
       
       <nav className="p-4 space-y-6">
         <div>
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             系統功能
           </h3>
           <ul className="space-y-2">
@@ -68,8 +68,8 @@ export default function Sidebar() {
                   <Link href={item.href} className={cn(
                     "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
                     isActive 
-                      ? "bg-blue-50 text-blue-700" 
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-accent text-accent-foreground" 
+                      : "text-muted-foreground hover:bg-muted"
                   )}>
                     <Icon className="h-5 w-5" />
                     <span>{item.name}</span>
@@ -81,7 +81,7 @@ export default function Sidebar() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
             Facebook 管理
           </h3>
           <ul className="space-y-2">
@@ -94,8 +94,8 @@ export default function Sidebar() {
                   <Link href={item.href} className={cn(
                     "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
                     isActive 
-                      ? "bg-blue-50 text-blue-700" 
-                      : "text-slate-600 hover:bg-slate-50"
+                      ? "bg-accent text-accent-foreground" 
+                      : "text-muted-foreground hover:bg-muted"
                   )}>
                     <Icon className="h-5 w-5" />
                     <span>{item.name}</span>

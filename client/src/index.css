@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  /* 純深色模式 - 完全無亮底 */
+  /* 北金國際North™Sea 純深色模式 - 完全無亮底 */
   --background: 222 47% 6%; /* #0F1419 極深背景 */
   --foreground: 210 11% 85%; /* #CBD5E1 淺灰文字 */
   --muted: 220 13% 12%; /* #1E293B 深暗色 */
@@ -26,16 +26,6 @@
   --destructive-foreground: 210 11% 85%; /* #CBD5E1 */
   --ring: 217 91% 50%; /* #1E40AF */
   --radius: 0.75rem;
-  
-  /* Custom colors for North™Sea */
-  --fb-blue: 207 90% 54%; /* #1877f2 */
-  --north-sea-blue: 215 84% 50%; /* #1d4ed8 */
-  --north-sea-gold: 45 93% 47%; /* #eab308 */
-  --slate-50: 210 40% 98%; /* #f8fafc */
-  --slate-100: 210 40% 96%; /* #f1f5f9 */
-  --slate-200: 214 32% 91%; /* #e2e8f0 */
-  --slate-600: 215 28% 17%; /* #475569 */
-  --slate-800: 215 25% 27%; /* #1e293b */
 }
 
 .dark {

@@ -117,11 +117,11 @@ export default function DataTable() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "collected":
-        return <Badge className="bg-green-100 text-green-800">已收集</Badge>;
+        return <Badge variant="secondary">已收集</Badge>;
       case "processing":
-        return <Badge className="bg-yellow-100 text-yellow-800">處理中</Badge>;
+        return <Badge variant="outline">處理中</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -137,13 +137,13 @@ export default function DataTable() {
 
   if (isLoading) {
     return (
-      <Card className="border border-slate-200">
+      <Card className="bg-card border-border">
         <CardContent className="p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+            <div className="h-4 bg-muted rounded w-1/4"></div>
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-slate-200 rounded"></div>
+                <div key={i} className="h-16 bg-muted rounded"></div>
               ))}
             </div>
           </div>
@@ -153,12 +153,12 @@ export default function DataTable() {
   }
 
   return (
-    <Card className="border border-slate-200">
-      <CardHeader className="border-b border-slate-200">
+    <Card className="bg-card border-border">
+      <CardHeader className="border-b border-border">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-slate-800">收集數據</h3>
-            <p className="text-slate-600 mt-1">最近收集的 Facebook 數據</p>
+            <h3 className="text-lg font-semibold text-card-foreground">收集數據</h3>
+            <p className="text-muted-foreground mt-1">最近收集的 Facebook 數據</p>
           </div>
           <div className="flex items-center space-x-3">
             <div className="relative">
