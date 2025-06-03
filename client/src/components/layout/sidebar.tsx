@@ -11,7 +11,9 @@ import {
   MessageSquare,
   Bot,
   Globe,
-  UserPlus
+  UserPlus,
+  Megaphone,
+  Zap
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
@@ -28,12 +30,10 @@ const navigation = [
 const facebookNavigation = [
   { name: "帳號管理", href: "/facebook-accounts", icon: User },
   { name: "好友管理", href: "/facebook-friends", icon: Users },
-  { name: "批量產號", href: "/facebook-account-generation", icon: User },
-  { name: "批量養號", href: "/facebook-batch-management", icon: Users },
-  { name: "群組管理", href: "/facebook-groups", icon: Users },
-  { name: "群組訊息", href: "/facebook-messaging", icon: MessageSquare },
-  { name: "自動回覆", href: "/facebook-auto-reply", icon: Bot },
-  { name: "翻譯工具", href: "/translation", icon: Globe },
+  { name: "批量產號", href: "/facebook-account-generation", icon: UserPlus },
+  { name: "批量養號", href: "/facebook-batch-management", icon: Zap },
+  { name: "自動訊息", href: "/auto-messaging", icon: MessageSquare },
+  { name: "廣告管理", href: "/ad-manager", icon: Megaphone },
 ];
 
 export default function Sidebar() {

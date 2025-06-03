@@ -266,7 +266,7 @@ export default function AutoMessaging() {
                                   />
                                 </FormControl>
                                 <FormDescription className="text-slate-400">
-                                  支援變數：{{"{name}"}}, {{"{company}"}}, {{"{product}"}} 等
+                                  支援變數：{"{name}"}, {"{company}"}, {"{product}"} 等
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>

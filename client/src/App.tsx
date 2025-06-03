@@ -15,6 +15,8 @@ import FacebookAccounts from "@/pages/facebook-accounts";
 import FacebookFriends from "@/pages/facebook-friends";
 import FacebookBatchManagement from "@/pages/facebook-batch-management";
 import FacebookAccountGeneration from "@/pages/facebook-account-generation";
+import AutoMessaging from "@/pages/auto-messaging";
+import AdManager from "@/pages/ad-manager";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +36,8 @@ function Router() {
             <Route path="/facebook-friends" component={FacebookFriends} />
             <Route path="/facebook-account-generation" component={FacebookAccountGeneration} />
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
+            <Route path="/auto-messaging" component={AutoMessaging} />
+            <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />
           </Switch>
         </div>

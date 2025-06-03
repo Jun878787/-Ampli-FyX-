@@ -452,6 +452,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Ad Campaigns API
+  app.get("/api/facebook/ad-campaigns", async (req, res) => {
+    try {
+      const campaigns = [
+        {
+          id: 1,
+          campaignName: "北金國際品牌推廣",
+          objective: "awareness",
+          status: "active",
+          impressions: 45632,
+          clicks: 1258,
+          spend: 5420,
+          conversions: 34,
+          ctr: 2.76,
+          cpc: 4.31,
+          startDate: "2024-06-01",
+          endDate: "2024-06-30",
+        },
+        {
+          id: 2,
+          campaignName: "產品銷售轉換",
+          objective: "conversions",
+          status: "active",
+          impressions: 32145,
+          clicks: 892,
+          spend: 4200,
+          conversions: 28,
+          ctr: 2.78,
+          cpc: 4.71,
+          startDate: "2024-06-01",
+          endDate: "2024-06-15",
+        },
+      ];
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Error fetching ad campaigns:", error);
+      res.status(500).json({ message: "Failed to fetch ad campaigns" });
+    }
+  });
+
+  app.post("/api/facebook/ad-campaigns", async (req, res) => {
+    try {
+      const campaignData = req.body;
+      const newCampaign = {
+        id: Date.now(),
+        campaignName: campaignData.campaignName,
+        objective: campaignData.objective,
+        status: "pending",
+        impressions: 0,
+        clicks: 0,
+        spend: 0,
+        conversions: 0,
+        ctr: 0,
+        cpc: 0,
+        startDate: campaignData.schedule.startDate,
+        endDate: campaignData.schedule.endDate,
+        createdAt: new Date().toISOString(),
+      };
+      res.status(201).json(newCampaign);
+    } catch (error) {
+      console.error("Error creating ad campaign:", error);
+      res.status(500).json({ message: "Failed to create ad campaign" });
+    }
+  });
+
+  app.get("/api/facebook/ad-analytics/:dateRange", async (req, res) => {
+    try {
+      const analytics = {
+        totalImpressions: 125847,
+        totalClicks: 3256,
+        totalSpend: 15420,
+        totalConversions: 89,
+        ctr: 2.59,
+        cpc: 4.73,
+        cpm: 122.5,
+        conversionRate: 2.73,
+        roas: 3.42,
+      };
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching ad analytics:", error);
+      res.status(500).json({ message: "Failed to fetch ad analytics" });
+    }
+  });
+
   // Facebook Friends API
   app.get("/api/facebook/friends", async (req, res) => {
     try {
