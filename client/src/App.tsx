@@ -32,6 +32,7 @@ function Router() {
             <Route path="/settings" component={Settings} />
             <Route path="/facebook-accounts" component={FacebookAccounts} />
             <Route path="/facebook-friends" component={FacebookFriends} />
+            <Route path="/facebook-account-generation" component={FacebookAccountGeneration} />
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
             <Route component={NotFound} />
           </Switch>
