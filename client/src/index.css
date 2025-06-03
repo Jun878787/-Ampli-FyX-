@@ -24,7 +24,7 @@
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 60 9.1% 97.8%;
   --ring: 20 14.3% 4.1%;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
   
   /* Custom colors for North™Sea */
   --fb-blue: 207 90% 54%; /* #1877f2 */
@@ -57,7 +57,7 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
   --ring: 240 4.9% 83.9%;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 @layer base {
@@ -66,7 +66,7 @@
   }
 
   body {
-    @apply font-inter antialiased bg-background text-foreground;
+    @apply font-inter antialiased bg-background text-foreground dark;
     font-family: 'Inter', sans-serif;
   }
 }
