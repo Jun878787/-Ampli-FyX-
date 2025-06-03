@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -203,6 +203,65 @@ export const translations = pgTable("translations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 批量帳號管理
+export const accountBatches = pgTable("account_batches", {
+  id: serial("id").primaryKey(),
+  batchName: varchar("batch_name", { length: 255 }).notNull(),
+  namePrefix: varchar("name_prefix", { length: 100 }).notNull(),
+  emailDomain: varchar("email_domain", { length: 255 }).notNull(),
+  accountType: varchar("account_type", { length: 50 }).notNull(), // business, personal, marketing
+  totalAccounts: integer("total_accounts").notNull(),
+  activeAccounts: integer("active_accounts").default(0),
+  pendingAccounts: integer("pending_accounts").default(0),
+  failedAccounts: integer("failed_accounts").default(0),
+  progress: integer("progress").default(0), // 0-100
+  status: varchar("status", { length: 50 }).default("creating"), // creating, running, completed, paused, failed
+  autoNurture: boolean("auto_nurture").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 養號策略
+export const nurturingStrategies = pgTable("nurturing_strategies", {
+  id: serial("id").primaryKey(),
+  strategyName: varchar("strategy_name", { length: 255 }).notNull(),
+  dailyActions: integer("daily_actions").notNull(),
+  friendRequests: integer("friend_requests").notNull(),
+  postLikes: integer("post_likes").notNull(),
+  comments: integer("comments").notNull(),
+  shares: integer("shares").notNull(),
+  activeHours: text("active_hours").array(), // Array of hours [9, 14, 19]
+  isActive: boolean("is_active").default(true),
+  successRate: varchar("success_rate", { length: 10 }),
+  activeAccounts: integer("active_accounts").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 批次帳號分配
+export const batchAccountAssignments = pgTable("batch_account_assignments", {
+  id: serial("id").primaryKey(),
+  batchId: integer("batch_id").references(() => accountBatches.id, { onDelete: "cascade" }),
+  accountId: integer("account_id").references(() => facebookAccounts.id, { onDelete: "cascade" }),
+  strategyId: integer("strategy_id").references(() => nurturingStrategies.id),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+}, (table) => [
+  index("batch_account_idx").on(table.batchId, table.accountId),
+]);
+
+// 自動化操作日誌
+export const automationLogs = pgTable("automation_logs", {
+  id: serial("id").primaryKey(),
+  accountId: integer("account_id").references(() => facebookAccounts.id, { onDelete: "cascade" }),
+  strategyId: integer("strategy_id").references(() => nurturingStrategies.id),
+  actionType: varchar("action_type", { length: 100 }).notNull(), // friend_request, like, comment, share
+  targetId: varchar("target_id", { length: 255 }), // ID of the target (post, user, etc.)
+  status: varchar("status", { length: 50 }).notNull(), // success, failed, pending
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"), // Additional action details
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Facebook 帳號相關類型和插入模式
 export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).omit({
   id: true,
@@ -243,6 +302,35 @@ export const insertAutoReplyRuleSchema = createInsertSchema(autoReplyRules).omit
 });
 
 export const insertTranslationSchema = createInsertSchema(translations).omit({
+  id: true,
+  createdAt: true,
+});
+
+// 批量管理相關插入模式
+export const insertAccountBatchSchema = createInsertSchema(accountBatches).omit({
+  id: true,
+  activeAccounts: true,
+  pendingAccounts: true,
+  failedAccounts: true,
+  progress: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertNurturingStrategySchema = createInsertSchema(nurturingStrategies).omit({
+  id: true,
+  successRate: true,
+  activeAccounts: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBatchAccountAssignmentSchema = createInsertSchema(batchAccountAssignments).omit({
+  id: true,
+  assignedAt: true,
+});
+
+export const insertAutomationLogSchema = createInsertSchema(automationLogs).omit({
   id: true,
   createdAt: true,
 });

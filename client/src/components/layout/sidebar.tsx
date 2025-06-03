@@ -27,6 +27,7 @@ const navigation = [
 const facebookNavigation = [
   { name: "帳號管理", href: "/facebook-accounts", icon: User },
   { name: "好友管理", href: "/facebook-friends", icon: Users },
+  { name: "批量養號", href: "/facebook-batch-management", icon: Users },
   { name: "群組管理", href: "/facebook-groups", icon: Users },
   { name: "群組訊息", href: "/facebook-messaging", icon: MessageSquare },
   { name: "自動回覆", href: "/facebook-auto-reply", icon: Bot },
