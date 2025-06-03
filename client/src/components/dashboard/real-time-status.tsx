@@ -16,46 +16,46 @@ export default function RealTimeStatus() {
   const runningTasks = tasks?.filter((task: any) => task.status === "running") || [];
 
   return (
-    <Card className="border border-slate-200">
-      <CardHeader className="border-b border-slate-200">
-        <CardTitle className="text-lg font-semibold text-slate-800">實時狀態</CardTitle>
+    <Card className="bg-card border-border">
+      <CardHeader className="border-b border-border">
+        <CardTitle className="text-lg font-semibold text-card-foreground">實時狀態</CardTitle>
       </CardHeader>
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-slate-600">系統狀態</span>
-          <span className="flex items-center text-green-600 font-medium">
+          <span className="text-muted-foreground">系統狀態</span>
+          <span className="flex items-center text-green-400 font-medium">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
             運行中
           </span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-slate-600">CPU 使用率</span>
-          <span className="text-slate-800 font-medium">{stats?.cpuUsage || "0%"}</span>
+          <span className="text-muted-foreground">CPU 使用率</span>
+          <span className="text-card-foreground font-medium">{stats?.cpuUsage || "0%"}</span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-slate-600">記憶體使用</span>
-          <span className="text-slate-800 font-medium">{stats?.memoryUsage || "0 GB"}</span>
+          <span className="text-muted-foreground">記憶體使用</span>
+          <span className="text-card-foreground font-medium">{stats?.memoryUsage || "0 GB"}</span>
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-slate-600">網路狀況</span>
-          <span className="text-green-600 font-medium">
+          <span className="text-muted-foreground">網路狀況</span>
+          <span className="text-green-400 font-medium">
             {stats?.networkStatus === "good" ? "良好" : "一般"}
           </span>
         </div>
         
-        <div className="pt-4 border-t border-slate-200">
-          <h4 className="font-medium text-slate-800 mb-3">當前任務進度</h4>
+        <div className="pt-4 border-t border-border">
+          <h4 className="font-medium text-card-foreground mb-3">當前任務進度</h4>
           <div className="space-y-3">
             {runningTasks.length === 0 ? (
-              <p className="text-sm text-slate-500">暫無運行中的任務</p>
+              <p className="text-sm text-muted-foreground">暫無運行中的任務</p>
             ) : (
               runningTasks.map((task: any) => (
                 <div key={task.id}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-slate-600">{task.name}</span>
+                    <span className="text-muted-foreground">{task.name}</span>
                     <span className="font-medium">{task.progress}%</span>
                   </div>
                   <Progress value={task.progress} className="h-2" />
