@@ -184,7 +184,7 @@ function simulateCollectionProgress(taskId: number) {
       return;
     }
 
-    const newProgress = Math.min(task.progress + Math.floor(Math.random() * 10) + 1, 100);
+    const newProgress = Math.min((task.progress ?? 0) + Math.floor(Math.random() * 10) + 1, 100);
     
     if (newProgress >= 100) {
       await storage.updateCollectionTask(taskId, {

@@ -30,8 +30,8 @@ export default function Sidebar() {
             <SiFacebook className="text-white text-lg" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-slate-800">FB 採集工具</h1>
-            <p className="text-sm text-slate-500">數據收集管理</p>
+            <h1 className="text-lg font-bold text-slate-800">North™Sea</h1>
+            <p className="text-sm text-slate-500">北金國際 數據採集</p>
           </div>
         </div>
       </div>
@@ -44,16 +44,14 @@ export default function Sidebar() {
             
             return (
               <li key={item.name}>
-                <Link href={item.href}>
-                  <a className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
-                    isActive 
-                      ? "bg-blue-50 text-blue-700" 
-                      : "text-slate-600 hover:bg-slate-50"
-                  )}>
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </a>
+                <Link href={item.href} className={cn(
+                  "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                  isActive 
+                    ? "bg-blue-50 text-blue-700" 
+                    : "text-slate-600 hover:bg-slate-50"
+                )}>
+                  <Icon className="h-5 w-5" />
+                  <span>{item.name}</span>
                 </Link>
               </li>
             );

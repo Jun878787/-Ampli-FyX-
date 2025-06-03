@@ -190,6 +190,11 @@ export class MemStorage implements IStorage {
     const task: CollectionTask = {
       ...insertTask,
       id,
+      status: insertTask.status ?? "pending",
+      keywords: insertTask.keywords ?? null,
+      includeImages: insertTask.includeImages ?? false,
+      includeVideos: insertTask.includeVideos ?? false,
+      progress: insertTask.progress ?? 0,
       createdAt: new Date(),
       completedAt: null,
     };
@@ -249,6 +254,9 @@ export class MemStorage implements IStorage {
     const data: CollectedData = {
       ...insertData,
       id,
+      taskId: insertData.taskId ?? null,
+      status: insertData.status ?? "collected",
+      metadata: insertData.metadata ?? null,
       createdAt: new Date(),
     };
     this.collectedData.set(id, data);
