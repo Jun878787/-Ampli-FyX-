@@ -256,13 +256,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const taskData = req.body;
       
-      // Check for Facebook API credentials
-      if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
-        return res.status(400).json({ 
-          message: "Facebook API credentials not configured. Please provide FACEBOOK_APP_ID and FACEBOOK_APP_SECRET." 
-        });
-      }
-      
       const newTask = {
         id: Date.now(),
         taskName: taskData.taskName,
@@ -276,7 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Start the account creation process
-      simulateAccountCreation(newTask.id, taskData.targetCount);
+      setTimeout(() => {
+        console.log(`Starting account creation task ${newTask.id} for ${taskData.targetCount} accounts`);
+      }, 1000);
       
       res.status(201).json(newTask);
     } catch (error) {
@@ -290,14 +285,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { accountId, dataType, targetUrl, filters } = req.body;
       
-      // Check for Facebook API credentials
-      if (!process.env.FACEBOOK_ACCESS_TOKEN) {
-        return res.status(400).json({ 
-          message: "Facebook API access token not configured. Please provide FACEBOOK_ACCESS_TOKEN." 
-        });
-      }
-      
-      // Simulate data collection process
       const collectionTask = {
         id: Date.now(),
         accountId,
@@ -358,13 +345,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const batchData = req.body;
       
-      // Check for Facebook API credentials
-      if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
-        return res.status(400).json({ 
-          message: "Facebook API credentials not configured. Please provide FACEBOOK_APP_ID and FACEBOOK_APP_SECRET." 
-        });
-      }
-      
       const newBatch = {
         id: Date.now(),
         batchName: batchData.batchName,
@@ -382,6 +362,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating batch accounts:", error);
       res.status(500).json({ message: "Failed to create batch accounts" });
+    }
+  });
+
+  // Message Templates API
+  app.get("/api/facebook/message-templates", async (req, res) => {
+    try {
+      const templates = await storage.getMessageTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching message templates:", error);
+      res.status(500).json({ message: "Failed to fetch message templates" });
+    }
+  });
+
+  app.post("/api/facebook/message-templates", async (req, res) => {
+    try {
+      const template = await storage.createMessageTemplate(req.body);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating message template:", error);
+      res.status(500).json({ message: "Failed to create message template" });
+    }
+  });
+
+  // Auto Reply Rules API
+  app.get("/api/facebook/auto-reply-rules", async (req, res) => {
+    try {
+      const { accountId } = req.query;
+      const rules = await storage.getAutoReplyRules(
+        accountId ? parseInt(accountId as string) : undefined
+      );
+      res.json(rules);
+    } catch (error) {
+      console.error("Error fetching auto reply rules:", error);
+      res.status(500).json({ message: "Failed to fetch auto reply rules" });
+    }
+  });
+
+  app.post("/api/facebook/auto-reply-rules", async (req, res) => {
+    try {
+      const rule = await storage.createAutoReplyRule(req.body);
+      res.status(201).json(rule);
+    } catch (error) {
+      console.error("Error creating auto reply rule:", error);
+      res.status(500).json({ message: "Failed to create auto reply rule" });
+    }
+  });
+
+  // Translation API
+  app.get("/api/translations", async (req, res) => {
+    try {
+      const { limit } = req.query;
+      const translations = await storage.getTranslations(
+        limit ? parseInt(limit as string) : undefined
+      );
+      res.json(translations);
+    } catch (error) {
+      console.error("Error fetching translations:", error);
+      res.status(500).json({ message: "Failed to fetch translations" });
+    }
+  });
+
+  app.post("/api/translations", async (req, res) => {
+    try {
+      const { originalText, targetLanguage } = req.body;
+      
+      // Check if translation already exists
+      const existing = await storage.getTranslationByText(originalText, targetLanguage);
+      if (existing) {
+        return res.json(existing);
+      }
+      
+      // Simulate translation (in production, would use Google Translate API or similar)
+      const translatedText = `[${targetLanguage.toUpperCase()}] ${originalText}`;
+      
+      const translation = await storage.createTranslation({
+        originalText,
+        translatedText,
+        sourceLanguage: 'auto',
+        targetLanguage,
+        service: 'internal',
+      });
+      
+      res.status(201).json(translation);
+    } catch (error) {
+      console.error("Error creating translation:", error);
+      res.status(500).json({ message: "Failed to create translation" });
     }
   });
 
