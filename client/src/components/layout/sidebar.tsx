@@ -5,7 +5,12 @@ import {
   Database, 
   Download, 
   BarChart3, 
-  Settings 
+  Settings,
+  User,
+  Users,
+  MessageSquare,
+  Bot,
+  Globe
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
@@ -17,6 +22,15 @@ const navigation = [
   { name: "導出數據", href: "/export-data", icon: Download },
   { name: "數據分析", href: "/analytics", icon: BarChart3 },
   { name: "設置", href: "/settings", icon: Settings },
+];
+
+const facebookNavigation = [
+  { name: "帳號管理", href: "/facebook-accounts", icon: User },
+  { name: "好友管理", href: "/facebook-friends", icon: Users },
+  { name: "群組管理", href: "/facebook-groups", icon: Users },
+  { name: "群組訊息", href: "/facebook-messaging", icon: MessageSquare },
+  { name: "自動回覆", href: "/facebook-auto-reply", icon: Bot },
+  { name: "翻譯工具", href: "/translation", icon: Globe },
 ];
 
 export default function Sidebar() {
@@ -36,27 +50,58 @@ export default function Sidebar() {
         </div>
       </div>
       
-      <nav className="p-4">
-        <ul className="space-y-2">
-          {navigation.map((item) => {
-            const Icon = item.icon;
-            const isActive = location === item.href;
-            
-            return (
-              <li key={item.name}>
-                <Link href={item.href} className={cn(
-                  "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
-                  isActive 
-                    ? "bg-blue-50 text-blue-700" 
-                    : "text-slate-600 hover:bg-slate-50"
-                )}>
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      <nav className="p-4 space-y-6">
+        <div>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            系統功能
+          </h3>
+          <ul className="space-y-2">
+            {navigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              
+              return (
+                <li key={item.name}>
+                  <Link href={item.href} className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    isActive 
+                      ? "bg-blue-50 text-blue-700" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  )}>
+                    <Icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+            Facebook 管理
+          </h3>
+          <ul className="space-y-2">
+            {facebookNavigation.map((item) => {
+              const Icon = item.icon;
+              const isActive = location === item.href;
+              
+              return (
+                <li key={item.name}>
+                  <Link href={item.href} className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    isActive 
+                      ? "bg-blue-50 text-blue-700" 
+                      : "text-slate-600 hover:bg-slate-50"
+                  )}>
+                    <Icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </nav>
     </div>
   );

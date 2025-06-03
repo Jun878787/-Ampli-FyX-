@@ -171,6 +171,257 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Accounts API
+  app.get("/api/facebook/accounts", async (req, res) => {
+    try {
+      const accounts = await storage.getFacebookAccounts();
+      res.json(accounts);
+    } catch (error) {
+      console.error("Error fetching Facebook accounts:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook accounts" });
+    }
+  });
+
+  app.post("/api/facebook/accounts", async (req, res) => {
+    try {
+      const account = await storage.createFacebookAccount(req.body);
+      res.status(201).json(account);
+    } catch (error) {
+      console.error("Error creating Facebook account:", error);
+      res.status(500).json({ message: "Failed to create Facebook account" });
+    }
+  });
+
+  app.patch("/api/facebook/accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const account = await storage.updateFacebookAccount(id, req.body);
+      if (!account) {
+        return res.status(404).json({ message: "Facebook account not found" });
+      }
+      res.json(account);
+    } catch (error) {
+      console.error("Error updating Facebook account:", error);
+      res.status(500).json({ message: "Failed to update Facebook account" });
+    }
+  });
+
+  app.delete("/api/facebook/accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteFacebookAccount(id);
+      if (!success) {
+        return res.status(404).json({ message: "Facebook account not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting Facebook account:", error);
+      res.status(500).json({ message: "Failed to delete Facebook account" });
+    }
+  });
+
+  // Facebook Friends API
+  app.get("/api/facebook/friends", async (req, res) => {
+    try {
+      const { accountId, search } = req.query;
+      const friends = await storage.getFacebookFriends(
+        accountId ? parseInt(accountId as string) : undefined,
+        search as string
+      );
+      res.json(friends);
+    } catch (error) {
+      console.error("Error fetching Facebook friends:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook friends" });
+    }
+  });
+
+  app.post("/api/facebook/friends", async (req, res) => {
+    try {
+      const friend = await storage.createFacebookFriend(req.body);
+      res.status(201).json(friend);
+    } catch (error) {
+      console.error("Error creating Facebook friend:", error);
+      res.status(500).json({ message: "Failed to create Facebook friend" });
+    }
+  });
+
+  app.get("/api/facebook/friends/search", async (req, res) => {
+    try {
+      const { keyword, location, school } = req.query;
+      if (!keyword) {
+        return res.status(400).json({ message: "Keyword is required" });
+      }
+      const friends = await storage.searchFriendsByKeyword(
+        keyword as string,
+        location as string,
+        school as string
+      );
+      res.json(friends);
+    } catch (error) {
+      console.error("Error searching friends:", error);
+      res.status(500).json({ message: "Failed to search friends" });
+    }
+  });
+
+  // Friend Groups API
+  app.get("/api/facebook/groups", async (req, res) => {
+    try {
+      const { accountId } = req.query;
+      const groups = await storage.getFriendGroups(
+        accountId ? parseInt(accountId as string) : undefined
+      );
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching friend groups:", error);
+      res.status(500).json({ message: "Failed to fetch friend groups" });
+    }
+  });
+
+  app.post("/api/facebook/groups", async (req, res) => {
+    try {
+      const group = await storage.createFriendGroup(req.body);
+      res.status(201).json(group);
+    } catch (error) {
+      console.error("Error creating friend group:", error);
+      res.status(500).json({ message: "Failed to create friend group" });
+    }
+  });
+
+  app.get("/api/facebook/groups/:id/members", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const members = await storage.getFriendGroupMembers(id);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching group members:", error);
+      res.status(500).json({ message: "Failed to fetch group members" });
+    }
+  });
+
+  app.post("/api/facebook/groups/:groupId/members/:friendId", async (req, res) => {
+    try {
+      const groupId = parseInt(req.params.groupId);
+      const friendId = parseInt(req.params.friendId);
+      const success = await storage.addFriendToGroup(groupId, friendId);
+      if (!success) {
+        return res.status(400).json({ message: "Failed to add friend to group" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error adding friend to group:", error);
+      res.status(500).json({ message: "Failed to add friend to group" });
+    }
+  });
+
+  // Message Templates API
+  app.get("/api/facebook/templates", async (req, res) => {
+    try {
+      const templates = await storage.getMessageTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching message templates:", error);
+      res.status(500).json({ message: "Failed to fetch message templates" });
+    }
+  });
+
+  app.post("/api/facebook/templates", async (req, res) => {
+    try {
+      const template = await storage.createMessageTemplate(req.body);
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating message template:", error);
+      res.status(500).json({ message: "Failed to create message template" });
+    }
+  });
+
+  // Group Messages API
+  app.get("/api/facebook/messages", async (req, res) => {
+    try {
+      const { accountId, groupId } = req.query;
+      const messages = await storage.getGroupMessages(
+        accountId ? parseInt(accountId as string) : undefined,
+        groupId ? parseInt(groupId as string) : undefined
+      );
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching group messages:", error);
+      res.status(500).json({ message: "Failed to fetch group messages" });
+    }
+  });
+
+  app.post("/api/facebook/messages", async (req, res) => {
+    try {
+      const message = await storage.createGroupMessage(req.body);
+      res.status(201).json(message);
+    } catch (error) {
+      console.error("Error creating group message:", error);
+      res.status(500).json({ message: "Failed to create group message" });
+    }
+  });
+
+  // Auto Reply Rules API
+  app.get("/api/facebook/auto-reply", async (req, res) => {
+    try {
+      const { accountId } = req.query;
+      const rules = await storage.getAutoReplyRules(
+        accountId ? parseInt(accountId as string) : undefined
+      );
+      res.json(rules);
+    } catch (error) {
+      console.error("Error fetching auto reply rules:", error);
+      res.status(500).json({ message: "Failed to fetch auto reply rules" });
+    }
+  });
+
+  app.post("/api/facebook/auto-reply", async (req, res) => {
+    try {
+      const rule = await storage.createAutoReplyRule(req.body);
+      res.status(201).json(rule);
+    } catch (error) {
+      console.error("Error creating auto reply rule:", error);
+      res.status(500).json({ message: "Failed to create auto reply rule" });
+    }
+  });
+
+  // Translation API
+  app.get("/api/translations", async (req, res) => {
+    try {
+      const { limit } = req.query;
+      const translations = await storage.getTranslations(
+        limit ? parseInt(limit as string) : undefined
+      );
+      res.json(translations);
+    } catch (error) {
+      console.error("Error fetching translations:", error);
+      res.status(500).json({ message: "Failed to fetch translations" });
+    }
+  });
+
+  app.post("/api/translate", async (req, res) => {
+    try {
+      const { text, targetLanguage } = req.body;
+      if (!text || !targetLanguage) {
+        return res.status(400).json({ message: "Text and target language are required" });
+      }
+
+      // Check if translation already exists
+      const existing = await storage.getTranslationByText(text, targetLanguage);
+      if (existing) {
+        return res.json(existing);
+      }
+
+      // Real translation would require external service API key
+      // For now, return error to prompt user for API configuration
+      return res.status(503).json({ 
+        message: "Translation service not configured. Please provide translation API credentials.",
+        requiresSetup: true 
+      });
+    } catch (error) {
+      console.error("Error translating text:", error);
+      res.status(500).json({ message: "Failed to translate text" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
