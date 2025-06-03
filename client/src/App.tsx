@@ -11,6 +11,8 @@ import DataManagement from "@/pages/data-management";
 import ExportData from "@/pages/export-data";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
+import FacebookAccounts from "@/pages/facebook-accounts";
+import FacebookFriends from "@/pages/facebook-friends";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +28,8 @@ function Router() {
             <Route path="/export-data" component={ExportData} />
             <Route path="/analytics" component={Analytics} />
             <Route path="/settings" component={Settings} />
+            <Route path="/facebook-accounts" component={FacebookAccounts} />
+            <Route path="/facebook-friends" component={FacebookFriends} />
             <Route component={NotFound} />
           </Switch>
         </div>
