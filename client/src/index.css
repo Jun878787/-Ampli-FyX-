@@ -4,6 +4,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 修復滾輪功能 */
+* {
+  scroll-behavior: smooth;
+}
+
+html, body {
+  overflow: auto;
+  height: 100%;
+}
+
+/* 確保所有滾動容器可以正常滾動 */
+.overflow-auto, .overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 自定義滾動條樣式 - 深色主題 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent-foreground));
+}
+
 :root {
   /* 北金國際North™Sea 純深色模式 - 完全無亮底 */
   --background: 222 47% 6%; /* #0F1419 極深背景 */
