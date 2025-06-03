@@ -357,6 +357,18 @@ export type InsertAutoReplyRule = z.infer<typeof insertAutoReplyRuleSchema>;
 export type Translation = typeof translations.$inferSelect;
 export type InsertTranslation = z.infer<typeof insertTranslationSchema>;
 
+export type AccountBatch = typeof accountBatches.$inferSelect;
+export type InsertAccountBatch = z.infer<typeof insertAccountBatchSchema>;
+
+export type NurturingStrategy = typeof nurturingStrategies.$inferSelect;
+export type InsertNurturingStrategy = z.infer<typeof insertNurturingStrategySchema>;
+
+export type BatchAccountAssignment = typeof batchAccountAssignments.$inferSelect;
+export type InsertBatchAccountAssignment = z.infer<typeof insertBatchAccountAssignmentSchema>;
+
+export type AutomationLog = typeof automationLogs.$inferSelect;
+export type InsertAutomationLog = z.infer<typeof insertAutomationLogSchema>;
+
 // 關聯定義
 export const facebookAccountsRelations = relations(facebookAccounts, ({ many }) => ({
   friends: many(facebookFriends),
