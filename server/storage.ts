@@ -3,6 +3,14 @@ import {
   collectionTasks, 
   collectedData, 
   systemStats,
+  facebookAccounts,
+  facebookFriends,
+  friendGroups,
+  friendGroupMembers,
+  messageTemplates,
+  groupMessages,
+  autoReplyRules,
+  translations,
   type User, 
   type InsertUser,
   type CollectionTask,
@@ -10,10 +18,24 @@ import {
   type CollectedData,
   type InsertCollectedData,
   type SystemStats,
-  type InsertSystemStats
+  type InsertSystemStats,
+  type FacebookAccount,
+  type InsertFacebookAccount,
+  type FacebookFriend,
+  type InsertFacebookFriend,
+  type FriendGroup,
+  type InsertFriendGroup,
+  type MessageTemplate,
+  type InsertMessageTemplate,
+  type GroupMessage,
+  type InsertGroupMessage,
+  type AutoReplyRule,
+  type InsertAutoReplyRule,
+  type Translation,
+  type InsertTranslation
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, ilike, or, count } from "drizzle-orm";
+import { eq, desc, ilike, or, count, and } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -37,6 +59,57 @@ export interface IStorage {
   // System Stats
   getSystemStats(): Promise<SystemStats | undefined>;
   updateSystemStats(stats: Partial<SystemStats>): Promise<SystemStats>;
+
+  // Facebook Accounts
+  getFacebookAccounts(): Promise<FacebookAccount[]>;
+  getFacebookAccount(id: number): Promise<FacebookAccount | undefined>;
+  createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount>;
+  updateFacebookAccount(id: number, updates: Partial<FacebookAccount>): Promise<FacebookAccount | undefined>;
+  deleteFacebookAccount(id: number): Promise<boolean>;
+
+  // Facebook Friends
+  getFacebookFriends(accountId?: number, search?: string): Promise<FacebookFriend[]>;
+  getFacebookFriend(id: number): Promise<FacebookFriend | undefined>;
+  createFacebookFriend(friend: InsertFacebookFriend): Promise<FacebookFriend>;
+  updateFacebookFriend(id: number, updates: Partial<FacebookFriend>): Promise<FacebookFriend | undefined>;
+  deleteFacebookFriend(id: number): Promise<boolean>;
+  searchFriendsByKeyword(keyword: string, location?: string, school?: string): Promise<FacebookFriend[]>;
+
+  // Friend Groups
+  getFriendGroups(accountId?: number): Promise<FriendGroup[]>;
+  getFriendGroup(id: number): Promise<FriendGroup | undefined>;
+  createFriendGroup(group: InsertFriendGroup): Promise<FriendGroup>;
+  updateFriendGroup(id: number, updates: Partial<FriendGroup>): Promise<FriendGroup | undefined>;
+  deleteFriendGroup(id: number): Promise<boolean>;
+  addFriendToGroup(groupId: number, friendId: number): Promise<boolean>;
+  removeFriendFromGroup(groupId: number, friendId: number): Promise<boolean>;
+  getFriendGroupMembers(groupId: number): Promise<FacebookFriend[]>;
+
+  // Message Templates
+  getMessageTemplates(): Promise<MessageTemplate[]>;
+  getMessageTemplate(id: number): Promise<MessageTemplate | undefined>;
+  createMessageTemplate(template: InsertMessageTemplate): Promise<MessageTemplate>;
+  updateMessageTemplate(id: number, updates: Partial<MessageTemplate>): Promise<MessageTemplate | undefined>;
+  deleteMessageTemplate(id: number): Promise<boolean>;
+
+  // Group Messages
+  getGroupMessages(accountId?: number, groupId?: number): Promise<GroupMessage[]>;
+  getGroupMessage(id: number): Promise<GroupMessage | undefined>;
+  createGroupMessage(message: InsertGroupMessage): Promise<GroupMessage>;
+  updateGroupMessage(id: number, updates: Partial<GroupMessage>): Promise<GroupMessage | undefined>;
+  deleteGroupMessage(id: number): Promise<boolean>;
+
+  // Auto Reply Rules
+  getAutoReplyRules(accountId?: number): Promise<AutoReplyRule[]>;
+  getAutoReplyRule(id: number): Promise<AutoReplyRule | undefined>;
+  createAutoReplyRule(rule: InsertAutoReplyRule): Promise<AutoReplyRule>;
+  updateAutoReplyRule(id: number, updates: Partial<AutoReplyRule>): Promise<AutoReplyRule | undefined>;
+  deleteAutoReplyRule(id: number): Promise<boolean>;
+
+  // Translations
+  getTranslations(limit?: number): Promise<Translation[]>;
+  createTranslation(translation: InsertTranslation): Promise<Translation>;
+  getTranslationByText(originalText: string, targetLanguage: string): Promise<Translation | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -507,6 +580,326 @@ export class DatabaseStorage implements IStorage {
         .set({ totalCollected: Math.max(0, stats.totalCollected - 1) })
         .where(eq(systemStats.id, stats.id));
     }
+  }
+
+  // Facebook Accounts
+  async getFacebookAccounts(): Promise<FacebookAccount[]> {
+    return await db.select().from(facebookAccounts).orderBy(desc(facebookAccounts.createdAt));
+  }
+
+  async getFacebookAccount(id: number): Promise<FacebookAccount | undefined> {
+    const [account] = await db.select().from(facebookAccounts).where(eq(facebookAccounts.id, id));
+    return account;
+  }
+
+  async createFacebookAccount(insertAccount: InsertFacebookAccount): Promise<FacebookAccount> {
+    const [account] = await db
+      .insert(facebookAccounts)
+      .values(insertAccount)
+      .returning();
+    return account;
+  }
+
+  async updateFacebookAccount(id: number, updates: Partial<FacebookAccount>): Promise<FacebookAccount | undefined> {
+    const [account] = await db
+      .update(facebookAccounts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(facebookAccounts.id, id))
+      .returning();
+    return account;
+  }
+
+  async deleteFacebookAccount(id: number): Promise<boolean> {
+    const result = await db.delete(facebookAccounts).where(eq(facebookAccounts.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Facebook Friends
+  async getFacebookFriends(accountId?: number, search?: string): Promise<FacebookFriend[]> {
+    let query = db.select().from(facebookFriends);
+    
+    const conditions = [];
+    if (accountId) {
+      conditions.push(eq(facebookFriends.accountId, accountId));
+    }
+    if (search) {
+      conditions.push(ilike(facebookFriends.friendName, `%${search}%`));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.orderBy(desc(facebookFriends.addedAt));
+  }
+
+  async getFacebookFriend(id: number): Promise<FacebookFriend | undefined> {
+    const [friend] = await db.select().from(facebookFriends).where(eq(facebookFriends.id, id));
+    return friend;
+  }
+
+  async createFacebookFriend(insertFriend: InsertFacebookFriend): Promise<FacebookFriend> {
+    const [friend] = await db
+      .insert(facebookFriends)
+      .values(insertFriend)
+      .returning();
+    return friend;
+  }
+
+  async updateFacebookFriend(id: number, updates: Partial<FacebookFriend>): Promise<FacebookFriend | undefined> {
+    const [friend] = await db
+      .update(facebookFriends)
+      .set(updates)
+      .where(eq(facebookFriends.id, id))
+      .returning();
+    return friend;
+  }
+
+  async deleteFacebookFriend(id: number): Promise<boolean> {
+    const result = await db.delete(facebookFriends).where(eq(facebookFriends.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async searchFriendsByKeyword(keyword: string, location?: string, school?: string): Promise<FacebookFriend[]> {
+    let query = db.select().from(facebookFriends);
+    
+    const conditions = [
+      or(
+        ilike(facebookFriends.friendName, `%${keyword}%`),
+        ilike(facebookFriends.workplace, `%${keyword}%`)
+      )
+    ];
+    
+    if (location) {
+      conditions.push(ilike(facebookFriends.location, `%${location}%`));
+    }
+    if (school) {
+      conditions.push(ilike(facebookFriends.school, `%${school}%`));
+    }
+    
+    return await query.where(and(...conditions)).orderBy(desc(facebookFriends.addedAt));
+  }
+
+  // Friend Groups
+  async getFriendGroups(accountId?: number): Promise<FriendGroup[]> {
+    let query = db.select().from(friendGroups);
+    if (accountId) {
+      query = query.where(eq(friendGroups.accountId, accountId));
+    }
+    return await query.orderBy(desc(friendGroups.createdAt));
+  }
+
+  async getFriendGroup(id: number): Promise<FriendGroup | undefined> {
+    const [group] = await db.select().from(friendGroups).where(eq(friendGroups.id, id));
+    return group;
+  }
+
+  async createFriendGroup(insertGroup: InsertFriendGroup): Promise<FriendGroup> {
+    const [group] = await db
+      .insert(friendGroups)
+      .values(insertGroup)
+      .returning();
+    return group;
+  }
+
+  async updateFriendGroup(id: number, updates: Partial<FriendGroup>): Promise<FriendGroup | undefined> {
+    const [group] = await db
+      .update(friendGroups)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(friendGroups.id, id))
+      .returning();
+    return group;
+  }
+
+  async deleteFriendGroup(id: number): Promise<boolean> {
+    // Delete group members first
+    await db.delete(friendGroupMembers).where(eq(friendGroupMembers.groupId, id));
+    
+    const result = await db.delete(friendGroups).where(eq(friendGroups.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async addFriendToGroup(groupId: number, friendId: number): Promise<boolean> {
+    try {
+      await db
+        .insert(friendGroupMembers)
+        .values({ groupId, friendId });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async removeFriendFromGroup(groupId: number, friendId: number): Promise<boolean> {
+    const result = await db
+      .delete(friendGroupMembers)
+      .where(and(
+        eq(friendGroupMembers.groupId, groupId),
+        eq(friendGroupMembers.friendId, friendId)
+      ));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getFriendGroupMembers(groupId: number): Promise<FacebookFriend[]> {
+    return await db
+      .select({
+        id: facebookFriends.id,
+        accountId: facebookFriends.accountId,
+        friendId: facebookFriends.friendId,
+        friendName: facebookFriends.friendName,
+        profileUrl: facebookFriends.profileUrl,
+        location: facebookFriends.location,
+        school: facebookFriends.school,
+        workplace: facebookFriends.workplace,
+        mutualFriends: facebookFriends.mutualFriends,
+        status: facebookFriends.status,
+        addedAt: facebookFriends.addedAt,
+        lastInteraction: facebookFriends.lastInteraction,
+      })
+      .from(friendGroupMembers)
+      .innerJoin(facebookFriends, eq(friendGroupMembers.friendId, facebookFriends.id))
+      .where(eq(friendGroupMembers.groupId, groupId));
+  }
+
+  // Message Templates
+  async getMessageTemplates(): Promise<MessageTemplate[]> {
+    return await db.select().from(messageTemplates).orderBy(desc(messageTemplates.createdAt));
+  }
+
+  async getMessageTemplate(id: number): Promise<MessageTemplate | undefined> {
+    const [template] = await db.select().from(messageTemplates).where(eq(messageTemplates.id, id));
+    return template;
+  }
+
+  async createMessageTemplate(insertTemplate: InsertMessageTemplate): Promise<MessageTemplate> {
+    const [template] = await db
+      .insert(messageTemplates)
+      .values(insertTemplate)
+      .returning();
+    return template;
+  }
+
+  async updateMessageTemplate(id: number, updates: Partial<MessageTemplate>): Promise<MessageTemplate | undefined> {
+    const [template] = await db
+      .update(messageTemplates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(messageTemplates.id, id))
+      .returning();
+    return template;
+  }
+
+  async deleteMessageTemplate(id: number): Promise<boolean> {
+    const result = await db.delete(messageTemplates).where(eq(messageTemplates.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Group Messages
+  async getGroupMessages(accountId?: number, groupId?: number): Promise<GroupMessage[]> {
+    let query = db.select().from(groupMessages);
+    
+    const conditions = [];
+    if (accountId) {
+      conditions.push(eq(groupMessages.accountId, accountId));
+    }
+    if (groupId) {
+      conditions.push(eq(groupMessages.groupId, groupId));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.orderBy(desc(groupMessages.createdAt));
+  }
+
+  async getGroupMessage(id: number): Promise<GroupMessage | undefined> {
+    const [message] = await db.select().from(groupMessages).where(eq(groupMessages.id, id));
+    return message;
+  }
+
+  async createGroupMessage(insertMessage: InsertGroupMessage): Promise<GroupMessage> {
+    const [message] = await db
+      .insert(groupMessages)
+      .values(insertMessage)
+      .returning();
+    return message;
+  }
+
+  async updateGroupMessage(id: number, updates: Partial<GroupMessage>): Promise<GroupMessage | undefined> {
+    const [message] = await db
+      .update(groupMessages)
+      .set(updates)
+      .where(eq(groupMessages.id, id))
+      .returning();
+    return message;
+  }
+
+  async deleteGroupMessage(id: number): Promise<boolean> {
+    const result = await db.delete(groupMessages).where(eq(groupMessages.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Auto Reply Rules
+  async getAutoReplyRules(accountId?: number): Promise<AutoReplyRule[]> {
+    let query = db.select().from(autoReplyRules);
+    if (accountId) {
+      query = query.where(eq(autoReplyRules.accountId, accountId));
+    }
+    return await query.orderBy(desc(autoReplyRules.createdAt));
+  }
+
+  async getAutoReplyRule(id: number): Promise<AutoReplyRule | undefined> {
+    const [rule] = await db.select().from(autoReplyRules).where(eq(autoReplyRules.id, id));
+    return rule;
+  }
+
+  async createAutoReplyRule(insertRule: InsertAutoReplyRule): Promise<AutoReplyRule> {
+    const [rule] = await db
+      .insert(autoReplyRules)
+      .values(insertRule)
+      .returning();
+    return rule;
+  }
+
+  async updateAutoReplyRule(id: number, updates: Partial<AutoReplyRule>): Promise<AutoReplyRule | undefined> {
+    const [rule] = await db
+      .update(autoReplyRules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(autoReplyRules.id, id))
+      .returning();
+    return rule;
+  }
+
+  async deleteAutoReplyRule(id: number): Promise<boolean> {
+    const result = await db.delete(autoReplyRules).where(eq(autoReplyRules.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Translations
+  async getTranslations(limit = 50): Promise<Translation[]> {
+    return await db.select().from(translations)
+      .orderBy(desc(translations.createdAt))
+      .limit(limit);
+  }
+
+  async createTranslation(insertTranslation: InsertTranslation): Promise<Translation> {
+    const [translation] = await db
+      .insert(translations)
+      .values(insertTranslation)
+      .returning();
+    return translation;
+  }
+
+  async getTranslationByText(originalText: string, targetLanguage: string): Promise<Translation | undefined> {
+    const [translation] = await db
+      .select()
+      .from(translations)
+      .where(and(
+        eq(translations.originalText, originalText),
+        eq(translations.targetLanguage, targetLanguage)
+      ))
+      .limit(1);
+    return translation;
   }
 }
 
