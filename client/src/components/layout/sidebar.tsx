@@ -10,7 +10,8 @@ import {
   Users,
   MessageSquare,
   Bot,
-  Globe
+  Globe,
+  UserPlus
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ const navigation = [
 const facebookNavigation = [
   { name: "帳號管理", href: "/facebook-accounts", icon: User },
   { name: "好友管理", href: "/facebook-friends", icon: Users },
+  { name: "批量產號", href: "/facebook-account-generation", icon: User },
   { name: "批量養號", href: "/facebook-batch-management", icon: Users },
   { name: "群組管理", href: "/facebook-groups", icon: Users },
   { name: "群組訊息", href: "/facebook-messaging", icon: MessageSquare },

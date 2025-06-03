@@ -14,6 +14,7 @@ import Settings from "@/pages/settings";
 import FacebookAccounts from "@/pages/facebook-accounts";
 import FacebookFriends from "@/pages/facebook-friends";
 import FacebookBatchManagement from "@/pages/facebook-batch-management";
+import FacebookAccountGeneration from "@/pages/facebook-account-generation";
 import NotFound from "@/pages/not-found";
 
 function Router() {

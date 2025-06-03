@@ -262,6 +262,58 @@ export const automationLogs = pgTable("automation_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// 批量產號任務
+export const accountCreationTasks = pgTable("account_creation_tasks", {
+  id: serial("id").primaryKey(),
+  taskName: varchar("task_name", { length: 255 }).notNull(),
+  targetCount: integer("target_count").notNull(),
+  completedCount: integer("completed_count").default(0),
+  failedCount: integer("failed_count").default(0),
+  nameTemplate: varchar("name_template", { length: 255 }).notNull(), // 例如: "NorthSea_{random}"
+  emailTemplate: varchar("email_template", { length: 255 }).notNull(), // 例如: "{name}@tempmail.com"
+  passwordTemplate: varchar("password_template", { length: 255 }).notNull(),
+  profileSettings: jsonb("profile_settings"), // 頭像、封面、基本資料設定
+  verificationSettings: jsonb("verification_settings"), // 手機驗證、郵箱驗證設定
+  proxySettings: jsonb("proxy_settings"), // 代理設定
+  status: varchar("status", { length: 50 }).default("pending"), // pending, running, completed, failed, paused
+  progress: integer("progress").default(0), // 0-100
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 帳號生成記錄
+export const generatedAccounts = pgTable("generated_accounts", {
+  id: serial("id").primaryKey(),
+  taskId: integer("task_id").references(() => accountCreationTasks.id, { onDelete: "cascade" }),
+  accountName: varchar("account_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  password: varchar("password", { length: 255 }).notNull(),
+  fbUserId: varchar("fb_user_id", { length: 255 }),
+  phoneNumber: varchar("phone_number", { length: 50 }),
+  status: varchar("status", { length: 50 }).default("created"), // created, verified, active, banned, failed
+  verificationStatus: jsonb("verification_status"), // 郵箱、手機等驗證狀態
+  loginCount: integer("login_count").default(0),
+  lastLogin: timestamp("last_login"),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"), // 額外資訊如代理、設備等
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// 帳號驗證任務
+export const verificationTasks = pgTable("verification_tasks", {
+  id: serial("id").primaryKey(),
+  accountId: integer("account_id").references(() => generatedAccounts.id, { onDelete: "cascade" }),
+  verificationType: varchar("verification_type", { length: 50 }).notNull(), // email, phone, photo
+  status: varchar("status", { length: 50 }).default("pending"), // pending, in_progress, completed, failed
+  verificationCode: varchar("verification_code", { length: 50 }),
+  attempts: integer("attempts").default(0),
+  maxAttempts: integer("max_attempts").default(3),
+  errorMessage: text("error_message"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Facebook 帳號相關類型和插入模式
 export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).omit({
   id: true,
@@ -368,6 +420,40 @@ export type InsertBatchAccountAssignment = z.infer<typeof insertBatchAccountAssi
 
 export type AutomationLog = typeof automationLogs.$inferSelect;
 export type InsertAutomationLog = z.infer<typeof insertAutomationLogSchema>;
+
+// 批量產號相關插入模式
+export const insertAccountCreationTaskSchema = createInsertSchema(accountCreationTasks).omit({
+  id: true,
+  completedCount: true,
+  failedCount: true,
+  progress: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGeneratedAccountSchema = createInsertSchema(generatedAccounts).omit({
+  id: true,
+  loginCount: true,
+  lastLogin: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVerificationTaskSchema = createInsertSchema(verificationTasks).omit({
+  id: true,
+  attempts: true,
+  completedAt: true,
+  createdAt: true,
+});
+
+export type AccountCreationTask = typeof accountCreationTasks.$inferSelect;
+export type InsertAccountCreationTask = z.infer<typeof insertAccountCreationTaskSchema>;
+
+export type GeneratedAccount = typeof generatedAccounts.$inferSelect;
+export type InsertGeneratedAccount = z.infer<typeof insertGeneratedAccountSchema>;
+
+export type VerificationTask = typeof verificationTasks.$inferSelect;
+export type InsertVerificationTask = z.infer<typeof insertVerificationTaskSchema>;
 
 // 關聯定義
 export const facebookAccountsRelations = relations(facebookAccounts, ({ many }) => ({
