@@ -5,8 +5,8 @@ export default function DataManagement() {
   return (
     <>
       <Header
-        title="數據管理"
-        description="管理和組織收集的 Facebook 數據"
+        title="North™Sea 數據管理"
+        description="北金國際專業 Facebook 數據管理和組織平台"
       />
       
       <main className="flex-1 overflow-auto p-6">

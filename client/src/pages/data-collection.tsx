@@ -5,8 +5,8 @@ export default function DataCollection() {
   return (
     <>
       <Header
-        title="數據採集"
-        description="配置和管理 Facebook 數據採集任務"
+        title="North™Sea 數據採集"
+        description="北金國際專業 Facebook 數據採集配置管理"
       />
       
       <main className="flex-1 overflow-auto p-6">
