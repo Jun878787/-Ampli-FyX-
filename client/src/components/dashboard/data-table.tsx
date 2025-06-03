@@ -273,16 +273,16 @@ export default function DataTable() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-800">
+                      <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300">
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-400 hover:text-red-300"
                         onClick={() => deleteDataMutation.mutate(item.id)}
                         disabled={deleteDataMutation.isPending}
                       >
@@ -296,8 +296,8 @@ export default function DataTable() {
           </table>
         </div>
 
-        <div className="px-6 py-4 border-t border-slate-200 flex items-center justify-between">
-          <div className="text-sm text-slate-600">
+        <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
             顯示 <span className="font-medium">{offset + 1}</span> 到{" "}
             <span className="font-medium">
               {Math.min(offset + limit, collectedData?.total || 0)}
@@ -313,7 +313,7 @@ export default function DataTable() {
             >
               上一頁
             </Button>
-            <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded">
+            <span className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded">
               {currentPage}
             </span>
             <Button
