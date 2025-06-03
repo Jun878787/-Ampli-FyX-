@@ -171,7 +171,6 @@ export default function CollectionPanel() {
           <Button 
             onClick={handleSaveSettings}
             disabled={createTaskMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700"
           >
             {createTaskMutation.isPending ? "保存中..." : "保存設置"}
           </Button>
