@@ -23,7 +23,7 @@ export default function Dashboard() {
   const startCollectionMutation = useMutation({
     mutationFn: async () => {
       // Find the most recent pending task and start it
-      const pendingTask = tasks?.find((task: any) => task.status === "pending");
+      const pendingTask = Array.isArray(tasks) ? tasks.find((task: any) => task.status === "pending") : null;
       if (!pendingTask) {
         throw new Error("沒有待執行的任務");
       }
@@ -47,19 +47,19 @@ export default function Dashboard() {
     },
   });
 
-  const isCollecting = tasks?.some((task: any) => task.status === "running") || false;
+  const isCollecting = Array.isArray(tasks) ? tasks.some((task: any) => task.status === "running") : false;
 
   return (
     <>
       <Header
-        title="數據採集控制台"
-        description="管理和監控 Facebook 數據收集任務"
+        title="North™Sea 數據採集控制台"
+        description="北金國際專業 Facebook 數據收集和監控平台"
         onStartCollection={() => startCollectionMutation.mutate()}
         isCollecting={isCollecting}
       />
       
       <main className="flex-1 overflow-auto p-6">
-        {stats && <StatsCards stats={stats} />}
+        {stats && typeof stats === 'object' && 'totalCollected' in stats && <StatsCards stats={stats as any} />}
         
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-8">
           <div className="xl:col-span-2">
