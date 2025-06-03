@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -83,3 +84,15 @@ export type InsertCollectedData = z.infer<typeof insertCollectedDataSchema>;
 
 export type SystemStats = typeof systemStats.$inferSelect;
 export type InsertSystemStats = z.infer<typeof insertSystemStatsSchema>;
+
+// Relations
+export const collectionTasksRelations = relations(collectionTasks, ({ many }) => ({
+  collectedData: many(collectedData),
+}));
+
+export const collectedDataRelations = relations(collectedData, ({ one }) => ({
+  task: one(collectionTasks, {
+    fields: [collectedData.taskId],
+    references: [collectionTasks.id],
+  }),
+}));

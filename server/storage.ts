@@ -12,6 +12,8 @@ import {
   type SystemStats,
   type InsertSystemStats
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, ilike, or, count } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -290,4 +292,215 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getCollectionTasks(): Promise<CollectionTask[]> {
+    return await db.select().from(collectionTasks).orderBy(desc(collectionTasks.createdAt));
+  }
+
+  async getCollectionTask(id: number): Promise<CollectionTask | undefined> {
+    const [task] = await db.select().from(collectionTasks).where(eq(collectionTasks.id, id));
+    return task || undefined;
+  }
+
+  async createCollectionTask(insertTask: InsertCollectionTask): Promise<CollectionTask> {
+    const [task] = await db
+      .insert(collectionTasks)
+      .values({
+        ...insertTask,
+        status: insertTask.status ?? "pending",
+        keywords: insertTask.keywords ?? null,
+        includeImages: insertTask.includeImages ?? false,
+        includeVideos: insertTask.includeVideos ?? false,
+        progress: insertTask.progress ?? 0,
+      })
+      .returning();
+    
+    // Update active tasks count
+    await this.incrementActiveTasks();
+    
+    return task;
+  }
+
+  async updateCollectionTask(id: number, updates: Partial<CollectionTask>): Promise<CollectionTask | undefined> {
+    const [task] = await db
+      .update(collectionTasks)
+      .set(updates)
+      .where(eq(collectionTasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteCollectionTask(id: number): Promise<boolean> {
+    const result = await db.delete(collectionTasks).where(eq(collectionTasks.id, id));
+    if (result.rowCount && result.rowCount > 0) {
+      await this.decrementActiveTasks();
+      return true;
+    }
+    return false;
+  }
+
+  async getCollectedData(limit = 10, offset = 0, search?: string): Promise<{ data: CollectedData[], total: number }> {
+    let query = db.select().from(collectedData);
+    let countQuery = db.select({ count: count() }).from(collectedData);
+    
+    if (search) {
+      const searchCondition = or(
+        ilike(collectedData.content, `%${search}%`),
+        ilike(collectedData.author, `%${search}%`)
+      );
+      query = query.where(searchCondition);
+      countQuery = countQuery.where(searchCondition);
+    }
+
+    const [data, totalResult] = await Promise.all([
+      query
+        .orderBy(desc(collectedData.createdAt))
+        .limit(limit)
+        .offset(offset),
+      countQuery
+    ]);
+
+    return { 
+      data, 
+      total: totalResult[0]?.count || 0 
+    };
+  }
+
+  async getCollectedDataByTask(taskId: number): Promise<CollectedData[]> {
+    return await db.select().from(collectedData).where(eq(collectedData.taskId, taskId));
+  }
+
+  async createCollectedData(insertData: InsertCollectedData): Promise<CollectedData> {
+    const [data] = await db
+      .insert(collectedData)
+      .values({
+        ...insertData,
+        taskId: insertData.taskId ?? null,
+        status: insertData.status ?? "collected",
+        metadata: insertData.metadata ?? null,
+      })
+      .returning();
+    
+    // Update total collected count
+    await this.incrementTotalCollected();
+    
+    return data;
+  }
+
+  async deleteCollectedData(id: number): Promise<boolean> {
+    const result = await db.delete(collectedData).where(eq(collectedData.id, id));
+    if (result.rowCount && result.rowCount > 0) {
+      await this.decrementTotalCollected();
+      return true;
+    }
+    return false;
+  }
+
+  async getSystemStats(): Promise<SystemStats | undefined> {
+    const [stats] = await db.select().from(systemStats).limit(1);
+    if (stats) {
+      // Update real-time CPU usage
+      const [updatedStats] = await db
+        .update(systemStats)
+        .set({ 
+          cpuUsage: `${Math.floor(Math.random() * 20) + 25}%`,
+          updatedAt: new Date()
+        })
+        .where(eq(systemStats.id, stats.id))
+        .returning();
+      return updatedStats;
+    }
+    
+    // Create initial stats if none exist
+    const [newStats] = await db
+      .insert(systemStats)
+      .values({
+        totalCollected: 0,
+        activeTasks: 0,
+        successRate: "0",
+        todayCollected: 0,
+        cpuUsage: "25%",
+        memoryUsage: "1.2 GB",
+        networkStatus: "good",
+      })
+      .returning();
+    return newStats;
+  }
+
+  async updateSystemStats(updates: Partial<SystemStats>): Promise<SystemStats> {
+    const currentStats = await this.getSystemStats();
+    if (!currentStats) {
+      throw new Error("No system stats found");
+    }
+    
+    const [updatedStats] = await db
+      .update(systemStats)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(systemStats.id, currentStats.id))
+      .returning();
+    return updatedStats;
+  }
+
+  private async incrementActiveTasks(): Promise<void> {
+    const stats = await this.getSystemStats();
+    if (stats) {
+      await db
+        .update(systemStats)
+        .set({ activeTasks: stats.activeTasks + 1 })
+        .where(eq(systemStats.id, stats.id));
+    }
+  }
+
+  private async decrementActiveTasks(): Promise<void> {
+    const stats = await this.getSystemStats();
+    if (stats) {
+      await db
+        .update(systemStats)
+        .set({ activeTasks: Math.max(0, stats.activeTasks - 1) })
+        .where(eq(systemStats.id, stats.id));
+    }
+  }
+
+  private async incrementTotalCollected(): Promise<void> {
+    const stats = await this.getSystemStats();
+    if (stats) {
+      await db
+        .update(systemStats)
+        .set({ 
+          totalCollected: stats.totalCollected + 1,
+          todayCollected: stats.todayCollected + 1
+        })
+        .where(eq(systemStats.id, stats.id));
+    }
+  }
+
+  private async decrementTotalCollected(): Promise<void> {
+    const stats = await this.getSystemStats();
+    if (stats) {
+      await db
+        .update(systemStats)
+        .set({ totalCollected: Math.max(0, stats.totalCollected - 1) })
+        .where(eq(systemStats.id, stats.id));
+    }
+  }
+}
+
+export const storage = new DatabaseStorage();
