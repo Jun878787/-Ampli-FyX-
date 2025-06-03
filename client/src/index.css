@@ -5,26 +5,26 @@
 @tailwind utilities;
 
 :root {
-  /* 深色模式作為預設 - 無白底亮底 */
-  --background: 220 13% 9%; /* #171923 深灰藍色背景 */
-  --foreground: 210 11% 91%; /* #E2E8F0 淺灰色文字 */
-  --muted: 217 19% 15%; /* #252D3A 暗灰色 */
-  --muted-foreground: 215 16% 65%; /* #94A3B8 中灰色文字 */
-  --popover: 220 13% 11%; /* #1A202C 深色彈窗 */
-  --popover-foreground: 210 11% 91%; /* #E2E8F0 */
-  --card: 217 19% 12%; /* #1E293B 深色卡片 */
-  --card-foreground: 210 11% 91%; /* #E2E8F0 */
-  --border: 215 25% 20%; /* #334155 深色邊框 */
-  --input: 215 25% 16%; /* #2D3748 深色輸入框 */
-  --primary: 217 91% 60%; /* #3B82F6 藍色主色 */
-  --primary-foreground: 210 11% 98%; /* #F8FAFC 白色文字 */
-  --secondary: 215 25% 20%; /* #334155 深灰色 */
-  --secondary-foreground: 210 11% 91%; /* #E2E8F0 */
-  --accent: 215 25% 20%; /* #334155 深色重點 */
-  --accent-foreground: 210 11% 91%; /* #E2E8F0 */
-  --destructive: 0 84% 55%; /* #EF4444 紅色 */
-  --destructive-foreground: 210 11% 98%; /* #F8FAFC */
-  --ring: 217 91% 60%; /* #3B82F6 */
+  /* 純深色模式 - 完全無亮底 */
+  --background: 222 47% 6%; /* #0F1419 極深背景 */
+  --foreground: 210 11% 85%; /* #CBD5E1 淺灰文字 */
+  --muted: 220 13% 12%; /* #1E293B 深暗色 */
+  --muted-foreground: 215 16% 55%; /* #64748B 中灰文字 */
+  --popover: 222 47% 8%; /* #141920 深色彈窗 */
+  --popover-foreground: 210 11% 85%; /* #CBD5E1 */
+  --card: 220 13% 9%; /* #171923 深色卡片 */
+  --card-foreground: 210 11% 85%; /* #CBD5E1 */
+  --border: 215 25% 18%; /* #2D3748 深邊框 */
+  --input: 220 13% 9%; /* #171923 深色輸入 */
+  --primary: 217 91% 50%; /* #1E40AF 深藍主色 */
+  --primary-foreground: 210 11% 85%; /* #CBD5E1 */
+  --secondary: 215 25% 15%; /* #1E293B 深灰 */
+  --secondary-foreground: 210 11% 85%; /* #CBD5E1 */
+  --accent: 215 25% 15%; /* #1E293B 深重點 */
+  --accent-foreground: 210 11% 85%; /* #CBD5E1 */
+  --destructive: 0 84% 45%; /* #DC2626 深紅 */
+  --destructive-foreground: 210 11% 85%; /* #CBD5E1 */
+  --ring: 217 91% 50%; /* #1E40AF */
   --radius: 0.75rem;
   
   /* Custom colors for North™Sea */
@@ -39,26 +39,26 @@
 }
 
 .dark {
-  /* 保持相同的深色配色 - 無白底亮底 */
-  --background: 220 13% 9%; /* #171923 深灰藍色背景 */
-  --foreground: 210 11% 91%; /* #E2E8F0 淺灰色文字 */
-  --muted: 217 19% 15%; /* #252D3A 暗灰色 */
-  --muted-foreground: 215 16% 65%; /* #94A3B8 中灰色文字 */
-  --popover: 220 13% 11%; /* #1A202C 深色彈窗 */
-  --popover-foreground: 210 11% 91%; /* #E2E8F0 */
-  --card: 217 19% 12%; /* #1E293B 深色卡片 */
-  --card-foreground: 210 11% 91%; /* #E2E8F0 */
-  --border: 215 25% 20%; /* #334155 深色邊框 */
-  --input: 215 25% 16%; /* #2D3748 深色輸入框 */
-  --primary: 217 91% 60%; /* #3B82F6 藍色主色 */
-  --primary-foreground: 210 11% 98%; /* #F8FAFC 白色文字 */
-  --secondary: 215 25% 20%; /* #334155 深灰色 */
-  --secondary-foreground: 210 11% 91%; /* #E2E8F0 */
-  --accent: 215 25% 20%; /* #334155 深色重點 */
-  --accent-foreground: 210 11% 91%; /* #E2E8F0 */
-  --destructive: 0 84% 55%; /* #EF4444 紅色 */
-  --destructive-foreground: 210 11% 98%; /* #F8FAFC */
-  --ring: 217 91% 60%; /* #3B82F6 */
+  /* 純深色模式 - 完全無亮底 */
+  --background: 222 47% 6%; /* #0F1419 極深背景 */
+  --foreground: 210 11% 85%; /* #CBD5E1 淺灰文字 */
+  --muted: 220 13% 12%; /* #1E293B 深暗色 */
+  --muted-foreground: 215 16% 55%; /* #64748B 中灰文字 */
+  --popover: 222 47% 8%; /* #141920 深色彈窗 */
+  --popover-foreground: 210 11% 85%; /* #CBD5E1 */
+  --card: 220 13% 9%; /* #171923 深色卡片 */
+  --card-foreground: 210 11% 85%; /* #CBD5E1 */
+  --border: 215 25% 18%; /* #2D3748 深邊框 */
+  --input: 220 13% 9%; /* #171923 深色輸入 */
+  --primary: 217 91% 50%; /* #1E40AF 深藍主色 */
+  --primary-foreground: 210 11% 85%; /* #CBD5E1 */
+  --secondary: 215 25% 15%; /* #1E293B 深灰 */
+  --secondary-foreground: 210 11% 85%; /* #CBD5E1 */
+  --accent: 215 25% 15%; /* #1E293B 深重點 */
+  --accent-foreground: 210 11% 85%; /* #CBD5E1 */
+  --destructive: 0 84% 45%; /* #DC2626 深紅 */
+  --destructive-foreground: 210 11% 85%; /* #CBD5E1 */
+  --ring: 217 91% 50%; /* #1E40AF */
   --radius: 0.75rem;
 }
 
