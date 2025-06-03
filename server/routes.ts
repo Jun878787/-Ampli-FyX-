@@ -220,6 +220,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Account Generation Tasks API
+  app.get("/api/facebook/generation-tasks", async (req, res) => {
+    try {
+      const tasks = [
+        {
+          id: 1,
+          taskName: "北金國際營銷帳號批次",
+          targetCount: 50,
+          completedCount: 35,
+          failedCount: 3,
+          progress: 76,
+          status: "running",
+          createdAt: "2024-06-03T09:00:00",
+        },
+        {
+          id: 2,
+          taskName: "企業推廣帳號",
+          targetCount: 30,
+          completedCount: 30,
+          failedCount: 0,
+          progress: 100,
+          status: "completed",
+          createdAt: "2024-06-02T14:30:00",
+        },
+      ];
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching generation tasks:", error);
+      res.status(500).json({ message: "Failed to fetch generation tasks" });
+    }
+  });
+
+  app.post("/api/facebook/generation-tasks", async (req, res) => {
+    try {
+      const taskData = req.body;
+      
+      // Check for Facebook API credentials
+      if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
+        return res.status(400).json({ 
+          message: "Facebook API credentials not configured. Please provide FACEBOOK_APP_ID and FACEBOOK_APP_SECRET." 
+        });
+      }
+      
+      const newTask = {
+        id: Date.now(),
+        taskName: taskData.taskName,
+        targetCount: taskData.targetCount,
+        completedCount: 0,
+        failedCount: 0,
+        progress: 0,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        settings: taskData,
+      };
+      
+      // Start the account creation process
+      simulateAccountCreation(newTask.id, taskData.targetCount);
+      
+      res.status(201).json(newTask);
+    } catch (error) {
+      console.error("Error creating generation task:", error);
+      res.status(500).json({ message: "Failed to create generation task" });
+    }
+  });
+
+  // Facebook Data Collection API
+  app.post("/api/facebook/collect-data", async (req, res) => {
+    try {
+      const { accountId, dataType, targetUrl, filters } = req.body;
+      
+      // Check for Facebook API credentials
+      if (!process.env.FACEBOOK_ACCESS_TOKEN) {
+        return res.status(400).json({ 
+          message: "Facebook API access token not configured. Please provide FACEBOOK_ACCESS_TOKEN." 
+        });
+      }
+      
+      // Simulate data collection process
+      const collectionTask = {
+        id: Date.now(),
+        accountId,
+        dataType,
+        targetUrl,
+        filters,
+        status: "running",
+        progress: 0,
+        startedAt: new Date().toISOString(),
+      };
+      
+      res.status(201).json({ 
+        success: true, 
+        taskId: collectionTask.id,
+        message: "Data collection started successfully" 
+      });
+    } catch (error) {
+      console.error("Error starting data collection:", error);
+      res.status(500).json({ message: "Failed to start data collection" });
+    }
+  });
+
+  // Facebook Batch Management API
+  app.get("/api/facebook/batch-accounts", async (req, res) => {
+    try {
+      const batches = [
+        {
+          id: 1,
+          batchName: "營銷帳號批次A",
+          totalAccounts: 15,
+          activeAccounts: 12,
+          pendingAccounts: 3,
+          failedAccounts: 0,
+          createdDate: "2024-06-01",
+          status: "running",
+          progress: 80,
+        },
+        {
+          id: 2,
+          batchName: "企業客戶養號",
+          totalAccounts: 10,
+          activeAccounts: 8,
+          pendingAccounts: 1,
+          failedAccounts: 1,
+          createdDate: "2024-05-28",
+          status: "completed",
+          progress: 100,
+        },
+      ];
+      res.json(batches);
+    } catch (error) {
+      console.error("Error fetching batch accounts:", error);
+      res.status(500).json({ message: "Failed to fetch batch accounts" });
+    }
+  });
+
+  app.post("/api/facebook/batch-accounts", async (req, res) => {
+    try {
+      const batchData = req.body;
+      
+      // Check for Facebook API credentials
+      if (!process.env.FACEBOOK_APP_ID || !process.env.FACEBOOK_APP_SECRET) {
+        return res.status(400).json({ 
+          message: "Facebook API credentials not configured. Please provide FACEBOOK_APP_ID and FACEBOOK_APP_SECRET." 
+        });
+      }
+      
+      const newBatch = {
+        id: Date.now(),
+        batchName: batchData.batchName,
+        totalAccounts: batchData.accountCount,
+        activeAccounts: 0,
+        pendingAccounts: batchData.accountCount,
+        failedAccounts: 0,
+        createdDate: new Date().toISOString().split('T')[0],
+        status: "creating",
+        progress: 0,
+        settings: batchData,
+      };
+      
+      res.status(201).json(newBatch);
+    } catch (error) {
+      console.error("Error creating batch accounts:", error);
+      res.status(500).json({ message: "Failed to create batch accounts" });
+    }
+  });
+
   // Facebook Friends API
   app.get("/api/facebook/friends", async (req, res) => {
     try {

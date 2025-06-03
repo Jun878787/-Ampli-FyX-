@@ -53,39 +53,9 @@ export default function FacebookAccountGeneration() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  // Mock data for demonstration
-  const creationTasks = [
-    {
-      id: 1,
-      taskName: "北金國際營銷帳號批次",
-      targetCount: 50,
-      completedCount: 35,
-      failedCount: 3,
-      progress: 76,
-      status: "running",
-      createdAt: "2024-06-03T09:00:00",
-    },
-    {
-      id: 2,
-      taskName: "企業推廣帳號",
-      targetCount: 30,
-      completedCount: 30,
-      failedCount: 0,
-      progress: 100,
-      status: "completed",
-      createdAt: "2024-06-02T14:30:00",
-    },
-    {
-      id: 3,
-      taskName: "地區客戶開發",
-      targetCount: 20,
-      completedCount: 8,
-      failedCount: 1,
-      progress: 45,
-      status: "paused",
-      createdAt: "2024-06-03T16:15:00",
-    },
-  ];
+  const { data: creationTasks = [], isLoading: tasksLoading } = useQuery({
+    queryKey: ["/api/facebook/generation-tasks"],
+  });
 
   const generatedAccounts = [
     {
