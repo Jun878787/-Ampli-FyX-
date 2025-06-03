@@ -33,8 +33,7 @@ export default function CollectionPanel() {
 
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
-      const response = await apiRequest("POST", "/api/tasks", taskData);
-      return response.json();
+      return await apiRequest("POST", "/api/tasks", { data: taskData });
     },
     onSuccess: () => {
       toast({
@@ -69,15 +68,15 @@ export default function CollectionPanel() {
   };
 
   return (
-    <Card className="border border-slate-200">
-      <CardHeader className="border-b border-slate-200">
-        <CardTitle className="text-lg font-semibold text-slate-800">數據採集設置</CardTitle>
-        <p className="text-slate-600 mt-1">配置採集參數和目標</p>
+    <Card className="bg-card border-border">
+      <CardHeader className="border-b border-border">
+        <CardTitle className="text-lg font-semibold text-card-foreground">數據採集設置</CardTitle>
+        <p className="text-muted-foreground mt-1">配置採集參數和目標</p>
       </CardHeader>
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label htmlFor="collection-type" className="text-sm font-medium text-slate-700 mb-2">
+            <Label htmlFor="collection-type" className="text-sm font-medium text-foreground mb-2">
               採集類型
             </Label>
             <Select
@@ -97,7 +96,7 @@ export default function CollectionPanel() {
           </div>
           
           <div>
-            <Label htmlFor="target-count" className="text-sm font-medium text-slate-700 mb-2">
+            <Label htmlFor="target-count" className="text-sm font-medium text-foreground mb-2">
               目標數量
             </Label>
             <Input
@@ -110,7 +109,7 @@ export default function CollectionPanel() {
           </div>
           
           <div>
-            <Label htmlFor="keywords" className="text-sm font-medium text-slate-700 mb-2">
+            <Label htmlFor="keywords" className="text-sm font-medium text-foreground mb-2">
               關鍵字
             </Label>
             <Input
@@ -122,7 +121,7 @@ export default function CollectionPanel() {
           </div>
           
           <div>
-            <Label htmlFor="time-range" className="text-sm font-medium text-slate-700 mb-2">
+            <Label htmlFor="time-range" className="text-sm font-medium text-foreground mb-2">
               時間範圍
             </Label>
             <Select
@@ -152,7 +151,7 @@ export default function CollectionPanel() {
                   setSettings({ ...settings, includeImages: checked as boolean })
                 }
               />
-              <Label htmlFor="include-images" className="text-sm text-slate-700">
+              <Label htmlFor="include-images" className="text-sm text-foreground">
                 包含圖片
               </Label>
             </div>
@@ -164,7 +163,7 @@ export default function CollectionPanel() {
                   setSettings({ ...settings, includeVideos: checked as boolean })
                 }
               />
-              <Label htmlFor="include-videos" className="text-sm text-slate-700">
+              <Label htmlFor="include-videos" className="text-sm text-foreground">
                 包含影片
               </Label>
             </div>
