@@ -5,25 +5,26 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 20 14.3% 4.1%;
-  --muted: 60 4.8% 95.9%;
-  --muted-foreground: 25 5.3% 44.7%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 20 14.3% 4.1%;
-  --card: 0 0% 100%;
-  --card-foreground: 20 14.3% 4.1%;
-  --border: 20 5.9% 90%;
-  --input: 20 5.9% 90%;
-  --primary: 207 90% 54%; /* Facebook blue #1877f2 */
-  --primary-foreground: 211 100% 99%;
-  --secondary: 60 4.8% 95.9%;
-  --secondary-foreground: 24 9.8% 10%;
-  --accent: 60 4.8% 95.9%;
-  --accent-foreground: 24 9.8% 10%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 60 9.1% 97.8%;
-  --ring: 20 14.3% 4.1%;
+  /* 深色模式作為預設 - 無白底亮底 */
+  --background: 220 13% 9%; /* #171923 深灰藍色背景 */
+  --foreground: 210 11% 91%; /* #E2E8F0 淺灰色文字 */
+  --muted: 217 19% 15%; /* #252D3A 暗灰色 */
+  --muted-foreground: 215 16% 65%; /* #94A3B8 中灰色文字 */
+  --popover: 220 13% 11%; /* #1A202C 深色彈窗 */
+  --popover-foreground: 210 11% 91%; /* #E2E8F0 */
+  --card: 217 19% 12%; /* #1E293B 深色卡片 */
+  --card-foreground: 210 11% 91%; /* #E2E8F0 */
+  --border: 215 25% 20%; /* #334155 深色邊框 */
+  --input: 215 25% 16%; /* #2D3748 深色輸入框 */
+  --primary: 217 91% 60%; /* #3B82F6 藍色主色 */
+  --primary-foreground: 210 11% 98%; /* #F8FAFC 白色文字 */
+  --secondary: 215 25% 20%; /* #334155 深灰色 */
+  --secondary-foreground: 210 11% 91%; /* #E2E8F0 */
+  --accent: 215 25% 20%; /* #334155 深色重點 */
+  --accent-foreground: 210 11% 91%; /* #E2E8F0 */
+  --destructive: 0 84% 55%; /* #EF4444 紅色 */
+  --destructive-foreground: 210 11% 98%; /* #F8FAFC */
+  --ring: 217 91% 60%; /* #3B82F6 */
   --radius: 0.75rem;
   
   /* Custom colors for North™Sea */
@@ -38,25 +39,26 @@
 }
 
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --primary: 207 90% 54%;
-  --primary-foreground: 211 100% 99%;
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --ring: 240 4.9% 83.9%;
+  /* 保持相同的深色配色 - 無白底亮底 */
+  --background: 220 13% 9%; /* #171923 深灰藍色背景 */
+  --foreground: 210 11% 91%; /* #E2E8F0 淺灰色文字 */
+  --muted: 217 19% 15%; /* #252D3A 暗灰色 */
+  --muted-foreground: 215 16% 65%; /* #94A3B8 中灰色文字 */
+  --popover: 220 13% 11%; /* #1A202C 深色彈窗 */
+  --popover-foreground: 210 11% 91%; /* #E2E8F0 */
+  --card: 217 19% 12%; /* #1E293B 深色卡片 */
+  --card-foreground: 210 11% 91%; /* #E2E8F0 */
+  --border: 215 25% 20%; /* #334155 深色邊框 */
+  --input: 215 25% 16%; /* #2D3748 深色輸入框 */
+  --primary: 217 91% 60%; /* #3B82F6 藍色主色 */
+  --primary-foreground: 210 11% 98%; /* #F8FAFC 白色文字 */
+  --secondary: 215 25% 20%; /* #334155 深灰色 */
+  --secondary-foreground: 210 11% 91%; /* #E2E8F0 */
+  --accent: 215 25% 20%; /* #334155 深色重點 */
+  --accent-foreground: 210 11% 91%; /* #E2E8F0 */
+  --destructive: 0 84% 55%; /* #EF4444 紅色 */
+  --destructive-foreground: 210 11% 98%; /* #F8FAFC */
+  --ring: 217 91% 60%; /* #3B82F6 */
   --radius: 0.75rem;
 }
 
@@ -68,6 +70,38 @@
   body {
     @apply font-inter antialiased bg-background text-foreground dark;
     font-family: 'Inter', sans-serif;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+  }
+  
+  /* 確保所有文字在深色背景上清晰可見 */
+  * {
+    color: inherit;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: hsl(var(--foreground));
+  }
+  
+  p, span, div {
+    color: hsl(var(--foreground));
+  }
+  
+  /* 確保輸入框文字清晰 */
+  input, textarea, select {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--input));
+  }
+  
+  /* 確保按鈕文字清晰 */
+  button {
+    color: hsl(var(--foreground));
+  }
+  
+  /* 確保卡片內容清晰 */
+  .card {
+    background-color: hsl(var(--card));
+    color: hsl(var(--card-foreground));
   }
 }
 
