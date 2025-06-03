@@ -34,7 +34,7 @@ export default function FacebookAccounts() {
     mutationFn: async (data: CreateAccountForm) => {
       return await apiRequest("/api/facebook/accounts", {
         method: "POST",
-        body: JSON.stringify(data),
+        data,
       });
     },
     onSuccess: () => {
@@ -48,7 +48,7 @@ export default function FacebookAccounts() {
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
       return await apiRequest(`/api/facebook/accounts/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status }),
+        data: { status },
       });
     },
     onSuccess: () => {
@@ -204,7 +204,7 @@ export default function FacebookAccounts() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {accounts.map((account: FacebookAccount) => (
+          {accounts?.map((account) => (
             <Card key={account.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -212,7 +212,7 @@ export default function FacebookAccounts() {
                     <CardTitle className="text-lg">{account.accountName}</CardTitle>
                     <CardDescription>{account.email}</CardDescription>
                   </div>
-                  {getStatusBadge(account.status)}
+                  {getStatusBadge(account.status || 'inactive')}
                 </div>
               </CardHeader>
               
