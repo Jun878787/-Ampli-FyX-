@@ -88,16 +88,11 @@ export type InsertSystemStats = z.infer<typeof insertSystemStatsSchema>;
 // Facebook 帳號生成任務
 export const facebookGenerationTasks = pgTable("facebook_generation_tasks", {
   id: serial("id").primaryKey(),
-  taskName: varchar("task_name").notNull(),
-  nameTemplate: varchar("name_template").default("User{random}"),
-  emailTemplate: varchar("email_template").default("{name}@{domain}"),
-  passwordTemplate: varchar("password_template").default("{random}Pass123!"),
-  randomAvatar: boolean("random_avatar").default(true),
-  randomCover: boolean("random_cover").default(true),
-  minAge: integer("min_age").default(18),
-  maxAge: integer("max_age").default(65),
+  name: varchar("name").notNull(),
+  type: varchar("type").notNull(),
   targetCount: integer("target_count").notNull(),
   completedCount: integer("completed_count").default(0),
+  settings: jsonb("settings"),
   status: varchar("status").default("pending"), // pending, running, completed, paused, failed
   createdAt: timestamp("created_at").defaultNow(),
   startedAt: timestamp("started_at"),
