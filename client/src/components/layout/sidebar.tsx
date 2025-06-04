@@ -37,7 +37,7 @@ const facebookNavigation = [
   { name: "帳號管理", href: "/facebook-account-manager", icon: User },
   { name: "批量產號", href: "/facebook-account-generation", icon: UserPlus },
   { name: "批量養號", href: "/facebook-batch-management", icon: Zap },
-  { name: "Graph API 測試中心", href: "/facebook-api-test", icon: TestTube2 },
+  { name: "Graph API 測試中心", href: "/facebook-graph-api-test", icon: Key },
   { name: "自動訊息", href: "/auto-messaging", icon: MessageSquare },
   { name: "廣告分析", href: "/facebook-ads-analytics", icon: BarChart3 },
 ];
