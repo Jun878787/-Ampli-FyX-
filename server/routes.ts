@@ -176,6 +176,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete all collected data
+  app.delete("/api/data", async (req, res) => {
+    try {
+      const deleted = await storage.deleteAllCollectedData();
+      res.json({ success: true, deletedCount: deleted });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete all collected data" });
+    }
+  });
+
   // Export data route
   app.post("/api/export", async (req, res) => {
     try {

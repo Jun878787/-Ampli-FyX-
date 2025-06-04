@@ -69,6 +69,7 @@ export interface IStorage {
   getCollectedDataByTask(taskId: number): Promise<CollectedData[]>;
   createCollectedData(data: InsertCollectedData): Promise<CollectedData>;
   deleteCollectedData(id: number): Promise<boolean>;
+  deleteAllCollectedData(): Promise<number>;
 
   // System Stats
   getSystemStats(): Promise<SystemStats | undefined>;
@@ -467,6 +468,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCollectionTask(id: number): Promise<boolean> {
     try {
+      // First, delete all related collected data
+      await db.delete(collectedData).where(eq(collectedData.taskId, id));
+      
+      // Then delete the collection task
       const result = await db.delete(collectionTasks).where(eq(collectionTasks.id, id));
       if (result.rowCount && result.rowCount > 0) {
         // Try to update stats, but don't fail the delete if this fails
@@ -546,6 +551,34 @@ export class DatabaseStorage implements IStorage {
       return true;
     }
     return false;
+  }
+
+  async deleteAllCollectedData(): Promise<number> {
+    try {
+      const result = await db.delete(collectedData);
+      const deletedCount = result.rowCount || 0;
+      
+      // Reset collected data stats
+      try {
+        const stats = await this.getSystemStats();
+        if (stats) {
+          await db
+            .update(systemStats)
+            .set({ 
+              totalCollected: 0,
+              todayCollected: 0
+            })
+            .where(eq(systemStats.id, stats.id));
+        }
+      } catch (error) {
+        console.warn("Failed to update stats after bulk delete:", error);
+      }
+      
+      return deletedCount;
+    } catch (error) {
+      console.error("Failed to delete all collected data:", error);
+      return 0;
+    }
   }
 
   async getSystemStats(): Promise<SystemStats | undefined> {
