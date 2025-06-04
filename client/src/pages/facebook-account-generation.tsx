@@ -31,6 +31,8 @@ interface TaskSettings {
   // 基本帳號設定
   nameTemplate: string;
   emailTemplate: string;
+  emailStrategy: string;
+  emailDomains: string[];
   passwordTemplate: string;
   startingNumber: number;
   numberPadding: number;
@@ -65,6 +67,8 @@ export default function FacebookAccountGeneration() {
     // 基本帳號設定
     nameTemplate: "User{number}",
     emailTemplate: "{name}@gmail.com", 
+    emailStrategy: "template_only",
+    emailDomains: ["gmail.com", "outlook.com", "yahoo.com"],
     passwordTemplate: "Pass{number}123!",
     startingNumber: 1,
     numberPadding: 3,
@@ -249,6 +253,25 @@ export default function FacebookAccountGeneration() {
                       </div>
 
                       <div>
+                        <Label className="text-sm text-gray-300">郵箱處理策略</Label>
+                        <Select
+                          value={taskSettings.emailStrategy}
+                          onValueChange={(value) => setTaskSettings(prev => ({...prev, emailStrategy: value}))}
+                        >
+                          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-700 border-gray-600">
+                            <SelectItem value="template_only">僅生成模板 (需手動創建)</SelectItem>
+                            <SelectItem value="auto_create_gmail">自動創建 Gmail (需 API)</SelectItem>
+                            <SelectItem value="auto_create_outlook">自動創建 Outlook (需 API)</SelectItem>
+                            <SelectItem value="existing_pool">使用現有郵箱池</SelectItem>
+                            <SelectItem value="temp_email">使用臨時郵箱服務</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
                         <Label className="text-sm text-gray-300">郵箱模板</Label>
                         <Input
                           value={taskSettings.emailTemplate}
@@ -256,7 +279,54 @@ export default function FacebookAccountGeneration() {
                           placeholder="例如: {name}@gmail.com"
                           className="bg-gray-700 border-gray-600 text-white"
                         />
+                        <p className="text-xs text-gray-400 mt-1">
+                          {taskSettings.emailStrategy === 'template_only' && '生成郵箱地址格式，需要您手動創建這些郵箱'}
+                          {taskSettings.emailStrategy === 'auto_create_gmail' && '系統會自動創建 Gmail 帳號 (需要 Gmail API 金鑰)'}
+                          {taskSettings.emailStrategy === 'auto_create_outlook' && '系統會自動創建 Outlook 帳號 (需要 Microsoft API)'}
+                          {taskSettings.emailStrategy === 'existing_pool' && '從您預先準備的郵箱池中隨機選擇'}
+                          {taskSettings.emailStrategy === 'temp_email' && '使用臨時郵箱服務 (10分鐘有效期)'}
+                        </p>
                       </div>
+
+                      {(taskSettings.emailStrategy === 'template_only' || taskSettings.emailStrategy === 'existing_pool') && (
+                        <div>
+                          <Label className="text-sm text-gray-300">支援的郵箱網域</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {taskSettings.emailDomains.map((domain, index) => (
+                              <div key={index} className="flex items-center gap-2 bg-gray-600 px-3 py-1 rounded">
+                                <span className="text-white text-sm">{domain}</span>
+                                <button
+                                  onClick={() => setTaskSettings(prev => ({
+                                    ...prev,
+                                    emailDomains: prev.emailDomains.filter((_, i) => i !== index)
+                                  }))}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Input
+                              placeholder="新增郵箱網域 (例如: yahoo.com)"
+                              className="bg-gray-700 border-gray-600 text-white flex-1"
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  const value = e.currentTarget.value.trim();
+                                  if (value && !taskSettings.emailDomains.includes(value)) {
+                                    setTaskSettings(prev => ({
+                                      ...prev,
+                                      emailDomains: [...prev.emailDomains, value]
+                                    }));
+                                    e.currentTarget.value = '';
+                                  }
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       <div>
                         <Label className="text-sm text-gray-300">密碼模板</Label>
