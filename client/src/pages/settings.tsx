@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Settings as SettingsIcon, Database, Shield, Bell, Globe, User, Save, Key, RefreshCw } from "lucide-react";
+import { Settings as SettingsIcon, Database, Shield, Bell, Globe, User, Save, Key, RefreshCw, Edit2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -35,12 +37,19 @@ const securitySettingsSchema = z.object({
   sessionTimeout: z.number().min(15).max(480).default(60),
   ipWhitelist: z.string().optional(),
   enableAuditLog: z.boolean().default(true),
-  adminPassword: z.string().min(6, "管理員密碼至少6位數").default("NorthSea2024!"),
   passwordPolicy: z.object({
     minLength: z.number().min(8).max(32).default(12),
     requireNumbers: z.boolean().default(true),
     requireSymbols: z.boolean().default(true),
   }),
+});
+
+const adminPasswordChangeSchema = z.object({
+  newPassword: z.string().min(6, "管理員密碼至少6位數"),
+  confirmPassword: z.string().min(6, "確認密碼至少6位數"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "密碼與確認密碼不符",
+  path: ["confirmPassword"],
 });
 
 const notificationSettingsSchema = z.object({
@@ -56,9 +65,13 @@ type GeneralSettingsForm = z.infer<typeof generalSettingsSchema>;
 type DataSettingsForm = z.infer<typeof dataSettingsSchema>;
 type SecuritySettingsForm = z.infer<typeof securitySettingsSchema>;
 type NotificationSettingsForm = z.infer<typeof notificationSettingsSchema>;
+type AdminPasswordChangeForm = z.infer<typeof adminPasswordChangeSchema>;
 
 export default function Settings() {
   const [selectedTab, setSelectedTab] = useState("general");
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("NorthSea2024!");
+  const { toast } = useToast();
 
   const generalForm = useForm<GeneralSettingsForm>({
     resolver: zodResolver(generalSettingsSchema),
@@ -88,12 +101,19 @@ export default function Settings() {
       enableTwoFactor: false,
       sessionTimeout: 60,
       enableAuditLog: true,
-      adminPassword: "NorthSea2024!",
       passwordPolicy: {
         minLength: 12,
         requireNumbers: true,
         requireSymbols: true,
       },
+    },
+  });
+
+  const passwordChangeForm = useForm<AdminPasswordChangeForm>({
+    resolver: zodResolver(adminPasswordChangeSchema),
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -117,6 +137,32 @@ export default function Settings() {
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: AdminPasswordChangeForm) => {
+      return await apiRequest("/api/admin/change-password", {
+        method: "POST",
+        data,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "成功",
+        description: "密碼已修正！",
+        className: "bg-green-800 border-green-700 text-green-100",
+      });
+      setAdminPassword(passwordChangeForm.getValues("newPassword"));
+      setIsPasswordDialogOpen(false);
+      passwordChangeForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "錯誤", 
+        description: "密碼修改失敗，請重試",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSaveGeneral = (data: GeneralSettingsForm) => {
     saveSettingsMutation.mutate({ type: "general", settings: data });
   };
@@ -131,6 +177,10 @@ export default function Settings() {
 
   const onSaveNotifications = (data: NotificationSettingsForm) => {
     saveSettingsMutation.mutate({ type: "notifications", settings: data });
+  };
+
+  const onChangePassword = (data: AdminPasswordChangeForm) => {
+    changePasswordMutation.mutate(data);
   };
 
   return (
@@ -534,30 +584,27 @@ export default function Settings() {
                         )}
                       />
 
-                      <FormField
-                        control={securityForm.control}
-                        name="adminPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-slate-200 flex items-center gap-2">
-                              <Key className="h-4 w-4" />
-                              管理員密碼
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="password"
-                                {...field}
-                                placeholder="輸入管理員密碼"
-                                className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
-                              />
-                            </FormControl>
-                            <FormDescription className="text-slate-400">
-                              用於敏感操作驗證的管理員密碼（查看帳號密碼、編輯帳號等）
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="flex items-center justify-between rounded-lg border border-slate-600 p-4 bg-slate-700/50">
+                        <div className="space-y-0.5">
+                          <div className="text-slate-200 flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            管理員密碼
+                          </div>
+                          <div className="text-slate-400 text-sm">
+                            用於敏感操作驗證的管理員密碼（查看帳號密碼、編輯帳號等）
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsPasswordDialogOpen(true)}
+                          className="bg-slate-600 border-slate-500 text-slate-100 hover:bg-slate-500 rounded-lg"
+                        >
+                          <Edit2 className="h-4 w-4 mr-1" />
+                          編輯
+                        </Button>
+                      </div>
 
                       <FormField
                         control={securityForm.control}
