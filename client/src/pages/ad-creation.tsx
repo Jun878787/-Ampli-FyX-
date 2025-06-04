@@ -108,9 +108,6 @@ export default function AdCreation() {
   const createAdMutation = useMutation({
     mutationFn: async (data: AdCreationData) => {
       const response = await apiRequest('/api/ads/create', { method: 'POST', data });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
       return response.json();
     },
     onSuccess: (data) => {
