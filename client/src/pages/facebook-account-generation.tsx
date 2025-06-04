@@ -235,10 +235,10 @@ export default function FacebookAccountGeneration() {
                   創建產號任務
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700 text-slate-100">
                 <DialogHeader>
-                  <DialogTitle>創建批量產號任務</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-slate-100">創建批量產號任務</DialogTitle>
+                  <DialogDescription className="text-slate-400">
                     配置自動化Facebook帳號創建參數和設定
                   </DialogDescription>
                 </DialogHeader>
@@ -251,9 +251,13 @@ export default function FacebookAccountGeneration() {
                         name="taskName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>任務名稱</FormLabel>
+                            <FormLabel className="text-slate-200">任務名稱</FormLabel>
                             <FormControl>
-                              <Input placeholder="例如：北金國際營銷帳號批次" {...field} />
+                              <Input 
+                                placeholder="例如：北金國際營銷帳號批次" 
+                                className="bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-lg"
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -265,12 +269,13 @@ export default function FacebookAccountGeneration() {
                         name="targetCount"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>目標帳號數</FormLabel>
+                            <FormLabel className="text-slate-200">目標帳號數</FormLabel>
                             <FormControl>
                               <Input 
                                 type="number" 
                                 min="1" 
                                 max="100"
+                                className="bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-lg"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value))}
                               />
@@ -290,11 +295,15 @@ export default function FacebookAccountGeneration() {
                         name="nameTemplate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>名稱模板</FormLabel>
+                            <FormLabel className="text-slate-200">名稱模板</FormLabel>
                             <FormControl>
-                              <Input placeholder="NorthSea_{random}" {...field} />
+                              <Input 
+                                placeholder="NorthSea_{random}" 
+                                className="bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-lg"
+                                {...field} 
+                              />
                             </FormControl>
-                            <FormDescription>
+                            <FormDescription className="text-slate-400">
                               使用 {"{random}"} 生成隨機字符，{"{number}"} 生成序號
                             </FormDescription>
                             <FormMessage />
@@ -307,11 +316,15 @@ export default function FacebookAccountGeneration() {
                         name="emailTemplate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>郵箱模板</FormLabel>
+                            <FormLabel className="text-slate-200">郵箱模板</FormLabel>
                             <FormControl>
-                              <Input placeholder="ns.{name}@tempmail.org" {...field} />
+                              <Input 
+                                placeholder="ns.{name}@tempmail.org" 
+                                className="bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-lg"
+                                {...field} 
+                              />
                             </FormControl>
-                            <FormDescription>
+                            <FormDescription className="text-slate-400">
                               使用 {"{name}"} 引用生成的名稱
                             </FormDescription>
                             <FormMessage />
@@ -324,11 +337,15 @@ export default function FacebookAccountGeneration() {
                         name="passwordTemplate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>密碼模板</FormLabel>
+                            <FormLabel className="text-slate-200">密碼模板</FormLabel>
                             <FormControl>
-                              <Input placeholder="NS{random}!" {...field} />
+                              <Input 
+                                placeholder="NS{random}!" 
+                                className="bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 rounded-lg"
+                                {...field} 
+                              />
                             </FormControl>
-                            <FormDescription>
+                            <FormDescription className="text-slate-400">
                               建議包含數字、字母和特殊字符
                             </FormDescription>
                             <FormMessage />
@@ -345,10 +362,10 @@ export default function FacebookAccountGeneration() {
                         control={form.control}
                         name="profileSettings.useRandomAvatar"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel>隨機頭像</FormLabel>
-                              <FormDescription>自動設置隨機頭像</FormDescription>
+                              <FormLabel className="text-slate-200">隨機頭像</FormLabel>
+                              <FormDescription className="text-slate-400">自動設置隨機頭像</FormDescription>
                             </div>
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -361,10 +378,10 @@ export default function FacebookAccountGeneration() {
                         control={form.control}
                         name="profileSettings.useRandomCover"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-slate-600 bg-slate-700/50 p-3">
                             <div className="space-y-0.5">
-                              <FormLabel>隨機封面</FormLabel>
-                              <FormDescription>自動設置隨機封面</FormDescription>
+                              <FormLabel className="text-slate-200">隨機封面</FormLabel>
+                              <FormDescription className="text-slate-400">自動設置隨機封面</FormDescription>
                             </div>
                             <FormControl>
                               <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -380,12 +397,13 @@ export default function FacebookAccountGeneration() {
                         name="profileSettings.ageRange.min"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>最小年齡</FormLabel>
+                            <FormLabel className="text-slate-200">最小年齡</FormLabel>
                             <FormControl>
                               <Input 
                                 type="number" 
                                 min="18" 
                                 max="65"
+                                className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value))}
                               />
@@ -400,12 +418,13 @@ export default function FacebookAccountGeneration() {
                         name="profileSettings.ageRange.max"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>最大年齡</FormLabel>
+                            <FormLabel className="text-slate-200">最大年齡</FormLabel>
                             <FormControl>
                               <Input 
                                 type="number" 
                                 min="18" 
                                 max="65"
+                                className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
                                 {...field}
                                 onChange={(e) => field.onChange(parseInt(e.target.value))}
                               />
@@ -420,14 +439,14 @@ export default function FacebookAccountGeneration() {
                         name="profileSettings.gender"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>性別設定</FormLabel>
+                            <FormLabel className="text-slate-200">性別設定</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger>
+                                <SelectTrigger className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg">
                                   <SelectValue placeholder="選擇性別" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
+                              <SelectContent className="bg-slate-700 border-slate-600">
                                 <SelectItem value="random">隨機</SelectItem>
                                 <SelectItem value="male">男性</SelectItem>
                                 <SelectItem value="female">女性</SelectItem>
@@ -537,12 +556,12 @@ export default function FacebookAccountGeneration() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {creationTasks.map((task) => (
-              <Card key={task.id} className="hover:shadow-lg transition-shadow">
+              <Card key={task.id} className="bg-slate-800/50 border-slate-700 hover:shadow-lg transition-shadow rounded-xl">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg">{task.taskName}</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-lg text-slate-100">{task.taskName}</CardTitle>
+                      <CardDescription className="text-slate-400">
                         創建時間：{new Date(task.createdAt).toLocaleString()}
                       </CardDescription>
                     </div>
@@ -599,31 +618,31 @@ export default function FacebookAccountGeneration() {
             </div>
           </div>
 
-          <div className="border rounded-lg">
+          <div className="border border-slate-700 rounded-lg bg-slate-800/50">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-slate-700/50 border-b border-slate-600">
                   <tr>
-                    <th className="px-4 py-3 text-left">帳號名稱</th>
-                    <th className="px-4 py-3 text-left">郵箱</th>
-                    <th className="px-4 py-3 text-left">狀態</th>
-                    <th className="px-4 py-3 text-left">登錄次數</th>
-                    <th className="px-4 py-3 text-left">最後登錄</th>
-                    <th className="px-4 py-3 text-left">創建時間</th>
-                    <th className="px-4 py-3 text-left">操作</th>
+                    <th className="px-4 py-3 text-left text-slate-200">帳號名稱</th>
+                    <th className="px-4 py-3 text-left text-slate-200">郵箱</th>
+                    <th className="px-4 py-3 text-left text-slate-200">狀態</th>
+                    <th className="px-4 py-3 text-left text-slate-200">登錄次數</th>
+                    <th className="px-4 py-3 text-left text-slate-200">最後登錄</th>
+                    <th className="px-4 py-3 text-left text-slate-200">創建時間</th>
+                    <th className="px-4 py-3 text-left text-slate-200">操作</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-slate-700">
                   {generatedAccounts.map((account) => (
-                    <tr key={account.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{account.accountName}</td>
-                      <td className="px-4 py-3 text-gray-600">{account.email}</td>
+                    <tr key={account.id} className="hover:bg-slate-700/30">
+                      <td className="px-4 py-3 font-medium text-slate-100">{account.accountName}</td>
+                      <td className="px-4 py-3 text-slate-300">{account.email}</td>
                       <td className="px-4 py-3">{getAccountStatusBadge(account.status)}</td>
-                      <td className="px-4 py-3">{account.loginCount}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-slate-100">{account.loginCount}</td>
+                      <td className="px-4 py-3 text-sm text-slate-400">
                         {account.lastLogin ? new Date(account.lastLogin).toLocaleString() : "未登錄"}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
+                      <td className="px-4 py-3 text-sm text-slate-400">
                         {new Date(account.createdAt).toLocaleString()}
                       </td>
                       <td className="px-4 py-3">
