@@ -466,12 +466,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteCollectionTask(id: number): Promise<boolean> {
-    const result = await db.delete(collectionTasks).where(eq(collectionTasks.id, id));
-    if (result.rowCount && result.rowCount > 0) {
-      await this.decrementActiveTasks();
-      return true;
+    try {
+      const result = await db.delete(collectionTasks).where(eq(collectionTasks.id, id));
+      if (result.rowCount && result.rowCount > 0) {
+        // Try to update stats, but don't fail the delete if this fails
+        try {
+          await this.decrementActiveTasks();
+        } catch (error) {
+          console.warn("Failed to update active tasks count:", error);
+        }
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to delete collection task:", error);
+      return false;
     }
-    return false;
   }
 
   async getCollectedData(limit = 10, offset = 0, search?: string): Promise<{ data: CollectedData[], total: number }> {
