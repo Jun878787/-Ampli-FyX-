@@ -1,7 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCollectionTaskSchema, insertCollectedDataSchema, insertFacebookGenerationTaskSchema } from "@shared/schema";
+import { 
+  insertCollectionTaskSchema, 
+  insertCollectedDataSchema, 
+  insertFacebookGenerationTaskSchema,
+  insertFacebookAccountSchema,
+  insertFacebookFriendSchema,
+  insertFriendGroupSchema,
+  insertMessageTemplateSchema,
+  insertGroupMessageSchema,
+  insertAutoReplyRuleSchema,
+  insertTranslationSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
