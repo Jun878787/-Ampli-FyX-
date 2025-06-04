@@ -57,6 +57,7 @@ function Router() {
             <Route path="/facebook-api-config" component={FacebookApiConfig} />
             <Route path="/facebook-graph-api-test" component={FacebookGraphAPITest} />
             <Route path="/facebook-content-extractor" component={FacebookContentExtractor} />
+        <Route path="/facebook-pixel-tracker" component={FacebookPixelTracker} />
             <Route path="/my-facebook-account" component={MyFacebookAccount} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />

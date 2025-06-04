@@ -73,7 +73,7 @@ export default function FacebookPixelTracker() {
         data: { pixelId }
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setPixelData(data.pixelData);
       toast({
         title: "像素數據提取成功",
@@ -102,7 +102,7 @@ export default function FacebookPixelTracker() {
         }
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       if (data.downloadUrl) {
         window.open(data.downloadUrl, '_blank');
       }
