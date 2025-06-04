@@ -22,6 +22,7 @@ import FacebookApiTest from "@/pages/facebook-api-test";
 import FacebookAdsAnalytics from "@/pages/facebook-ads-analytics";
 import FacebookAdContentExtractor from "@/pages/facebook-ad-content-extractor";
 import FacebookApiConfig from "@/pages/facebook-api-config";
+import FacebookGraphAPITest from "@/pages/facebook-graph-api-test";
 import MyFacebookAccount from "@/pages/my-facebook-account";
 import NotFound from "@/pages/not-found";
 
@@ -52,6 +53,7 @@ function Router() {
             <Route path="/facebook-ads-analytics" component={FacebookAdsAnalytics} />
             <Route path="/facebook-ads-analytics/ad-details" component={FacebookAdContentExtractor} />
             <Route path="/facebook-api-config" component={FacebookApiConfig} />
+            <Route path="/facebook-graph-api-test" component={FacebookGraphAPITest} />
             <Route path="/my-facebook-account" component={MyFacebookAccount} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />

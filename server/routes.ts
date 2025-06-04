@@ -1103,6 +1103,61 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Facebook API Testing Center
+  app.post("/api/facebook/test-token", async (req: Request, res: Response) => {
+    try {
+      const { accessToken } = req.body;
+      
+      if (!accessToken) {
+        return res.status(400).json({ success: false, error: "訪問權杖為必填項" });
+      }
+
+      // Test basic connection
+      const userResponse = await fetch(`https://graph.facebook.com/v18.0/me?access_token=${accessToken}`);
+      const userData = await userResponse.json();
+
+      if (!userResponse.ok) {
+        return res.json({ 
+          success: false, 
+          error: userData.error?.message || "權杖無效" 
+        });
+      }
+
+      // Test permissions
+      const permissionsResponse = await fetch(`https://graph.facebook.com/v18.0/me/permissions?access_token=${accessToken}`);
+      const permissionsData = await permissionsResponse.json();
+      
+      const permissions = permissionsData.data?.filter((perm: any) => perm.status === 'granted').map((perm: any) => perm.permission) || [];
+      
+      const requiredPermissions = ["ads_read", "ads_management", "business_management", "read_insights", "pages_read_engagement"];
+      const missingPermissions = requiredPermissions.filter(perm => !permissions.includes(perm));
+
+      // Test ad accounts access
+      let adAccounts = null;
+      try {
+        const adAccountsResponse = await fetch(`https://graph.facebook.com/v18.0/me/adaccounts?fields=id,name,account_status&access_token=${accessToken}`);
+        const adAccountsData = await adAccountsResponse.json();
+        if (adAccountsResponse.ok) {
+          adAccounts = adAccountsData.data;
+        }
+      } catch (error) {
+        // Ignore ad accounts error for now
+      }
+
+      res.json({
+        success: true,
+        user: userData,
+        permissions,
+        missingPermissions,
+        adAccounts
+      });
+
+    } catch (error) {
+      console.error("Error testing token:", error);
+      res.status(500).json({ success: false, error: "測試權杖時發生錯誤" });
+    }
+  });
+
   // Facebook API routes
   app.get("/api/facebook/test", async (req: Request, res: Response) => {
     try {
