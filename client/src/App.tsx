@@ -52,6 +52,7 @@ function Router() {
             <Route path="/facebook-ads-analytics" component={FacebookAdsAnalytics} />
             <Route path="/facebook-ads-analytics/ad-details" component={FacebookAdContentExtractor} />
             <Route path="/facebook-api-config" component={FacebookApiConfig} />
+            <Route path="/my-facebook-account" component={MyFacebookAccount} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />

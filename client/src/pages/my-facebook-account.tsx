@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, TrendingUp, DollarSign, Users, Eye, MousePointer, Target, BarChart3, Calendar, Mail, Refresh } from "lucide-react";
+import { Activity, TrendingUp, DollarSign, Users, Eye, MousePointer, Target, BarChart3, Calendar, Mail, RotateCcw } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -116,7 +116,7 @@ export default function MyFacebookAccount() {
             disabled={refreshing}
             className="bg-blue-600 hover:bg-blue-700"
           >
-            <Refresh className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            <RotateCcw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             刷新數據
           </Button>
         </div>
