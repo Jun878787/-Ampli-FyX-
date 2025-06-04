@@ -33,7 +33,7 @@ export default function CollectionPanel() {
 
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
-      return await apiRequest("POST", "/api/tasks", { data: taskData });
+      return await apiRequest("POST", "/api/tasks", taskData);
     },
     onSuccess: () => {
       toast({
@@ -68,25 +68,25 @@ export default function CollectionPanel() {
   };
 
   return (
-    <Card className="bg-card border-border">
-      <CardHeader className="border-b border-border">
-        <CardTitle className="text-lg font-semibold text-card-foreground">數據採集設置</CardTitle>
-        <p className="text-muted-foreground mt-1">配置採集參數和目標</p>
+    <Card className="bg-slate-800/50 border-slate-700 rounded-xl">
+      <CardHeader className="border-b border-slate-700">
+        <CardTitle className="text-lg font-semibold text-slate-100">數據採集設置</CardTitle>
+        <p className="text-slate-400 mt-1">配置採集參數和目標</p>
       </CardHeader>
       <CardContent className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label htmlFor="collection-type" className="text-sm font-medium text-foreground mb-2">
+            <Label htmlFor="collection-type" className="text-sm font-medium text-slate-200 mb-2">
               採集類型
             </Label>
             <Select
               value={settings.type}
               onValueChange={(value) => setSettings({ ...settings, type: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-slate-800 border-slate-700 rounded-lg">
                 <SelectItem value="posts">貼文內容</SelectItem>
                 <SelectItem value="comments">評論數據</SelectItem>
                 <SelectItem value="profiles">用戶資料</SelectItem>
@@ -96,7 +96,7 @@ export default function CollectionPanel() {
           </div>
           
           <div>
-            <Label htmlFor="target-count" className="text-sm font-medium text-foreground mb-2">
+            <Label htmlFor="target-count" className="text-sm font-medium text-slate-200 mb-2">
               目標數量
             </Label>
             <Input
@@ -105,11 +105,12 @@ export default function CollectionPanel() {
               placeholder="1000"
               value={settings.targetCount}
               onChange={(e) => setSettings({ ...settings, targetCount: parseInt(e.target.value) || 0 })}
+              className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg placeholder:text-slate-400"
             />
           </div>
           
           <div>
-            <Label htmlFor="keywords" className="text-sm font-medium text-foreground mb-2">
+            <Label htmlFor="keywords" className="text-sm font-medium text-slate-200 mb-2">
               關鍵字
             </Label>
             <Input
@@ -117,21 +118,22 @@ export default function CollectionPanel() {
               placeholder="輸入搜索關鍵字"
               value={settings.keywords}
               onChange={(e) => setSettings({ ...settings, keywords: e.target.value })}
+              className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg placeholder:text-slate-400"
             />
           </div>
           
           <div>
-            <Label htmlFor="time-range" className="text-sm font-medium text-foreground mb-2">
+            <Label htmlFor="time-range" className="text-sm font-medium text-slate-200 mb-2">
               時間範圍
             </Label>
             <Select
               value={settings.timeRange.toString()}
               onValueChange={(value) => setSettings({ ...settings, timeRange: parseInt(value) })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-slate-800 border-slate-700 rounded-lg">
                 <SelectItem value="7">最近 7 天</SelectItem>
                 <SelectItem value="30">最近 30 天</SelectItem>
                 <SelectItem value="90">最近 3 個月</SelectItem>
@@ -150,8 +152,9 @@ export default function CollectionPanel() {
                 onCheckedChange={(checked) => 
                   setSettings({ ...settings, includeImages: checked as boolean })
                 }
+                className="border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor="include-images" className="text-sm text-foreground">
+              <Label htmlFor="include-images" className="text-sm text-slate-200">
                 包含圖片
               </Label>
             </div>
@@ -162,8 +165,9 @@ export default function CollectionPanel() {
                 onCheckedChange={(checked) => 
                   setSettings({ ...settings, includeVideos: checked as boolean })
                 }
+                className="border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
-              <Label htmlFor="include-videos" className="text-sm text-foreground">
+              <Label htmlFor="include-videos" className="text-sm text-slate-200">
                 包含影片
               </Label>
             </div>
@@ -171,6 +175,7 @@ export default function CollectionPanel() {
           <Button 
             onClick={handleSaveSettings}
             disabled={createTaskMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg border-0"
           >
             {createTaskMutation.isPending ? "保存中..." : "保存設置"}
           </Button>
