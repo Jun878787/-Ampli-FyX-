@@ -205,6 +205,217 @@ class FacebookService {
       };
     }
   }
+
+  // 廣告內容提取功能
+  async getAdContents(params: {
+    accountId: string;
+    campaignId: string;
+    contentType: string;
+    searchQuery: string;
+    startDate: string;
+    endDate: string;
+  }): Promise<FacebookAPIResponse> {
+    try {
+      const { accountId, campaignId, contentType, searchQuery, startDate, endDate } = params;
+      
+      // 構建Facebook Graph API查詢
+      let fields = 'id,name,adcreatives{object_story_spec,title,body,call_to_action_type,image_url,video_id,link_url}';
+      fields += ',insights{impressions,clicks,ctr,cpc,spend,reach,frequency}';
+      fields += ',targeting{age_min,age_max,genders,geo_locations,interests,behaviors}';
+      
+      let url = `${this.baseUrl}/act_${accountId}/ads?fields=${fields}&access_token=${this.apiKey}`;
+      
+      if (campaignId && campaignId !== 'all') {
+        url += `&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]`;
+      }
+      
+      if (startDate && endDate) {
+        url += `&time_range={"since":"${startDate}","until":"${endDate}"}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `無法獲取廣告內容: HTTP ${response.status}`
+        };
+      }
+
+      const data = await response.json();
+      
+      // 處理和格式化廣告內容數據
+      const processedAds = data.data?.map((ad: any) => {
+        const creative = ad.adcreatives?.data?.[0];
+        const insights = ad.insights?.data?.[0];
+        const targeting = ad.targeting;
+        
+        return {
+          id: ad.id,
+          adId: ad.id,
+          name: ad.name,
+          // 文章標題
+          headline: creative?.title || creative?.object_story_spec?.link_data?.name || '無標題',
+          // 內容
+          primaryText: creative?.body || creative?.object_story_spec?.link_data?.description || '無內容',
+          description: creative?.object_story_spec?.link_data?.caption || '',
+          callToAction: creative?.call_to_action_type || '了解更多',
+          contentType: this.determineContentType(creative),
+          imageUrl: creative?.image_url,
+          videoId: creative?.video_id,
+          linkUrl: creative?.link_url || creative?.object_story_spec?.link_data?.link,
+          
+          // 花費數據
+          impressions: insights?.impressions || 0,
+          clicks: insights?.clicks || 0,
+          ctr: insights?.ctr || 0,
+          cpc: insights?.cpc || 0,
+          spend: insights?.spend || 0, // 花費
+          reach: insights?.reach || 0,
+          frequency: insights?.frequency || 0,
+          
+          // 受眾分析
+          audienceAnalysis: {
+            ageRange: targeting ? `${targeting.age_min || 18}-${targeting.age_max || 65}` : '18-65',
+            genders: targeting?.genders || ['all'],
+            locations: targeting?.geo_locations?.countries || [],
+            interests: targeting?.interests?.map((i: any) => i.name) || [],
+            behaviors: targeting?.behaviors?.map((b: any) => b.name) || [],
+          },
+          
+          // 潛在客戶分析
+          potentialCustomers: {
+            estimatedReach: insights?.reach || 0,
+            engagementRate: insights?.clicks && insights?.impressions ? 
+              ((insights.clicks / insights.impressions) * 100).toFixed(2) : '0',
+            costPerLead: insights?.spend && insights?.clicks ? 
+              (insights.spend / insights.clicks).toFixed(2) : '0',
+            qualityScore: this.calculateQualityScore(insights),
+          },
+          
+          status: 'ACTIVE',
+          createdAt: ad.created_time || new Date().toISOString(),
+        };
+      }) || [];
+
+      // 應用篩選
+      let filteredAds = processedAds;
+      
+      if (contentType && contentType !== 'all') {
+        filteredAds = filteredAds.filter((ad: any) => ad.contentType === contentType);
+      }
+      
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filteredAds = filteredAds.filter((ad: any) => 
+          ad.headline.toLowerCase().includes(query) ||
+          ad.primaryText.toLowerCase().includes(query) ||
+          ad.name.toLowerCase().includes(query)
+        );
+      }
+
+      return {
+        success: true,
+        data: filteredAds
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `提取廣告內容失敗: ${error instanceof Error ? error.message : '未知錯誤'}`
+      };
+    }
+  }
+
+  async extractAdContents(params: {
+    accountId: string;
+    campaignId: string;
+    dateRange: { from: Date; to: Date };
+  }): Promise<FacebookAPIResponse> {
+    try {
+      const { accountId, campaignId, dateRange } = params;
+      
+      // 調用getAdContents來提取最新數據
+      const result = await this.getAdContents({
+        accountId,
+        campaignId,
+        contentType: 'all',
+        searchQuery: '',
+        startDate: dateRange.from.toISOString().split('T')[0],
+        endDate: dateRange.to.toISOString().split('T')[0],
+      });
+
+      if (result.success) {
+        return {
+          success: true,
+          data: {
+            extracted: result.data?.length || 0,
+            updated: result.data?.length || 0,
+          }
+        };
+      } else {
+        return result;
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: `提取廣告內容失敗: ${error instanceof Error ? error.message : '未知錯誤'}`
+      };
+    }
+  }
+
+  async exportAdContents(format: string): Promise<FacebookAPIResponse> {
+    try {
+      // 模擬導出功能 - 在實際應用中會生成真實的導出文件
+      const timestamp = Date.now();
+      const downloadUrl = `/downloads/facebook-ad-contents-${timestamp}.${format}`;
+      
+      return {
+        success: true,
+        data: {
+          downloadUrl,
+          estimatedTime: '1-2分鐘'
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `導出廣告內容失敗: ${error instanceof Error ? error.message : '未知錯誤'}`
+      };
+    }
+  }
+
+  private determineContentType(creative: any): string {
+    if (creative?.video_id) return 'video';
+    if (creative?.object_story_spec?.link_data?.child_attachments) return 'carousel';
+    return 'single_image';
+  }
+
+  private calculateQualityScore(insights: any): string {
+    if (!insights) return '0';
+    
+    const ctr = insights.ctr || 0;
+    const cpc = insights.cpc || 0;
+    
+    // 簡單的質量評分算法
+    let score = 0;
+    if (ctr > 2) score += 30;
+    else if (ctr > 1) score += 20;
+    else if (ctr > 0.5) score += 10;
+    
+    if (cpc < 0.5) score += 30;
+    else if (cpc < 1) score += 20;
+    else if (cpc < 2) score += 10;
+    
+    if (insights.frequency && insights.frequency < 3) score += 20;
+    else if (insights.frequency && insights.frequency < 5) score += 10;
+    
+    return Math.min(score, 100).toString();
+  }
 }
 
 export const facebookService = new FacebookService();

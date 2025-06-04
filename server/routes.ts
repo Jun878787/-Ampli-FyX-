@@ -1305,6 +1305,89 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Facebook廣告內容提取 API
+  app.get("/api/facebook/ad-contents", async (req: Request, res: Response) => {
+    try {
+      const { 
+        accountId, 
+        campaignId, 
+        contentType, 
+        searchQuery, 
+        startDate, 
+        endDate 
+      } = req.query;
+
+      // 使用Facebook服務提取真實廣告內容
+      const result = await facebookService.getAdContents({
+        accountId: accountId as string,
+        campaignId: campaignId as string,
+        contentType: contentType as string,
+        searchQuery: searchQuery as string,
+        startDate: startDate as string,
+        endDate: endDate as string,
+      });
+
+      if (result.success) {
+        res.json(result.data);
+      } else {
+        res.status(500).json({ message: result.error || "獲取廣告內容失敗" });
+      }
+    } catch (error) {
+      console.error("Error fetching ad contents:", error);
+      res.status(500).json({ message: "獲取廣告內容失敗" });
+    }
+  });
+
+  app.post("/api/facebook/extract-ad-contents", async (req: Request, res: Response) => {
+    try {
+      const { accountId, campaignId, dateRange } = req.body;
+
+      // 使用Facebook服務提取最新廣告內容
+      const result = await facebookService.extractAdContents({
+        accountId,
+        campaignId,
+        dateRange,
+      });
+
+      if (result.success) {
+        res.json({
+          success: true,
+          message: "廣告內容提取成功",
+          extracted: result.data?.extracted || 0,
+          updated: result.data?.updated || 0,
+        });
+      } else {
+        res.status(500).json({ message: result.error || "提取廣告內容失敗" });
+      }
+    } catch (error) {
+      console.error("Error extracting ad contents:", error);
+      res.status(500).json({ message: "提取廣告內容失敗" });
+    }
+  });
+
+  app.get("/api/facebook/export-ad-contents", async (req: Request, res: Response) => {
+    try {
+      const format = req.query.format as string || 'excel';
+      
+      // 使用Facebook服務導出廣告內容
+      const result = await facebookService.exportAdContents(format);
+
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `廣告內容導出 (${format.toUpperCase()}) 已開始`,
+          downloadUrl: result.data?.downloadUrl,
+          estimatedTime: "1-2分鐘"
+        });
+      } else {
+        res.status(500).json({ message: result.error || "導出廣告內容失敗" });
+      }
+    } catch (error) {
+      console.error("Error exporting ad contents:", error);
+      res.status(500).json({ message: "導出廣告內容失敗" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

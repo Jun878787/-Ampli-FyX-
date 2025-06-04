@@ -20,6 +20,7 @@ import AutoMessaging from "@/pages/auto-messaging";
 import AdManager from "@/pages/ad-manager";
 import FacebookApiTest from "@/pages/facebook-api-test";
 import FacebookAdsAnalytics from "@/pages/facebook-ads-analytics";
+import FacebookAdContentExtractor from "@/pages/facebook-ad-content-extractor";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -47,6 +48,7 @@ function Router() {
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
             <Route path="/facebook-api-test" component={FacebookApiTest} />
             <Route path="/facebook-ads-analytics" component={FacebookAdsAnalytics} />
+            <Route path="/facebook-ad-content-extractor" component={FacebookAdContentExtractor} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />
