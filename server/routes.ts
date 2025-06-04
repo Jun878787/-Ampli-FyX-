@@ -16,7 +16,7 @@ import {
   adDailyData
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { z } from "zod";
 import { gmailService, type GmailAccountRequest } from "./gmail-service";
 import { facebookService } from "./facebook-service";
@@ -2142,8 +2142,7 @@ function simulateCollectionProgress(taskId: number) {
       // Check if data for this date already exists
       const existingData = await db.select()
         .from(adDailyData)
-        .where(eq(adDailyData.campaignId, campaignId))
-        .where(eq(adDailyData.date, date));
+        .where(and(eq(adDailyData.campaignId, campaignId), eq(adDailyData.date, date)));
 
       if (existingData.length > 0) {
         // Update existing data
