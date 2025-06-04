@@ -1983,6 +1983,12 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // 像素數據API - 使用專用服務
+  app.post("/api/facebook/pixel-data-fixed", async (req: Request, res: Response) => {
+    const { getPixelData } = await import("./facebook-pixel-service");
+    return getPixelData(req, res);
+  });
+
 
 
   app.post("/api/facebook/export-pixel-data", async (req: Request, res: Response) => {
