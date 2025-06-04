@@ -895,8 +895,7 @@ async function simulateFacebookAccountGeneration(taskId: number) {
         
         // Create Facebook account record
         const accountData = {
-          accountId: `fb_${Date.now()}_${accountNumber}`,
-          username: username,
+          accountName: username,
           email: email,
           password: password,
           status: emailCreated ? 'email_verified' as const : 'pending_verification' as const,
