@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+// import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -184,10 +184,24 @@ export default function FacebookAdsAnalytics() {
               </Select>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <DatePickerWithRange
-                  date={dateRange}
-                  onDateChange={setDateRange}
-                  className="bg-gray-700 border-gray-600"
+                <Input
+                  type="date"
+                  value={format(dateRange.from, "yyyy-MM-dd")}
+                  onChange={(e) => setDateRange({
+                    ...dateRange,
+                    from: new Date(e.target.value)
+                  })}
+                  className="bg-gray-700 border-gray-600 text-white w-40"
+                />
+                <span className="text-gray-400">到</span>
+                <Input
+                  type="date"
+                  value={format(dateRange.to, "yyyy-MM-dd")}
+                  onChange={(e) => setDateRange({
+                    ...dateRange,
+                    to: new Date(e.target.value)
+                  })}
+                  className="bg-gray-700 border-gray-600 text-white w-40"
                 />
               </div>
             </div>
