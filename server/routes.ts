@@ -2122,31 +2122,23 @@ function simulateCollectionProgress(taskId: number) {
       // Store campaign in database for tracking
       try {
         await storage.createManualAdData({
-          campaignId: campaignId,
           campaignName: campaignName,
-          dailyBudget: parseFloat(dailyBudget) || 0,
-          adObjective: adObjective,
-          settings: JSON.stringify({
+          date: new Date().toISOString().split('T')[0],
+          spend: Math.round((parseFloat(dailyBudget) || 0) * 100), // 轉換為分
+          impressions: 0,
+          clicks: 0,
+          conversions: 0,
+          audience: {
             ageRange: ageRange,
             gender: gender,
-            regions: regions || [],
-            audienceTags: audienceTags || [],
-            placements: placements || []
-          }),
-          notes: notes || "",
-          status: 'active'
+            audienceTags: audienceTags || []
+          },
+          placements: placements || [],
+          publishRegions: regions || [],
+          adObjective: adObjective,
+          notes: notes || ""
         });
-        
-        // Initialize performance data with zeros
-        await storage.createAdPerformanceData({
-          campaignId: campaignId,
-          date: new Date().toISOString().split('T')[0],
-          dailySpend: 0,
-          views: 0,
-          reach: 0,
-          interactions: 0,
-          followers: 0
-        });
+
         
         console.log(`Campaign ${campaignId} stored in database successfully`);
       } catch (dbError) {
