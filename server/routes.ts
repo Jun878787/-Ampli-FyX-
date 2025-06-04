@@ -1983,6 +1983,8 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+
+
   app.post("/api/facebook/export-pixel-data", async (req: Request, res: Response) => {
     try {
       const { pixelData, format } = req.body;
