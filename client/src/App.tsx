@@ -63,6 +63,7 @@ function Router() {
             <Route path="/facebook-content-extractor" component={FacebookContentExtractor} />
         <Route path="/facebook-pixel-tracker" component={FacebookPixelTracker} />
             <Route path="/my-facebook-account" component={MyFacebookAccount} />
+            <Route path="/manual-ad-data" component={ManualAdData} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
