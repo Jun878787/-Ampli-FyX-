@@ -50,9 +50,12 @@ export default function AdDataInput() {
   const saveDataMutation = useMutation({
     mutationFn: async (data: DailyData) => {
       const response = await apiRequest('/api/ads/data', { method: 'POST', data });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: [`/api/ads/${campaignId}/data`] });
       toast({
         title: "數據已保存",
@@ -60,10 +63,11 @@ export default function AdDataInput() {
       });
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Save error:', error);
       toast({
         title: "保存失敗",
-        description: "無法保存廣告數據，請重試",
+        description: error.message || "無法保存廣告數據，請重試",
         variant: "destructive",
       });
     }
