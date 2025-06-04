@@ -108,9 +108,13 @@ export default function AdCreation() {
   const createAdMutation = useMutation({
     mutationFn: async (data: AdCreationData) => {
       const response = await apiRequest('/api/ads/create', { method: 'POST', data });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Ad creation successful:", data);
       queryClient.invalidateQueries({ queryKey: ['/api/ads'] });
       toast({
         title: "廣告已創建",
@@ -119,9 +123,10 @@ export default function AdCreation() {
       resetForm();
     },
     onError: (error) => {
+      console.error("Ad creation error:", error);
       toast({
         title: "創建失敗",
-        description: "無法創建廣告活動，請重試",
+        description: error.message || "無法創建廣告活動，請重試",
         variant: "destructive",
       });
     }
@@ -164,6 +169,49 @@ export default function AdCreation() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.campaignName.trim()) {
+      toast({
+        title: "請填寫活動名稱",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!formData.adObjective) {
+      toast({
+        title: "請選擇廣告目標",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!formData.gender) {
+      toast({
+        title: "請選擇性別",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (formData.regions.length === 0) {
+      toast({
+        title: "請至少選擇一個地區",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (formData.placements.length === 0) {
+      toast({
+        title: "請至少選擇一個版面",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log("Submitting form data:", formData);
     createAdMutation.mutate(formData);
   };
 
@@ -328,13 +376,13 @@ export default function AdCreation() {
                   <Label htmlFor="audienceTags" className="text-white">受眾標籤</Label>
                   <Input
                     id="audienceTags"
-                    value={formData.audienceTags.join(', ')}
+                    value={formData.audienceTags.join('、')}
                     onChange={(e) => setFormData(prev => ({ 
                       ...prev, 
-                      audienceTags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                      audienceTags: e.target.value.split(/[、,，]/).map(tag => tag.trim()).filter(tag => tag.length > 0)
                     }))}
                     className="bg-gray-700 border-gray-600 text-white"
-                    placeholder="例如：科技、購物、旅遊（用逗號分隔）"
+                    placeholder="例如：科技、購物、旅遊"
                   />
                 </div>
               </div>
