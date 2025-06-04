@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Target, Users, MapPin, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -14,14 +15,14 @@ interface AdCreationData {
   campaignName: string;
   dailyBudget: number;
   adObjective: string;
-  audience: {
-    ageMin: string;
-    ageMax: string;
-    gender: string;
-    location: string;
-    interests: string;
+  ageRange: {
+    min: string;
+    max: string;
   };
-  placement: string;
+  gender: string;
+  regions: string[];
+  audienceTags: string[];
+  placements: string[];
   notes: string;
 }
 
@@ -47,11 +48,33 @@ const GENDERS = [
   { value: "female", label: "女性" },
 ];
 
-const TAIWAN_CITIES = [
-  "台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市",
-  "新竹縣", "新竹市", "苗栗縣", "彰化縣", "南投縣", "雲林縣",
-  "嘉義縣", "嘉義市", "屏東縣", "宜蘭縣", "花蓮縣", "台東縣",
-  "澎湖縣", "金門縣", "連江縣"
+const REGIONS = [
+  // 主要區域
+  { value: "north", label: "北部" },
+  { value: "central", label: "中部" },
+  { value: "south", label: "南部" },
+  // 縣市選項
+  { value: "taipei", label: "台北市" },
+  { value: "new_taipei", label: "新北市" },
+  { value: "taoyuan", label: "桃園市" },
+  { value: "taichung", label: "台中市" },
+  { value: "tainan", label: "台南市" },
+  { value: "kaohsiung", label: "高雄市" },
+  { value: "hsinchu_county", label: "新竹縣" },
+  { value: "hsinchu_city", label: "新竹市" },
+  { value: "miaoli", label: "苗栗縣" },
+  { value: "changhua", label: "彰化縣" },
+  { value: "nantou", label: "南投縣" },
+  { value: "yunlin", label: "雲林縣" },
+  { value: "chiayi_county", label: "嘉義縣" },
+  { value: "chiayi_city", label: "嘉義市" },
+  { value: "pingtung", label: "屏東縣" },
+  { value: "yilan", label: "宜蘭縣" },
+  { value: "hualien", label: "花蓮縣" },
+  { value: "taitung", label: "台東縣" },
+  { value: "penghu", label: "澎湖縣" },
+  { value: "kinmen", label: "金門縣" },
+  { value: "lienchiang", label: "連江縣" }
 ];
 
 const PLACEMENTS = [
@@ -71,14 +94,14 @@ export default function AdCreation() {
     campaignName: "",
     dailyBudget: 0,
     adObjective: "",
-    audience: {
-      ageMin: "",
-      ageMax: "",
-      gender: "",
-      location: "",
-      interests: "",
+    ageRange: {
+      min: "",
+      max: "",
     },
-    placement: "",
+    gender: "",
+    regions: [],
+    audienceTags: [],
+    placements: [],
     notes: "",
   });
 
@@ -109,16 +132,34 @@ export default function AdCreation() {
       campaignName: "",
       dailyBudget: 0,
       adObjective: "",
-      audience: {
-        ageMin: "",
-        ageMax: "",
-        gender: "",
-        location: "",
-        interests: "",
+      ageRange: {
+        min: "",
+        max: "",
       },
-      placement: "",
+      gender: "",
+      regions: [],
+      audienceTags: [],
+      placements: [],
       notes: "",
     });
+  };
+
+  const handleRegionToggle = (regionValue: string) => {
+    setFormData(prev => ({
+      ...prev,
+      regions: prev.regions.includes(regionValue)
+        ? prev.regions.filter(r => r !== regionValue)
+        : [...prev.regions, regionValue]
+    }));
+  };
+
+  const handlePlacementToggle = (placementValue: string) => {
+    setFormData(prev => ({
+      ...prev,
+      placements: prev.placements.includes(placementValue)
+        ? prev.placements.filter(p => p !== placementValue)
+        : [...prev.placements, placementValue]
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -126,11 +167,11 @@ export default function AdCreation() {
     createAdMutation.mutate(formData);
   };
 
-  const handleAudienceChange = (field: string, value: string) => {
+  const handleAgeRangeChange = (field: 'min' | 'max', value: string) => {
     setFormData(prev => ({
       ...prev,
-      audience: {
-        ...prev.audience,
+      ageRange: {
+        ...prev.ageRange,
         [field]: value
       }
     }));
