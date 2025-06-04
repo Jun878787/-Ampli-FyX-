@@ -993,62 +993,6 @@ function simulateCollectionProgress(taskId: number) {
       });
     }
   }, 3000);
-}
-
-  // Gmail API routes
-  const gmailAccountRequestSchema = z.object({
-    username: z.string().min(1),
-    password: z.string().min(6),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
-    recoveryEmail: z.string().email().optional()
-  });
-
-  app.post("/api/gmail/create-account", async (req, res) => {
-    try {
-      const requestData = gmailAccountRequestSchema.parse(req.body);
-      const result = await gmailService.createAccount(requestData);
-      res.json(result);
-    } catch (error) {
-      console.error("Gmail account creation error:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "創建 Gmail 帳戶失敗" 
-      });
-    }
-  });
-
-  app.post("/api/gmail/verify", async (req, res) => {
-    try {
-      const { email, verificationCode } = req.body;
-      if (!email || !verificationCode) {
-        return res.status(400).json({ success: false, error: "缺少必要參數" });
-      }
-      
-      const result = await gmailService.verifyAccount(email, verificationCode);
-      res.json({ success: result });
-    } catch (error) {
-      console.error("Gmail verification error:", error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "驗證失敗" 
-      });
-    }
-  });
-
-  app.get("/api/gmail/check-availability/:username", async (req, res) => {
-    try {
-      const { username } = req.params;
-      const available = await gmailService.checkAvailability(username);
-      res.json({ available });
-    } catch (error) {
-      console.error("Username availability check error:", error);
-      res.status(500).json({ 
-        available: false, 
-        error: error instanceof Error ? error.message : "檢查失敗" 
-      });
-    }
-  });
 
   const httpServer = createServer(app);
   return httpServer;
