@@ -647,17 +647,89 @@ export default function FacebookAccountGeneration() {
           
           {selectedTask && (
             <div className="space-y-6">
-              <TaskFormFields form={{
-                control: {
-                  _formValues: selectedTask
-                }
-              }} readOnly={true} />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-slate-200 text-sm font-medium">任務名稱</label>
+                  <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                    {selectedTask.taskName}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-slate-200 text-sm font-medium">目標帳號數</label>
+                  <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                    {selectedTask.targetCount}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-slate-100">帳號模板設定</h3>
+                
+                <div>
+                  <label className="text-slate-200 text-sm font-medium">名稱模板</label>
+                  <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                    {selectedTask.nameTemplate || "NorthSea_{random}"}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-slate-200 text-sm font-medium">郵箱模板</label>
+                  <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                    {selectedTask.emailTemplate || "ns.{name}@tempmail.org"}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-200 text-sm font-medium">密碼模板</label>
+                  <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                    {selectedTask.passwordTemplate || "NS{random}!"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-slate-100">個人資料設定</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between p-3 bg-slate-700 border border-slate-600 rounded-lg">
+                    <span className="text-slate-200">隨機頭像</span>
+                    <span className="text-slate-300">
+                      {selectedTask.randomAvatar !== false ? "已啟用" : "已停用"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-slate-700 border border-slate-600 rounded-lg">
+                    <span className="text-slate-200">隨機封面</span>
+                    <span className="text-slate-300">
+                      {selectedTask.randomCover !== false ? "已啟用" : "已停用"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-slate-200 text-sm font-medium">最小年齡</label>
+                    <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                      {selectedTask.minAge || 25}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-200 text-sm font-medium">最大年齡</label>
+                    <div className="mt-1 p-3 bg-slate-700 border border-slate-600 rounded-lg text-slate-100">
+                      {selectedTask.maxAge || 45}
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <div className="flex justify-end pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setIsViewTaskOpen(false)}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-600 rounded-lg"
                 >
                   關閉
                 </Button>
