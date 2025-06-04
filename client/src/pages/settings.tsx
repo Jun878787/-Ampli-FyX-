@@ -35,6 +35,7 @@ const securitySettingsSchema = z.object({
   sessionTimeout: z.number().min(15).max(480).default(60),
   ipWhitelist: z.string().optional(),
   enableAuditLog: z.boolean().default(true),
+  adminPassword: z.string().min(6, "管理員密碼至少6位數").default("NorthSea2024!"),
   passwordPolicy: z.object({
     minLength: z.number().min(8).max(32).default(12),
     requireNumbers: z.boolean().default(true),
@@ -87,6 +88,7 @@ export default function Settings() {
       enableTwoFactor: false,
       sessionTimeout: 60,
       enableAuditLog: true,
+      adminPassword: "NorthSea2024!",
       passwordPolicy: {
         minLength: 12,
         requireNumbers: true,
@@ -526,6 +528,31 @@ export default function Settings() {
                             </FormControl>
                             <FormDescription className="text-slate-400">
                               用戶閒置多久後自動登出
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={securityForm.control}
+                        name="adminPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-slate-200 flex items-center gap-2">
+                              <Key className="h-4 w-4" />
+                              管理員密碼
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="password"
+                                {...field}
+                                placeholder="輸入管理員密碼"
+                                className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
+                              />
+                            </FormControl>
+                            <FormDescription className="text-slate-400">
+                              用於敏感操作驗證的管理員密碼（查看帳號密碼、編輯帳號等）
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
