@@ -272,11 +272,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/facebook/accounts", async (req, res) => {
     try {
-      const account = await storage.createFacebookAccount(req.body);
+      // 驗證必需字段
+      const { accountName, email } = req.body;
+      if (!accountName || !email) {
+        return res.status(400).json({ 
+          message: "Account name and email are required" 
+        });
+      }
+
+      // 確保數據結構正確
+      const accountData = {
+        accountName,
+        email,
+        password: req.body.password || null,
+        accessToken: req.body.accessToken || null,
+        userId: req.body.userId || null,
+        age: req.body.age || null,
+        avatarUrl: req.body.avatarUrl || null,
+        coverUrl: req.body.coverUrl || null,
+        status: req.body.status || 'active',
+        friendsCount: req.body.friendsCount || 0,
+        generationTaskId: req.body.generationTaskId || null
+      };
+
+      const account = await storage.createFacebookAccount(accountData);
       res.status(201).json(account);
     } catch (error) {
       console.error("Error creating Facebook account:", error);
-      res.status(500).json({ message: "Failed to create Facebook account" });
+      res.status(500).json({ 
+        message: "Failed to create Facebook account",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
