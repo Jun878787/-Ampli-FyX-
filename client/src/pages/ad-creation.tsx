@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,6 +90,7 @@ const PLACEMENTS = [
 export default function AdCreation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   
   const [formData, setFormData] = useState<AdCreationData>({
     campaignName: "",
@@ -138,11 +140,24 @@ export default function AdCreation() {
     onSuccess: (data) => {
       console.log("Ad creation successful:", data);
       queryClient.invalidateQueries({ queryKey: ['/api/ads'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/facebook/campaigns'] });
+      
       toast({
         title: "廣告已創建",
-        description: "您的廣告活動已成功創建",
+        description: `活動「${data.data.campaignName}」已成功創建，正在跳轉到詳情頁面`,
       });
-      resetForm();
+      
+      // 儲存活動ID到本地存儲供後續使用
+      localStorage.setItem('lastCreatedCampaign', JSON.stringify({
+        id: data.campaignId,
+        name: data.data.campaignName,
+        createdAt: data.data.createdAt
+      }));
+      
+      // 延遲跳轉到廣告分析頁面
+      setTimeout(() => {
+        setLocation('/facebook-ads-analytics');
+      }, 1500);
     },
     onError: (error) => {
       console.error("Ad creation error:", error);

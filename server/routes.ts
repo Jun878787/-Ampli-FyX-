@@ -2140,6 +2140,41 @@ function simulateCollectionProgress(taskId: number) {
       
       const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
+      // Store campaign in database for tracking
+      try {
+        await storage.createManualAdData({
+          campaignId: campaignId,
+          campaignName: campaignName,
+          dailyBudget: parseFloat(dailyBudget) || 0,
+          adObjective: adObjective,
+          settings: JSON.stringify({
+            ageRange: ageRange,
+            gender: gender,
+            regions: regions || [],
+            audienceTags: audienceTags || [],
+            placements: placements || []
+          }),
+          notes: notes || "",
+          status: 'active'
+        });
+        
+        // Initialize performance data with zeros
+        await storage.createAdPerformanceData({
+          campaignId: campaignId,
+          date: new Date().toISOString().split('T')[0],
+          dailySpend: 0,
+          views: 0,
+          reach: 0,
+          interactions: 0,
+          followers: 0
+        });
+        
+        console.log(`Campaign ${campaignId} stored in database successfully`);
+      } catch (dbError) {
+        console.error("Database storage error:", dbError);
+        // Continue with response even if database storage fails
+      }
+      
       // Ensure proper JSON response
       res.setHeader('Content-Type', 'application/json');
       
