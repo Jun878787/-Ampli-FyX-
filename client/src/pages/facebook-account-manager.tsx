@@ -534,11 +534,19 @@ export default function FacebookAccountManager() {
                   <FormField
                     control={nurturingForm.control}
                     name="dailyLikes"
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
                         <FormLabel className="text-white">每日點讚數</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="1" max="100" className="bg-gray-700 border-gray-600 text-white" />
+                          <Input
+                            {...field}
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={value || ""}
+                            onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -547,11 +555,19 @@ export default function FacebookAccountManager() {
                   <FormField
                     control={nurturingForm.control}
                     name="dailyComments"
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
                         <FormLabel className="text-white">每日留言數</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="0" max="50" className="bg-gray-700 border-gray-600 text-white" />
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            max="50"
+                            value={value || ""}
+                            onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -560,11 +576,19 @@ export default function FacebookAccountManager() {
                   <FormField
                     control={nurturingForm.control}
                     name="dailyShares"
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
                         <FormLabel className="text-white">每日分享數</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="0" max="20" className="bg-gray-700 border-gray-600 text-white" />
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            max="20"
+                            value={value || ""}
+                            onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -573,11 +597,19 @@ export default function FacebookAccountManager() {
                   <FormField
                     control={nurturingForm.control}
                     name="dailyFriendRequests"
-                    render={({ field }) => (
+                    render={({ field: { onChange, value, ...field } }) => (
                       <FormItem>
                         <FormLabel className="text-white">每日好友請求數</FormLabel>
                         <FormControl>
-                          <Input {...field} type="number" min="0" max="30" className="bg-gray-700 border-gray-600 text-white" />
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            max="30"
+                            value={value || ""}
+                            onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : "")}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
