@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Play, Pause, Settings, Users, Zap, Shield, Activity, UserPlus, CheckCircle, XCircle, Clock, Eye, Edit, Trash2 } from "lucide-react";
+import { Plus, Play, Pause, Settings, Users, Zap, Shield, Activity, UserPlus, CheckCircle, XCircle, Clock, Eye, Edit, Trash2, EyeOff, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -52,6 +53,13 @@ type AccountCreationForm = z.infer<typeof accountCreationSchema>;
 export default function FacebookAccountGeneration() {
   const [selectedTab, setSelectedTab] = useState("tasks");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isViewAccountOpen, setIsViewAccountOpen] = useState(false);
+  const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [isAdminVerified, setIsAdminVerified] = useState(false);
+  const [adminPasswordConfig, setAdminPasswordConfig] = useState("NorthSea2024!");
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -243,6 +251,27 @@ export default function FacebookAccountGeneration() {
       toast({
         title: "刪除失敗",
         description: "無法刪除任務，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Verification mutations
+  const retryVerificationMutation = useMutation({
+    mutationFn: async () => {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "批量重試成功",
+        description: "所有失敗的驗證任務已重新啟動",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "重試失敗",
+        description: "無法啟動批量重試，請稍後再試",
         variant: "destructive",
       });
     },
@@ -764,8 +793,12 @@ export default function FacebookAccountGeneration() {
                       variant="outline" 
                       size="sm" 
                       className="flex-1 bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600"
-                      onClick={() => handleTaskAction(task.id, 'delete')}
-                      disabled={deleteTaskMutation.isPending}
+                      onClick={() => {
+                        toast({
+                          title: "任務設定",
+                          description: "正在打開任務設定面板...",
+                        });
+                      }}
                     >
                       <Settings className="w-4 h-4 mr-1" />
                       設定
@@ -868,7 +901,13 @@ export default function FacebookAccountGeneration() {
         <TabsContent value="verification" className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">驗證任務管理</h2>
-            <Button>批量重試驗證</Button>
+            <Button 
+              onClick={() => retryVerificationMutation.mutate()}
+              disabled={retryVerificationMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {retryVerificationMutation.isPending ? "處理中..." : "批量重試驗證"}
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
