@@ -1028,7 +1028,7 @@ export default function FacebookAccountGeneration() {
 
         {/* Account View Dialog */}
         <Dialog open={isViewAccountOpen} onOpenChange={setIsViewAccountOpen}>
-          <DialogContent className="max-w-2xl bg-slate-800 border-slate-700 text-slate-100">
+          <DialogContent className="max-w-2xl max-h-[90vh] bg-slate-800 border-slate-700 text-slate-100 overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 <Eye className="w-5 h-5 mr-2 text-blue-400" />
@@ -1155,7 +1155,7 @@ export default function FacebookAccountGeneration() {
 
         {/* Account Edit Dialog */}
         <Dialog open={isEditAccountOpen} onOpenChange={setIsEditAccountOpen}>
-          <DialogContent className="max-w-2xl bg-slate-800 border-slate-700 text-slate-100">
+          <DialogContent className="max-w-2xl max-h-[90vh] bg-slate-800 border-slate-700 text-slate-100 overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center">
                 <Edit className="w-5 h-5 mr-2 text-green-400" />
