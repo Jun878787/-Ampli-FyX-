@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter, Search, FileSpreadsheet, MessageSquare, Plus, MousePointer } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter, Search, FileSpreadsheet, MessageSquare, Plus, MousePointer, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +97,28 @@ export default function FacebookAdsAnalytics() {
         description: "廣告數據導出已開始",
       });
     },
+  });
+
+  // 刪除廣告活動
+  const deleteAdMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest(`/api/manual-ad-data/${id}`, { method: 'DELETE' });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/manual-ad-data'] });
+      toast({
+        title: "廣告活動已刪除",
+        description: "廣告活動已成功刪除",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "刪除失敗",
+        description: "無法刪除廣告活動，請重試",
+        variant: "destructive",
+      });
+    }
   });
 
   // 計算真實數據統計
@@ -416,6 +438,7 @@ export default function FacebookAdsAnalytics() {
                       <TableHead className="text-gray-300">點擊數</TableHead>
                       <TableHead className="text-gray-300">轉換數</TableHead>
                       <TableHead className="text-gray-300">ROAS</TableHead>
+                      <TableHead className="text-gray-300">操作</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -439,6 +462,21 @@ export default function FacebookAdsAnalytics() {
                           <Badge variant="secondary">
                             待更新
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm('確定要刪除此廣告活動嗎？')) {
+                                deleteAdMutation.mutate(campaign.id);
+                              }
+                            }}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
