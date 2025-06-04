@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,8 @@ import {
   DollarSign,
   Eye,
   MousePointer,
-  Download
+  Download,
+  Trash2
 } from "lucide-react";
 
 export default function EmploymentAnalytics() {
@@ -259,6 +261,7 @@ export default function EmploymentAnalytics() {
                       <TableHead className="text-gray-300">花費</TableHead>
                       <TableHead className="text-gray-300">曝光數</TableHead>
                       <TableHead className="text-gray-300">點擊數</TableHead>
+                      <TableHead className="text-gray-300">操作</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -293,6 +296,20 @@ export default function EmploymentAnalytics() {
                           </TableCell>
                           <TableCell className="text-gray-300">
                             {(ad.clicks || 0).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('確定要刪除此廣告活動嗎？')) {
+                                  deleteAdMutation.mutate(ad.id);
+                                }
+                              }}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       );
