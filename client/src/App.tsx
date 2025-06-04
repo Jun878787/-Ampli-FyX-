@@ -26,6 +26,7 @@ import FacebookGraphAPITest from "@/pages/facebook-graph-api-test";
 import FacebookContentExtractor from "@/pages/facebook-content-extractor";
 import FacebookPixelTracker from "@/pages/facebook-pixel-tracker";
 import MyFacebookAccount from "@/pages/my-facebook-account";
+import PrivacyPolicy from "@/pages/privacy-policy";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -61,6 +62,7 @@ function Router() {
             <Route path="/my-facebook-account" component={MyFacebookAccount} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
+            <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route component={NotFound} />
           </Switch>
         </main>
