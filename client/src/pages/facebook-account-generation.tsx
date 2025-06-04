@@ -178,51 +178,52 @@ export default function FacebookAccountGeneration() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "running":
-        return <Badge className="bg-blue-100 text-blue-800">運行中</Badge>;
+        return <Badge className="bg-blue-600 text-white rounded-md">運行中</Badge>;
       case "completed":
-        return <Badge className="bg-green-100 text-green-800">已完成</Badge>;
+        return <Badge className="bg-green-600 text-white rounded-md">已完成</Badge>;
       case "paused":
-        return <Badge className="bg-yellow-100 text-yellow-800">已暫停</Badge>;
+        return <Badge className="bg-yellow-600 text-white rounded-md">已暫停</Badge>;
       case "failed":
-        return <Badge variant="destructive">失敗</Badge>;
+        return <Badge className="bg-red-600 text-white rounded-md">失敗</Badge>;
       default:
-        return <Badge variant="outline">未知</Badge>;
+        return <Badge className="bg-slate-600 text-white rounded-md">未知</Badge>;
     }
   };
 
   const getAccountStatusBadge = (status: string) => {
     switch (status) {
       case "verified":
-        return <Badge className="bg-green-100 text-green-800"><CheckCircle className="w-3 h-3 mr-1" />已驗證</Badge>;
+        return <Badge className="bg-green-600 text-white rounded-md"><CheckCircle className="w-3 h-3 mr-1" />已驗證</Badge>;
       case "active":
-        return <Badge className="bg-blue-100 text-blue-800"><Activity className="w-3 h-3 mr-1" />活躍</Badge>;
+        return <Badge className="bg-blue-600 text-white rounded-md"><Activity className="w-3 h-3 mr-1" />活躍</Badge>;
       case "created":
-        return <Badge className="bg-gray-100 text-gray-800"><Clock className="w-3 h-3 mr-1" />已創建</Badge>;
+        return <Badge className="bg-slate-600 text-white rounded-md"><Clock className="w-3 h-3 mr-1" />已創建</Badge>;
       case "failed":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />失敗</Badge>;
+        return <Badge className="bg-red-600 text-white rounded-md"><XCircle className="w-3 h-3 mr-1" />失敗</Badge>;
       case "banned":
-        return <Badge variant="destructive"><Shield className="w-3 h-3 mr-1" />被封</Badge>;
+        return <Badge className="bg-red-600 text-white rounded-md"><Shield className="w-3 h-3 mr-1" />被封</Badge>;
       default:
-        return <Badge variant="outline">未知</Badge>;
+        return <Badge className="bg-slate-600 text-white rounded-md">未知</Badge>;
     }
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">批量產號系統</h1>
-          <p className="text-gray-600 mt-2">自動化Facebook帳號創建、驗證和管理</p>
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-100">批量產號系統</h1>
+            <p className="text-slate-400 mt-2">北金國際North™Sea - 自動化Facebook帳號創建、驗證和管理</p>
+          </div>
         </div>
-      </div>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="tasks">產號任務</TabsTrigger>
-          <TabsTrigger value="accounts">生成帳號</TabsTrigger>
-          <TabsTrigger value="verification">驗證管理</TabsTrigger>
-          <TabsTrigger value="settings">系統設定</TabsTrigger>
-        </TabsList>
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+          <TabsList className="bg-slate-800 rounded-xl">
+            <TabsTrigger value="tasks" className="rounded-lg">產號任務</TabsTrigger>
+            <TabsTrigger value="accounts" className="rounded-lg">生成帳號</TabsTrigger>
+            <TabsTrigger value="verification" className="rounded-lg">驗證管理</TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-lg">系統設定</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="tasks" className="space-y-6">
           <div className="flex justify-between items-center">
@@ -559,17 +560,17 @@ export default function FacebookAccountGeneration() {
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 text-sm">
-                    <div className="text-center p-2 bg-green-50 rounded">
-                      <div className="font-semibold text-green-700">{task.completedCount}</div>
-                      <div className="text-green-600">成功</div>
+                    <div className="text-center p-2 bg-green-600/20 border border-green-600/30 rounded-lg">
+                      <div className="font-semibold text-green-300">{task.completedCount}</div>
+                      <div className="text-green-400">成功</div>
                     </div>
-                    <div className="text-center p-2 bg-gray-50 rounded">
-                      <div className="font-semibold text-gray-700">{task.targetCount - task.completedCount - task.failedCount}</div>
-                      <div className="text-gray-600">待處理</div>
+                    <div className="text-center p-2 bg-slate-600/20 border border-slate-600/30 rounded-lg">
+                      <div className="font-semibold text-slate-300">{task.targetCount - task.completedCount - task.failedCount}</div>
+                      <div className="text-slate-400">待處理</div>
                     </div>
-                    <div className="text-center p-2 bg-red-50 rounded">
-                      <div className="font-semibold text-red-700">{task.failedCount}</div>
-                      <div className="text-red-600">失敗</div>
+                    <div className="text-center p-2 bg-red-600/20 border border-red-600/30 rounded-lg">
+                      <div className="font-semibold text-red-300">{task.failedCount}</div>
+                      <div className="text-red-400">失敗</div>
                     </div>
                   </div>
 
@@ -745,7 +746,8 @@ export default function FacebookAccountGeneration() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }
