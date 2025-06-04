@@ -11,8 +11,12 @@ import {
   insertMessageTemplateSchema,
   insertGroupMessageSchema,
   insertAutoReplyRuleSchema,
-  insertTranslationSchema
+  insertTranslationSchema,
+  adCampaigns,
+  adDailyData
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { gmailService, type GmailAccountRequest } from "./gmail-service";
 import { facebookService } from "./facebook-service";
@@ -2100,6 +2104,105 @@ function simulateCollectionProgress(taskId: number) {
     } catch (error) {
       console.error("Error deleting manual ad data:", error);
       res.status(500).json({ error: "Failed to delete manual ad data" });
+    }
+  });
+
+  // Ad creation and management endpoints
+  app.post("/api/ads/create", async (req: Request, res: Response) => {
+    try {
+      const { campaignName, dailyBudget, adObjective, audience, placement, notes } = req.body;
+      
+      const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      await db.insert(adCampaigns).values({
+        id: campaignId,
+        campaignName,
+        dailyBudget,
+        adObjective,
+        audience,
+        placement,
+        notes: notes || null,
+      });
+
+      res.json({
+        success: true,
+        campaignId,
+        message: "Ad campaign created successfully"
+      });
+    } catch (error) {
+      console.error("Create ad campaign error:", error);
+      res.status(500).json({ error: "Failed to create ad campaign" });
+    }
+  });
+
+  app.post("/api/ads/data", async (req: Request, res: Response) => {
+    try {
+      const { campaignId, date, dailySpend, views, reach, interactions, followers } = req.body;
+      
+      // Check if data for this date already exists
+      const existingData = await db.select()
+        .from(adDailyData)
+        .where(eq(adDailyData.campaignId, campaignId))
+        .where(eq(adDailyData.date, date));
+
+      if (existingData.length > 0) {
+        // Update existing data
+        await db.update(adDailyData)
+          .set({
+            dailySpend,
+            views,
+            reach,
+            interactions,
+            followers,
+            updatedAt: new Date(),
+          })
+          .where(eq(adDailyData.id, existingData[0].id));
+      } else {
+        // Insert new data
+        await db.insert(adDailyData).values({
+          campaignId,
+          date,
+          dailySpend,
+          views,
+          reach,
+          interactions,
+          followers,
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Daily ad data saved successfully"
+      });
+    } catch (error) {
+      console.error("Save ad data error:", error);
+      res.status(500).json({ error: "Failed to save ad data" });
+    }
+  });
+
+  app.get("/api/ads/:campaignId/data", async (req: Request, res: Response) => {
+    try {
+      const { campaignId } = req.params;
+      
+      const data = await db.select()
+        .from(adDailyData)
+        .where(eq(adDailyData.campaignId, campaignId))
+        .orderBy(desc(adDailyData.date));
+
+      res.json(data);
+    } catch (error) {
+      console.error("Get ad data error:", error);
+      res.status(500).json({ error: "Failed to fetch ad data" });
+    }
+  });
+
+  app.get("/api/ads/campaigns", async (req: Request, res: Response) => {
+    try {
+      const campaigns = await db.select().from(adCampaigns).orderBy(desc(adCampaigns.createdAt));
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Get campaigns error:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
     }
   });
 
