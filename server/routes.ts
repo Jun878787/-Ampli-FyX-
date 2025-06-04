@@ -15,6 +15,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { gmailService, type GmailAccountRequest } from "./gmail-service";
+import { facebookService } from "./facebook-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // System Stats routes
@@ -993,6 +994,99 @@ function simulateCollectionProgress(taskId: number) {
       });
     }
   }, 3000);
+
+  // Facebook API routes
+  app.get("/api/facebook/test", async (req, res) => {
+    try {
+      const result = await facebookService.testConnection();
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook API test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to test Facebook API connection" 
+      });
+    }
+  });
+
+  app.get("/api/facebook/validate-token", async (req, res) => {
+    try {
+      const result = await facebookService.validateAccessToken();
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook token validation error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to validate Facebook access token" 
+      });
+    }
+  });
+
+  app.get("/api/facebook/user/:userId?", async (req, res) => {
+    try {
+      const userId = req.params.userId;
+      const result = await facebookService.getUserInfo(userId);
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook user info error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to fetch Facebook user info" 
+      });
+    }
+  });
+
+  app.get("/api/facebook/page/:pageId", async (req, res) => {
+    try {
+      const pageId = req.params.pageId;
+      const result = await facebookService.getPageInfo(pageId);
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook page info error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to fetch Facebook page info" 
+      });
+    }
+  });
+
+  app.get("/api/facebook/search/pages", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      if (!query) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Query parameter 'q' is required" 
+        });
+      }
+
+      const result = await facebookService.searchPages(query, limit);
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook page search error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to search Facebook pages" 
+      });
+    }
+  });
+
+  app.get("/api/facebook/page/:pageId/posts", async (req, res) => {
+    try {
+      const pageId = req.params.pageId;
+      const limit = parseInt(req.query.limit as string) || 25;
+      const result = await facebookService.getPagePosts(pageId, limit);
+      res.json(result);
+    } catch (error) {
+      console.error("Facebook page posts error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to fetch Facebook page posts" 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
