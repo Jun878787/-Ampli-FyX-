@@ -44,6 +44,7 @@ export const collectionTasks = pgTable("collection_tasks", {
   name: varchar("name").notNull(),
   type: varchar("type").notNull(), // posts, comments, users, etc
   status: varchar("status").default("pending"), // pending, running, completed, paused
+  progress: integer("progress").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   completedAt: timestamp("completed_at"),
 });

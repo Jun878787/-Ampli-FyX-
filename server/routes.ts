@@ -1021,6 +1021,72 @@ function simulateCollectionProgress(taskId: number) {
     }
   }, 3000);
 
+  // Facebook Account Data routes
+  app.get("/api/facebook/account-data", async (req: Request, res: Response) => {
+    try {
+      const { facebookAccountData } = await import('./facebook-account-data');
+      
+      // 初始化帳號
+      await facebookAccountData.initializeAccount();
+      
+      // 獲取帳號基本信息
+      const accountInfo = {
+        email: facebookAccountData.getAccountEmail(),
+        status: 'active',
+        lastSync: new Date().toISOString()
+      };
+      
+      res.json(accountInfo);
+    } catch (error) {
+      console.error("Error fetching account data:", error);
+      res.status(500).json({ error: "Failed to fetch account data" });
+    }
+  });
+
+  app.get("/api/facebook/campaigns", async (req: Request, res: Response) => {
+    try {
+      const { facebookAccountData } = await import('./facebook-account-data');
+      const campaigns = await facebookAccountData.getAccountCampaigns();
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
+    }
+  });
+
+  app.get("/api/facebook/ads", async (req: Request, res: Response) => {
+    try {
+      const { facebookAccountData } = await import('./facebook-account-data');
+      const ads = await facebookAccountData.getAccountAds();
+      res.json(ads);
+    } catch (error) {
+      console.error("Error fetching ads:", error);
+      res.status(500).json({ error: "Failed to fetch ads" });
+    }
+  });
+
+  app.get("/api/facebook/insights", async (req: Request, res: Response) => {
+    try {
+      const { facebookAccountData } = await import('./facebook-account-data');
+      const insights = await facebookAccountData.getAdInsights();
+      res.json(insights);
+    } catch (error) {
+      console.error("Error fetching insights:", error);
+      res.status(500).json({ error: "Failed to fetch insights" });
+    }
+  });
+
+  app.get("/api/facebook/activity-log", async (req: Request, res: Response) => {
+    try {
+      const { facebookAccountData } = await import('./facebook-account-data');
+      const activityLog = await facebookAccountData.getActivityLog();
+      res.json(activityLog);
+    } catch (error) {
+      console.error("Error fetching activity log:", error);
+      res.status(500).json({ error: "Failed to fetch activity log" });
+    }
+  });
+
   // Facebook API routes
   app.get("/api/facebook/test", async (req: Request, res: Response) => {
     try {

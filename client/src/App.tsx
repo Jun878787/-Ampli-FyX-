@@ -22,6 +22,7 @@ import FacebookApiTest from "@/pages/facebook-api-test";
 import FacebookAdsAnalytics from "@/pages/facebook-ads-analytics";
 import FacebookAdContentExtractor from "@/pages/facebook-ad-content-extractor";
 import FacebookApiConfig from "@/pages/facebook-api-config";
+import MyFacebookAccount from "@/pages/my-facebook-account";
 import NotFound from "@/pages/not-found";
 
 function Router() {
