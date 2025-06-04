@@ -2054,6 +2054,55 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // 手動廣告數據管理 API 路由
+  app.get("/api/manual-ad-data", async (req: Request, res: Response) => {
+    try {
+      const adData = await storage.getManualAdData();
+      res.json(adData);
+    } catch (error) {
+      console.error("Error fetching manual ad data:", error);
+      res.status(500).json({ error: "Failed to fetch manual ad data" });
+    }
+  });
+
+  app.post("/api/manual-ad-data", async (req: Request, res: Response) => {
+    try {
+      const adData = await storage.createManualAdData(req.body);
+      res.json(adData);
+    } catch (error) {
+      console.error("Error creating manual ad data:", error);
+      res.status(500).json({ error: "Failed to create manual ad data" });
+    }
+  });
+
+  app.put("/api/manual-ad-data/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const adData = await storage.updateManualAdData(id, req.body);
+      if (!adData) {
+        return res.status(404).json({ error: "Manual ad data not found" });
+      }
+      res.json(adData);
+    } catch (error) {
+      console.error("Error updating manual ad data:", error);
+      res.status(500).json({ error: "Failed to update manual ad data" });
+    }
+  });
+
+  app.delete("/api/manual-ad-data/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteManualAdData(id);
+      if (!success) {
+        return res.status(404).json({ error: "Manual ad data not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting manual ad data:", error);
+      res.status(500).json({ error: "Failed to delete manual ad data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

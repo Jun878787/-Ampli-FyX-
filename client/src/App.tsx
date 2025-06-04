@@ -26,6 +26,7 @@ import FacebookGraphAPITest from "@/pages/facebook-graph-api-test";
 import FacebookContentExtractor from "@/pages/facebook-content-extractor";
 import FacebookPixelTracker from "@/pages/facebook-pixel-tracker";
 import MyFacebookAccount from "@/pages/my-facebook-account";
+import ManualAdData from "@/pages/manual-ad-data";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import DataDeletion from "@/pages/data-deletion";
 import TermsOfService from "@/pages/terms-of-service";
