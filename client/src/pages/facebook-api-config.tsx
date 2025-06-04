@@ -87,6 +87,7 @@ export default function FacebookApiConfig() {
       apiRequest("/api/facebook/api-configs", { method: "POST", data: config }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-configs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-guidance"] });
       setIsAddDialogOpen(false);
       toast({
         title: "配置添加成功",
@@ -101,6 +102,7 @@ export default function FacebookApiConfig() {
       apiRequest(`/api/facebook/api-configs/${configId}`, { method: "PUT", data: updates }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-configs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-guidance"] });
       toast({
         title: "配置更新成功",
         description: "API配置已更新"
@@ -113,6 +115,7 @@ export default function FacebookApiConfig() {
     mutationFn: (configId: string) => apiRequest(`/api/facebook/api-configs/${configId}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-configs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-guidance"] });
       toast({
         title: "配置刪除成功",
         description: "API配置已刪除"
@@ -126,6 +129,7 @@ export default function FacebookApiConfig() {
       apiRequest(`/api/facebook/api-configs/${configId}/activate`, { method: "POST" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-configs"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/api-guidance"] });
       toast({
         title: "活動配置已更新",
         description: "新的活動API配置已設置"
