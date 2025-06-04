@@ -171,6 +171,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Generation Tasks API
+  app.get("/api/facebook/generation-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getFacebookGenerationTasks();
+      res.json(tasks);
+    } catch (error) {
+      console.error("Error fetching Facebook generation tasks:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook generation tasks" });
+    }
+  });
+
+  app.post("/api/facebook/generation-tasks", async (req, res) => {
+    try {
+      const taskData = insertFacebookGenerationTaskSchema.parse(req.body);
+      const task = await storage.createFacebookGenerationTask(taskData);
+      
+      // Simulate task execution
+      if (task.status === 'pending') {
+        simulateFacebookAccountGeneration(task.id);
+      }
+      
+      res.status(201).json(task);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: "Invalid task data", details: error.errors });
+      } else {
+        console.error("Error creating Facebook generation task:", error);
+        res.status(500).json({ message: "Failed to create Facebook generation task" });
+      }
+    }
+  });
+
+  app.get("/api/facebook/generation-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.getFacebookGenerationTask(id);
+      if (!task) {
+        return res.status(404).json({ message: "Facebook generation task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error fetching Facebook generation task:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook generation task" });
+    }
+  });
+
+  app.put("/api/facebook/generation-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const task = await storage.updateFacebookGenerationTask(id, updates);
+      if (!task) {
+        return res.status(404).json({ message: "Facebook generation task not found" });
+      }
+      res.json(task);
+    } catch (error) {
+      console.error("Error updating Facebook generation task:", error);
+      res.status(500).json({ message: "Failed to update Facebook generation task" });
+    }
+  });
+
+  app.delete("/api/facebook/generation-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteFacebookGenerationTask(id);
+      if (!success) {
+        return res.status(404).json({ message: "Facebook generation task not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting Facebook generation task:", error);
+      res.status(500).json({ message: "Failed to delete Facebook generation task" });
+    }
+  });
+
   // Facebook Accounts API
   app.get("/api/facebook/accounts", async (req, res) => {
     try {
@@ -741,6 +816,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Facebook Account Generation Simulation
+function simulateFacebookAccountGeneration(taskId: number) {
+  console.log(`Starting account creation task ${taskId} for ${Math.floor(Math.random() * 10) + 5} accounts`);
+  
+  setTimeout(async () => {
+    try {
+      await storage.updateFacebookGenerationTask(taskId, {
+        status: 'running',
+        startedAt: new Date()
+      });
+      
+      // Simulate gradual progress
+      const targetCount = Math.floor(Math.random() * 10) + 5;
+      for (let i = 1; i <= targetCount; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await storage.updateFacebookGenerationTask(taskId, {
+          completedCount: i
+        });
+      }
+      
+      await storage.updateFacebookGenerationTask(taskId, {
+        status: 'completed',
+        completedAt: new Date()
+      });
+      
+      console.log(`Facebook account generation task ${taskId} completed`);
+    } catch (error) {
+      console.error(`Error in Facebook account generation task ${taskId}:`, error);
+      await storage.updateFacebookGenerationTask(taskId, {
+        status: 'failed'
+      });
+    }
+  }, 1000);
 }
 
 // Simulate collection progress for demo purposes

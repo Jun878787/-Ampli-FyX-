@@ -252,7 +252,7 @@ export default function DataTable() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                    {formatDate(item.publishTime)}
+                    {item.createdAt ? formatDate(item.createdAt) : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-4 text-sm text-slate-400">
