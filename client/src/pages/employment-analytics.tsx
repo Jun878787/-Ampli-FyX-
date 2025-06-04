@@ -28,6 +28,7 @@ export default function EmploymentAnalytics() {
   const [searchQuery, setSearchQuery] = useState("");
   const [jobTypeFilter, setJobTypeFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const queryClient = useQueryClient();
 
   // 獲取手動廣告數據
   const { data: manualAdData = [] } = useQuery({
@@ -37,6 +38,18 @@ export default function EmploymentAnalytics() {
   // 獲取就業廣告分析數據
   const { data: employmentAnalysis } = useQuery({
     queryKey: ["/api/employment/analysis"],
+  });
+
+  // 刪除廣告數據
+  const deleteAdMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest(`/api/manual-ad-data/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/manual-ad-data"] });
+    },
   });
 
   // 過濾廣告數據
