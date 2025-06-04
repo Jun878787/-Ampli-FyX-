@@ -1414,6 +1414,143 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Facebook API配置管理路由
+  app.get("/api/facebook/api-configs", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const configs = facebookAPIManager.getApiConfigs();
+      res.json(configs);
+    } catch (error) {
+      console.error("Error fetching API configs:", error);
+      res.status(500).json({ message: "獲取API配置失敗" });
+    }
+  });
+
+  app.get("/api/facebook/api-guidance", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const guidance = facebookAPIManager.getConfigurationGuidance();
+      res.json(guidance);
+    } catch (error) {
+      console.error("Error fetching API guidance:", error);
+      res.status(500).json({ message: "獲取配置指導失敗" });
+    }
+  });
+
+  app.post("/api/facebook/api-configs", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const config = req.body;
+      
+      if (!config.id || !config.name || !config.apiKey) {
+        return res.status(400).json({ message: "缺少必需的配置字段" });
+      }
+
+      const success = facebookAPIManager.addApiConfig(config);
+      
+      if (success) {
+        res.json({ success: true, message: "API配置添加成功" });
+      } else {
+        res.status(400).json({ message: "配置ID已存在" });
+      }
+    } catch (error) {
+      console.error("Error adding API config:", error);
+      res.status(500).json({ message: "添加API配置失敗" });
+    }
+  });
+
+  app.put("/api/facebook/api-configs/:configId", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const { configId } = req.params;
+      const updates = req.body;
+
+      const success = facebookAPIManager.updateApiConfig(configId, updates);
+      
+      if (success) {
+        res.json({ success: true, message: "API配置更新成功" });
+      } else {
+        res.status(404).json({ message: "配置不存在" });
+      }
+    } catch (error) {
+      console.error("Error updating API config:", error);
+      res.status(500).json({ message: "更新API配置失敗" });
+    }
+  });
+
+  app.delete("/api/facebook/api-configs/:configId", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const { configId } = req.params;
+
+      const success = facebookAPIManager.removeApiConfig(configId);
+      
+      if (success) {
+        res.json({ success: true, message: "API配置刪除成功" });
+      } else {
+        res.status(400).json({ message: "無法刪除主配置或配置不存在" });
+      }
+    } catch (error) {
+      console.error("Error deleting API config:", error);
+      res.status(500).json({ message: "刪除API配置失敗" });
+    }
+  });
+
+  app.post("/api/facebook/api-configs/:configId/activate", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const { configId } = req.params;
+
+      const success = facebookAPIManager.setActiveConfig(configId);
+      
+      if (success) {
+        res.json({ success: true, message: "活動配置設置成功" });
+      } else {
+        res.status(404).json({ message: "配置不存在" });
+      }
+    } catch (error) {
+      console.error("Error setting active config:", error);
+      res.status(500).json({ message: "設置活動配置失敗" });
+    }
+  });
+
+  app.post("/api/facebook/api-configs/:configId/validate", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      const { configId } = req.params;
+
+      const result = await facebookAPIManager.checkConfigStatus(configId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error validating API config:", error);
+      res.status(500).json({ 
+        isValid: false,
+        permissions: [],
+        rateLimitInfo: null,
+        error: "驗證配置時發生錯誤"
+      });
+    }
+  });
+
+  app.post("/api/facebook/api-configs/validate-all", async (req: Request, res: Response) => {
+    try {
+      const { facebookAPIManager } = await import("./facebook-api-manager");
+      
+      const results = await facebookAPIManager.validateAllConfigs();
+      
+      // 將Map轉換為對象
+      const resultsObject: Record<string, any> = {};
+      for (const [key, value] of results) {
+        resultsObject[key] = value;
+      }
+      
+      res.json(resultsObject);
+    } catch (error) {
+      console.error("Error validating all configs:", error);
+      res.status(500).json({ message: "批量驗證失敗" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -16,7 +16,8 @@ import {
   Megaphone,
   Zap,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  Key
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
