@@ -27,6 +27,8 @@ import FacebookContentExtractor from "@/pages/facebook-content-extractor";
 import FacebookPixelTracker from "@/pages/facebook-pixel-tracker";
 import MyFacebookAccount from "@/pages/my-facebook-account";
 import PrivacyPolicy from "@/pages/privacy-policy";
+import DataDeletion from "@/pages/data-deletion";
+import TermsOfService from "@/pages/terms-of-service";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -63,6 +65,8 @@ function Router() {
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
+            <Route path="/data-deletion" component={DataDeletion} />
+            <Route path="/terms-of-service" component={TermsOfService} />
             <Route component={NotFound} />
           </Switch>
         </main>
