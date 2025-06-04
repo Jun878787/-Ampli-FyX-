@@ -32,7 +32,7 @@ function Router() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
       <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
       <div className="flex-1 flex flex-col min-h-0">
         <main className="flex-1 overflow-auto">
