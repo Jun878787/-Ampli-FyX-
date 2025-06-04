@@ -872,6 +872,84 @@ export default function Settings() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Admin Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="max-w-md bg-slate-800 border-slate-700 text-slate-100">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-blue-400" />
+              修改管理員密碼
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              請輸入新的管理員密碼以確保系統安全
+            </DialogDescription>
+          </DialogHeader>
+
+          <Form {...passwordChangeForm}>
+            <form onSubmit={passwordChangeForm.handleSubmit(onChangePassword)} className="space-y-4">
+              <FormField
+                control={passwordChangeForm.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-200">新密碼</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        {...field}
+                        placeholder="輸入新密碼"
+                        className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={passwordChangeForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-200">確認密碼</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        {...field}
+                        placeholder="再次輸入新密碼"
+                        className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setIsPasswordDialogOpen(false);
+                    passwordChangeForm.reset();
+                  }}
+                  className="bg-slate-600 border-slate-500 text-slate-100 hover:bg-slate-500 rounded-lg"
+                >
+                  取消
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={changePasswordMutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                >
+                  {changePasswordMutation.isPending ? "修改中..." : "確認修改"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
