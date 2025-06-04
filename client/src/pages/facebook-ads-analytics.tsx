@@ -99,41 +99,31 @@ export default function FacebookAdsAnalytics() {
     },
   });
 
-  // 模擬數據 - 在實際實現中這將從API獲取
-  const mockAnalyticsData = {
-    overview: {
-      totalSpend: 15680.50,
-      totalImpressions: 2340000,
-      totalClicks: 45600,
-      totalConversions: 1240,
-      ctr: 1.95,
-      cpc: 0.34,
-      cpm: 6.70,
-      roas: 4.2,
-    },
-    dailyTrends: [
-      { date: "2024-12-01", spend: 520, impressions: 78000, clicks: 1520, conversions: 42 },
-      { date: "2024-12-02", spend: 480, impressions: 72000, clicks: 1380, conversions: 38 },
-      { date: "2024-12-03", spend: 600, impressions: 89000, clicks: 1740, conversions: 51 },
-      { date: "2024-12-04", spend: 550, impressions: 82000, clicks: 1600, conversions: 45 },
-      { date: "2024-12-05", spend: 620, impressions: 93000, clicks: 1820, conversions: 56 },
-    ],
-    campaignPerformance: [
-      { name: "北金品牌推廣", spend: 5240, impressions: 780000, clicks: 15200, conversions: 420, roas: 4.8 },
-      { name: "產品銷售活動", spend: 4680, impressions: 702000, clicks: 13800, conversions: 380, roas: 3.9 },
-      { name: "節日促銷", spend: 3560, impressions: 534000, clicks: 10400, conversions: 285, roas: 4.1 },
-      { name: "新客戶獲取", spend: 2200, impressions: 324000, clicks: 6200, conversions: 155, roas: 3.6 },
-    ],
-    audienceInsights: [
-      { age: "18-24", percentage: 15, performance: "高" },
-      { age: "25-34", percentage: 35, performance: "極高" },
-      { age: "35-44", percentage: 28, performance: "高" },
-      { age: "45-54", percentage: 15, performance: "中等" },
-      { age: "55+", percentage: 7, performance: "低" },
-    ],
+  // 計算真實數據統計
+  const calculateOverviewStats = () => {
+    if (!manualAdData.length) return null;
+    
+    const totalSpend = manualAdData.reduce((sum, ad) => sum + (ad.spend || 0), 0);
+    const totalImpressions = manualAdData.reduce((sum, ad) => sum + (ad.impressions || 0), 0);
+    const totalClicks = manualAdData.reduce((sum, ad) => sum + (ad.clicks || 0), 0);
+    const totalConversions = manualAdData.reduce((sum, ad) => sum + (ad.conversions || 0), 0);
+    
+    const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0;
+    const cpc = totalClicks > 0 ? (totalSpend / totalClicks) : 0;
+    const cpm = totalImpressions > 0 ? (totalSpend / totalImpressions * 1000) : 0;
+    
+    return {
+      totalSpend: totalSpend.toFixed(2),
+      totalImpressions,
+      totalClicks,
+      totalConversions,
+      ctr: ctr.toFixed(2),
+      cpc: cpc.toFixed(2),
+      cpm: cpm.toFixed(2),
+    };
   };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+  const overviewStats = calculateOverviewStats();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 p-6">
@@ -234,11 +224,10 @@ export default function FacebookAdsAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                ${mockAnalyticsData.overview.totalSpend.toLocaleString()}
+                ${overviewStats ? parseFloat(overviewStats.totalSpend).toLocaleString() : '0'}
               </div>
-              <div className="text-xs text-green-400 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +12.5% 較上月
+              <div className="text-xs text-gray-400">
+                {manualAdData.length} 個活動
               </div>
             </CardContent>
           </Card>
@@ -252,11 +241,10 @@ export default function FacebookAdsAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {(mockAnalyticsData.overview.totalImpressions / 1000000).toFixed(1)}M
+                {overviewStats ? overviewStats.totalImpressions.toLocaleString() : '0'}
               </div>
-              <div className="text-xs text-green-400 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +8.3% 較上月
+              <div className="text-xs text-gray-400">
+                曝光數據統計
               </div>
             </CardContent>
           </Card>
@@ -270,11 +258,10 @@ export default function FacebookAdsAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {mockAnalyticsData.overview.totalClicks.toLocaleString()}
+                {overviewStats ? overviewStats.totalClicks.toLocaleString() : '0'}
               </div>
-              <div className="text-xs text-green-400 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +15.7% 較上月
+              <div className="text-xs text-gray-400">
+                CTR: {overviewStats ? overviewStats.ctr : '0'}%
               </div>
             </CardContent>
           </Card>
@@ -288,11 +275,10 @@ export default function FacebookAdsAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-white">
-                {mockAnalyticsData.overview.totalConversions.toLocaleString()}
+                {overviewStats ? overviewStats.totalConversions.toLocaleString() : '0'}
               </div>
-              <div className="text-xs text-green-400 flex items-center gap-1">
-                <TrendingUp className="w-3 h-3" />
-                +22.1% 較上月
+              <div className="text-xs text-gray-400">
+                轉換數據統計
               </div>
             </CardContent>
           </Card>
@@ -305,8 +291,8 @@ export default function FacebookAdsAnalytics() {
               <CardTitle className="text-sm text-gray-400">點擊率 (CTR)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-white">{mockAnalyticsData.overview.ctr}%</div>
-              <Progress value={mockAnalyticsData.overview.ctr * 10} className="mt-2" />
+              <div className="text-lg font-bold text-white">{overviewStats ? overviewStats.ctr : '0'}%</div>
+              <Progress value={overviewStats ? parseFloat(overviewStats.ctr) * 10 : 0} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -315,8 +301,8 @@ export default function FacebookAdsAnalytics() {
               <CardTitle className="text-sm text-gray-400">單次點擊成本 (CPC)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-white">${mockAnalyticsData.overview.cpc}</div>
-              <Progress value={75} className="mt-2" />
+              <div className="text-lg font-bold text-white">${overviewStats ? overviewStats.cpc : '0'}</div>
+              <Progress value={50} className="mt-2" />
             </CardContent>
           </Card>
 
@@ -325,8 +311,8 @@ export default function FacebookAdsAnalytics() {
               <CardTitle className="text-sm text-gray-400">千次曝光成本 (CPM)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-white">${mockAnalyticsData.overview.cpm}</div>
-              <Progress value={67} className="mt-2" />
+              <div className="text-lg font-bold text-white">${overviewStats ? overviewStats.cpm : '0'}</div>
+              <Progress value={50} className="mt-2" />
             </CardContent>
           </Card>
 
