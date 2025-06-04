@@ -321,7 +321,7 @@ export default function FacebookAdsAnalytics() {
               <CardTitle className="text-sm text-gray-400">廣告支出回報率 (ROAS)</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-bold text-white">{mockAnalyticsData.overview.roas}x</div>
+              <div className="text-lg font-bold text-white">計算中</div>
               <Progress value={84} className="mt-2" />
             </CardContent>
           </Card>
@@ -355,7 +355,7 @@ export default function FacebookAdsAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={mockAnalyticsData.dailyTrends}>
+                    <LineChart data={[]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="date" stroke="#9CA3AF" />
                       <YAxis stroke="#9CA3AF" />
@@ -378,7 +378,7 @@ export default function FacebookAdsAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
-                    <AreaChart data={mockAnalyticsData.dailyTrends}>
+                    <AreaChart data={[]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="date" stroke="#9CA3AF" />
                       <YAxis stroke="#9CA3AF" />
@@ -443,28 +443,14 @@ export default function FacebookAdsAnalytics() {
                       </TableRow>
                     ))}
                     
-                    {/* 顯示模擬活動數據 */}
-                    {mockAnalyticsData.campaignPerformance.map((campaign, index) => (
-                      <TableRow 
-                        key={`mock-${index}`} 
-                        className="border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors"
-                        onClick={() => goToDataInput(campaign.id || `campaign-${index}`, campaign.name)}
-                      >
-                        <TableCell className="text-white font-medium flex items-center gap-2">
-                          {campaign.name}
-                          <MousePointer className="h-4 w-4 text-gray-400" />
-                        </TableCell>
-                        <TableCell className="text-gray-300">${campaign.spend.toLocaleString()}</TableCell>
-                        <TableCell className="text-gray-300">{campaign.impressions.toLocaleString()}</TableCell>
-                        <TableCell className="text-gray-300">{campaign.clicks.toLocaleString()}</TableCell>
-                        <TableCell className="text-gray-300">{campaign.conversions}</TableCell>
-                        <TableCell>
-                          <Badge variant={campaign.roas >= 4 ? "default" : "secondary"}>
-                            {campaign.roas}x
-                          </Badge>
+                    {/* 如果沒有手動廣告數據則顯示提示 */}
+                    {manualAdData.length === 0 && (
+                      <TableRow className="border-gray-700">
+                        <TableCell colSpan={6} className="text-center text-gray-400 py-8">
+                          尚未建立廣告活動
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -481,7 +467,7 @@ export default function FacebookAdsAnalytics() {
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
-                        data={mockAnalyticsData.audienceInsights}
+                        data={[]}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
@@ -490,9 +476,7 @@ export default function FacebookAdsAnalytics() {
                         fill="#8884d8"
                         dataKey="percentage"
                       >
-                        {mockAnalyticsData.audienceInsights.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                        {[]}
                       </Pie>
                       <Tooltip />
                     </PieChart>
@@ -506,22 +490,9 @@ export default function FacebookAdsAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockAnalyticsData.audienceInsights.map((audience, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg">
-                        <div>
-                          <div className="text-white font-medium">{audience.age} 歲</div>
-                          <div className="text-sm text-gray-400">{audience.percentage}% 佔比</div>
-                        </div>
-                        <Badge
-                          variant={
-                            audience.performance === '極高' ? 'default' :
-                            audience.performance === '高' ? 'secondary' : 'outline'
-                          }
-                        >
-                          {audience.performance}
-                        </Badge>
-                      </div>
-                    ))}
+                    <div className="text-center text-gray-400 py-8">
+                      尚無受眾數據
+                    </div>
                   </div>
                 </CardContent>
               </Card>
