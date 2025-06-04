@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Users, MapPin, GraduationCap, Briefcase, UserPlus, MessageCircle } from "lucide-react";
+import { Search, Users, MapPin, GraduationCap, Briefcase, UserPlus, MessageCircle, Trash2, UserCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { FacebookFriend, FacebookAccount } from "@shared/schema";
 
 const searchFriendsSchema = z.object({
