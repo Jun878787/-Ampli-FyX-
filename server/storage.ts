@@ -12,6 +12,7 @@ import {
   groupMessages,
   autoReplyRules,
   translations,
+  manualAdData,
   type User, 
   type UpsertUser,
   type CollectionTask,
@@ -35,7 +36,9 @@ import {
   type AutoReplyRule,
   type InsertAutoReplyRule,
   type Translation,
-  type InsertTranslation
+  type InsertTranslation,
+  type ManualAdData,
+  type InsertManualAdData
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, ilike, or, count, and } from "drizzle-orm";
@@ -121,6 +124,13 @@ export interface IStorage {
   getTranslations(limit?: number): Promise<Translation[]>;
   createTranslation(translation: InsertTranslation): Promise<Translation>;
   getTranslationByText(originalText: string, targetLanguage: string): Promise<Translation | undefined>;
+
+  // Manual Ad Data
+  getManualAdData(): Promise<ManualAdData[]>;
+  getManualAdDataById(id: number): Promise<ManualAdData | undefined>;
+  createManualAdData(data: InsertManualAdData): Promise<ManualAdData>;
+  updateManualAdData(id: number, updates: Partial<ManualAdData>): Promise<ManualAdData | undefined>;
+  deleteManualAdData(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -972,6 +982,65 @@ export class DatabaseStorage implements IStorage {
       ))
       .limit(1);
     return translation;
+  }
+
+  // Manual Ad Data methods
+  async getManualAdData(): Promise<ManualAdData[]> {
+    return await db.select().from(manualAdData).orderBy(desc(manualAdData.createdAt));
+  }
+
+  async getManualAdDataById(id: number): Promise<ManualAdData | undefined> {
+    const [data] = await db.select().from(manualAdData).where(eq(manualAdData.id, id));
+    return data || undefined;
+  }
+
+  async createManualAdData(insertData: InsertManualAdData): Promise<ManualAdData> {
+    // 將美元轉換為分（cents）存儲
+    const dataToInsert = {
+      ...insertData,
+      spend: Math.round((insertData.spend || 0) * 100), // 轉換為分
+    };
+
+    const [data] = await db
+      .insert(manualAdData)
+      .values(dataToInsert)
+      .returning();
+    
+    // 返回時將分轉換回美元
+    return {
+      ...data,
+      spend: data.spend / 100
+    };
+  }
+
+  async updateManualAdData(id: number, updates: Partial<ManualAdData>): Promise<ManualAdData | undefined> {
+    // 如果更新包含spend，轉換為分
+    const updatesToApply = { ...updates };
+    if (updates.spend !== undefined) {
+      updatesToApply.spend = Math.round(updates.spend * 100);
+    }
+
+    const [data] = await db
+      .update(manualAdData)
+      .set({
+        ...updatesToApply,
+        updatedAt: new Date()
+      })
+      .where(eq(manualAdData.id, id))
+      .returning();
+    
+    if (!data) return undefined;
+
+    // 返回時將分轉換回美元
+    return {
+      ...data,
+      spend: data.spend / 100
+    };
+  }
+
+  async deleteManualAdData(id: number): Promise<boolean> {
+    const result = await db.delete(manualAdData).where(eq(manualAdData.id, id));
+    return (result.rowCount || 0) > 0;
   }
 }
 

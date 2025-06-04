@@ -334,3 +334,26 @@ export const autoReplyRulesRelations = relations(autoReplyRules, ({ one }) => ({
     references: [facebookAccounts.id],
   }),
 }));
+
+// 手動廣告數據管理
+export const manualAdData = pgTable("manual_ad_data", {
+  id: serial("id").primaryKey(),
+  campaignName: varchar("campaign_name").notNull(),
+  date: varchar("date").notNull(),
+  spend: integer("spend").notNull(), // 存儲為分（cents）避免浮點數問題
+  impressions: integer("impressions").notNull(),
+  clicks: integer("clicks").notNull(),
+  conversions: integer("conversions").notNull(),
+  audience: jsonb("audience").notNull(), // 存儲受眾數據
+  placements: jsonb("placements").notNull(), // 版面選擇
+  publishRegions: jsonb("publish_regions").notNull(), // 發布地區
+  adObjective: varchar("ad_objective").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertManualAdDataSchema = createInsertSchema(manualAdData);
+
+export type ManualAdData = typeof manualAdData.$inferSelect;
+export type InsertManualAdData = z.infer<typeof insertManualAdDataSchema>;
