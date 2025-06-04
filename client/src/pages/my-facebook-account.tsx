@@ -52,6 +52,15 @@ interface ActivityLogItem {
 
 export default function MyFacebookAccount() {
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedAccountData, setSelectedAccountData] = useState<any>(null);
+
+  // 從 localStorage 獲取選中的帳號信息
+  useEffect(() => {
+    const storedAccount = localStorage.getItem('selectedAccountData');
+    if (storedAccount) {
+      setSelectedAccountData(JSON.parse(storedAccount));
+    }
+  }, []);
 
   // 獲取帳號基本信息
   const { data: accountData, refetch: refetchAccount } = useQuery({

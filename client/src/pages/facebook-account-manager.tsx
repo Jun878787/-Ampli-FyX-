@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Settings, Users, MessageCircle, Power, PowerOff, Trash2, Edit, Play, Pause, BarChart3, Shield, Clock, Target } from "lucide-react";
+import { useLocation } from "wouter";
+import { Plus, Settings, Users, MessageCircle, Power, PowerOff, Trash2, Edit, Play, Pause, BarChart3, Shield, Clock, Target, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +52,7 @@ export default function FacebookAccountManager() {
   const [selectedAccounts, setSelectedAccounts] = useState<Set<number>>(new Set());
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: accounts = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/accounts"],
@@ -156,6 +158,12 @@ export default function FacebookAccountManager() {
       newSelected.add(accountId);
     }
     setSelectedAccounts(newSelected);
+  };
+
+  const handleViewAccount = (account: any) => {
+    // 儲存帳號信息到 localStorage 以便詳細頁面使用
+    localStorage.setItem('selectedAccountData', JSON.stringify(account));
+    setLocation('/my-facebook-account');
   };
 
   const handleSelectAll = () => {
@@ -394,8 +402,20 @@ export default function FacebookAccountManager() {
                       </TableRow>
                     ) : (
                       accounts.map((account) => (
-                        <TableRow key={account.id} className="border-gray-700">
-                          <TableCell>
+                        <TableRow 
+                          key={account.id} 
+                          className="border-gray-700 hover:bg-gray-800/50 cursor-pointer transition-colors"
+                          onClick={(e) => {
+                            // 如果點擊的是checkbox或按鈕，不觸發導航
+                            if (e.target instanceof HTMLInputElement || 
+                                e.target instanceof HTMLButtonElement ||
+                                e.target.closest('button')) {
+                              return;
+                            }
+                            handleViewAccount(account);
+                          }}
+                        >
+                          <TableCell onClick={(e) => e.stopPropagation()}>
                             <input
                               type="checkbox"
                               checked={selectedAccounts.has(account.id)}
@@ -403,17 +423,26 @@ export default function FacebookAccountManager() {
                               className="rounded"
                             />
                           </TableCell>
-                          <TableCell className="text-white font-medium">{account.accountName}</TableCell>
+                          <TableCell className="text-white font-medium">{account.accountName || account.profileName}</TableCell>
                           <TableCell className="text-gray-300">{account.email}</TableCell>
                           <TableCell>{getStatusBadge(account.status)}</TableCell>
                           <TableCell className="text-gray-300">
                             {account.lastActivity ? new Date(account.lastActivity).toLocaleString('zh-TW') : '從未'}
                           </TableCell>
-                          <TableCell>
+                          <TableCell onClick={(e) => e.stopPropagation()}>
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
                                 variant="outline"
+                                title="查看廣告數據"
+                                onClick={() => handleViewAccount(account)}
+                              >
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                title="養號設置"
                                 onClick={() => {
                                   setSelectedAccount(account);
                                   setIsNurturingDialogOpen(true);
@@ -424,6 +453,7 @@ export default function FacebookAccountManager() {
                               <Button
                                 size="sm"
                                 variant={account.status === 'active' ? 'outline' : 'default'}
+                                title={account.status === 'active' ? '停用帳號' : '啟用帳號'}
                                 onClick={() => toggleAccountStatusMutation.mutate({
                                   accountId: account.id,
                                   status: account.status === 'active' ? 'inactive' : 'active'
