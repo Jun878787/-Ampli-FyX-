@@ -1813,6 +1813,166 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Facebook像素追蹤API
+  app.post("/api/facebook/pixel-data", async (req: Request, res: Response) => {
+    try {
+      const { pixelId } = req.body;
+      
+      if (!pixelId) {
+        return res.status(400).json({ error: "像素ID是必需的" });
+      }
+
+      // 模擬像素數據（需要真實API密鑰才能獲取實際數據）
+      const mockPixelData = {
+        pixelId: pixelId,
+        pixelName: `像素_${pixelId}`,
+        totalSpend: 28650.75,
+        impressions: 892450,
+        clicks: 15680,
+        conversions: 425,
+        cpm: 32.12,
+        cpc: 1.83,
+        ctr: 1.76,
+        conversionRate: 2.71,
+        roas: 4.85,
+        reach: 187650,
+        frequency: 4.75,
+        audienceData: {
+          ageGroups: {
+            "18-24": 22,
+            "25-34": 35,
+            "35-44": 28,
+            "45-54": 12,
+            "55+": 3
+          },
+          genders: {
+            "male": 58,
+            "female": 41,
+            "other": 1
+          },
+          locations: {
+            "台灣": 45,
+            "香港": 18,
+            "新加坡": 15,
+            "馬來西亞": 12,
+            "其他": 10
+          },
+          interests: ["科技產品", "數位行銷", "商業投資", "創業", "電商"]
+        },
+        campaigns: [
+          {
+            id: "camp_001",
+            name: "品牌推廣活動",
+            spend: 12500.25,
+            impressions: 450320,
+            clicks: 8240,
+            conversions: 215,
+            status: "active"
+          },
+          {
+            id: "camp_002", 
+            name: "產品宣傳",
+            spend: 8750.50,
+            impressions: 287650,
+            clicks: 4850,
+            conversions: 125,
+            status: "active"
+          },
+          {
+            id: "camp_003",
+            name: "節慶促銷",
+            spend: 7400.00,
+            impressions: 154480,
+            clicks: 2590,
+            conversions: 85,
+            status: "paused"
+          }
+        ],
+        dateRange: {
+          from: "2024-01-01",
+          to: "2024-12-31"
+        }
+      };
+      
+      // 實際API調用需要Facebook Marketing API權限
+      // const pixelDataResponse = await fetchPixelDataFromFacebook(pixelId);
+      
+      res.json({ 
+        success: true,
+        pixelData: mockPixelData,
+        note: "這是模擬數據。要獲取真實數據，請提供Facebook Marketing API密鑰。"
+      });
+
+    } catch (error) {
+      console.error("像素數據獲取失敗:", error);
+      res.status(500).json({ 
+        error: "像素數據獲取失敗",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/facebook/export-pixel-data", async (req: Request, res: Response) => {
+    try {
+      const { pixelData, format } = req.body;
+      
+      if (!pixelData) {
+        return res.status(400).json({ error: "無效的像素數據" });
+      }
+
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `facebook_pixel_${pixelData.pixelId}_${timestamp}`;
+      
+      let exportData: string;
+      let contentType: string;
+      let fileExtension: string;
+
+      if (format === 'csv') {
+        // CSV格式導出
+        const csvHeaders = ['像素ID', '像素名稱', '總花費', '曝光次數', '點擊次數', '轉換次數', 'CPM', 'CPC', 'CTR', '轉換率', 'ROAS', '覆蓋人數', '頻率'];
+        const csvRow = [
+          pixelData.pixelId,
+          `"${pixelData.pixelName.replace(/"/g, '""')}"`,
+          pixelData.totalSpend,
+          pixelData.impressions,
+          pixelData.clicks,
+          pixelData.conversions,
+          pixelData.cpm,
+          pixelData.cpc,
+          pixelData.ctr,
+          pixelData.conversionRate,
+          pixelData.roas,
+          pixelData.reach,
+          pixelData.frequency
+        ];
+        
+        exportData = [csvHeaders.join(','), csvRow.join(',')].join('\n');
+        contentType = 'text/csv';
+        fileExtension = 'csv';
+      } else {
+        // JSON格式導出
+        exportData = JSON.stringify({
+          exportDate: new Date().toISOString(),
+          pixelData: pixelData
+        }, null, 2);
+        contentType = 'application/json';
+        fileExtension = 'json';
+      }
+
+      // 設置響應頭
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.${fileExtension}"`);
+      res.send(exportData);
+
+    } catch (error) {
+      console.error("像素數據導出失敗:", error);
+      res.status(500).json({ 
+        error: "導出失敗",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

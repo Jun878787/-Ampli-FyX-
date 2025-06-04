@@ -19,7 +19,8 @@ import {
   ChevronLeft,
   Key,
   TestTube2,
-  FileText
+  FileText,
+  Target
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ const facebookNavigation = [
   { name: "批量養號", href: "/facebook-batch-management", icon: Zap },
   { name: "Graph API 測試中心", href: "/facebook-graph-api-test", icon: Key },
   { name: "內容提取器", href: "/facebook-content-extractor", icon: FileText },
+  { name: "像素追蹤器", href: "/facebook-pixel-tracker", icon: Target },
   { name: "自動訊息", href: "/auto-messaging", icon: MessageSquare },
   { name: "廣告分析", href: "/facebook-ads-analytics", icon: BarChart3 },
 ];
