@@ -2116,31 +2116,38 @@ function simulateCollectionProgress(taskId: number) {
       
       const campaignId = `campaign_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // Create a simple campaign record
-      const campaign = {
-        id: campaignId,
-        campaignName,
-        dailyBudget: parseFloat(dailyBudget) || 0,
-        adObjective,
-        ageRange: JSON.stringify(ageRange),
-        gender,
-        regions: JSON.stringify(regions || []),
-        audienceTags: JSON.stringify(audienceTags || []),
-        placements: JSON.stringify(placements || []),
-        notes: notes || null,
-        createdAt: new Date(),
-        status: 'active'
+      // Ensure proper JSON response
+      res.setHeader('Content-Type', 'application/json');
+      
+      const response = {
+        success: true,
+        campaignId: campaignId,
+        message: "廣告活動創建成功",
+        data: {
+          id: campaignId,
+          campaignName: campaignName,
+          dailyBudget: parseFloat(dailyBudget) || 0,
+          adObjective: adObjective,
+          ageRange: ageRange,
+          gender: gender,
+          regions: regions || [],
+          audienceTags: audienceTags || [],
+          placements: placements || [],
+          notes: notes || "",
+          status: 'active',
+          createdAt: new Date().toISOString()
+        }
       };
 
-      res.json({
-        success: true,
-        campaignId,
-        campaign,
-        message: "廣告活動創建成功"
-      });
+      res.status(200).json(response);
     } catch (error) {
       console.error("Create ad campaign error:", error);
-      res.status(500).json({ error: "創建廣告活動失敗，請重試" });
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ 
+        success: false,
+        error: "創建廣告活動失敗，請重試",
+        message: error.message || "Unknown error"
+      });
     }
   });
 

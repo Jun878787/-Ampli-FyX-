@@ -256,7 +256,7 @@ export default function AdCreation() {
                       id="campaignName"
                       value={formData.campaignName}
                       onChange={(e) => setFormData(prev => ({ ...prev, campaignName: e.target.value }))}
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
                       placeholder="輸入活動名稱"
                       required
                     />
@@ -269,7 +269,7 @@ export default function AdCreation() {
                       type="number"
                       value={formData.dailyBudget}
                       onChange={(e) => setFormData(prev => ({ ...prev, dailyBudget: parseFloat(e.target.value) || 0 }))}
-                      className="bg-gray-700 border-gray-600 text-white"
+                      className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
                       placeholder="0"
                       required
                     />
@@ -381,7 +381,7 @@ export default function AdCreation() {
                       ...prev, 
                       audienceTags: e.target.value.split(/[、,，]/).map(tag => tag.trim()).filter(tag => tag.length > 0)
                     }))}
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
                     placeholder="例如：科技、購物、旅遊"
                   />
                 </div>
@@ -429,7 +429,7 @@ export default function AdCreation() {
                   id="notes"
                   value={formData.notes}
                   onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                  className="bg-gray-700 border-gray-600 text-white"
+                  className="bg-gray-700 border-gray-600 text-white placeholder:text-gray-400"
                   placeholder="添加任何相關備註..."
                   rows={4}
                 />
