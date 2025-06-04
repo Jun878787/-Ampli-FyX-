@@ -43,6 +43,13 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
+  // Facebook Generation Tasks
+  getFacebookGenerationTasks(): Promise<FacebookGenerationTask[]>;
+  getFacebookGenerationTask(id: number): Promise<FacebookGenerationTask | undefined>;
+  createFacebookGenerationTask(task: InsertFacebookGenerationTask): Promise<FacebookGenerationTask>;
+  updateFacebookGenerationTask(id: number, updates: Partial<FacebookGenerationTask>): Promise<FacebookGenerationTask | undefined>;
+  deleteFacebookGenerationTask(id: number): Promise<boolean>;
+
   // Collection Tasks
   getCollectionTasks(): Promise<CollectionTask[]>;
   getCollectionTask(id: number): Promise<CollectionTask | undefined>;
@@ -582,9 +589,47 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Facebook Generation Tasks
+  async getFacebookGenerationTasks(): Promise<FacebookGenerationTask[]> {
+    return await db.select().from(facebookGenerationTasks).orderBy(desc(facebookGenerationTasks.createdAt));
+  }
+
+  async getFacebookGenerationTask(id: number): Promise<FacebookGenerationTask | undefined> {
+    const [task] = await db.select().from(facebookGenerationTasks).where(eq(facebookGenerationTasks.id, id));
+    return task;
+  }
+
+  async createFacebookGenerationTask(insertTask: InsertFacebookGenerationTask): Promise<FacebookGenerationTask> {
+    const [task] = await db
+      .insert(facebookGenerationTasks)
+      .values(insertTask)
+      .returning();
+    return task;
+  }
+
+  async updateFacebookGenerationTask(id: number, updates: Partial<FacebookGenerationTask>): Promise<FacebookGenerationTask | undefined> {
+    const [task] = await db
+      .update(facebookGenerationTasks)
+      .set(updates)
+      .where(eq(facebookGenerationTasks.id, id))
+      .returning();
+    return task;
+  }
+
+  async deleteFacebookGenerationTask(id: number): Promise<boolean> {
+    const result = await db.delete(facebookGenerationTasks).where(eq(facebookGenerationTasks.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
   // Facebook Accounts
   async getFacebookAccounts(): Promise<FacebookAccount[]> {
-    return await db.select().from(facebookAccounts).orderBy(desc(facebookAccounts.createdAt));
+    try {
+      return await db.select().from(facebookAccounts).orderBy(desc(facebookAccounts.createdAt));
+    } catch (error) {
+      // If column doesn't exist, return empty array for now
+      console.log("Facebook accounts table not ready, returning empty array");
+      return [];
+    }
   }
 
   async getFacebookAccount(id: number): Promise<FacebookAccount | undefined> {
