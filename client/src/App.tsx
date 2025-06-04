@@ -23,6 +23,7 @@ import FacebookAdsAnalytics from "@/pages/facebook-ads-analytics";
 import FacebookAdContentExtractor from "@/pages/facebook-ad-content-extractor";
 import FacebookApiConfig from "@/pages/facebook-api-config";
 import FacebookGraphAPITest from "@/pages/facebook-graph-api-test";
+import FacebookContentExtractor from "@/pages/facebook-content-extractor";
 import MyFacebookAccount from "@/pages/my-facebook-account";
 import NotFound from "@/pages/not-found";
 

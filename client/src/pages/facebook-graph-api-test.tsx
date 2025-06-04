@@ -63,70 +63,136 @@ export default function FacebookGraphAPITest() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Alert className="mb-4 bg-yellow-900/20 border-yellow-600">
-                  <AlertTriangle className="h-4 w-4 text-yellow-400" />
-                  <AlertTitle className="text-yellow-400">權限不足解決方案</AlertTitle>
-                  <AlertDescription className="text-yellow-300">
-                    如果您只看到 "user_payment_tokens" 權限，需要創建企業應用程式才能獲取廣告管理權限。
+                <Alert className="mb-4 bg-red-900/20 border-red-600">
+                  <AlertTriangle className="h-4 w-4 text-red-400" />
+                  <AlertTitle className="text-red-400">廣告權限需要商家驗證</AlertTitle>
+                  <AlertDescription className="text-red-300">
+                    Facebook廣告API需要商家驗證才能獲取ads_read、ads_management等權限。個人開發者帳戶無法直接使用廣告功能。
                   </AlertDescription>
                 </Alert>
 
                 <div className="space-y-6">
-                  <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
-                    <h3 className="text-green-400 font-semibold mb-3 flex items-center gap-2">
+                  <div className="bg-orange-900/20 border border-orange-600 rounded-lg p-4">
+                    <h3 className="text-orange-400 font-semibold mb-3 flex items-center gap-2">
                       <Building className="h-4 w-4" />
-                      創建企業應用程式（獲取廣告權限）
+                      商家驗證流程（獲取廣告權限）
                     </h3>
                     <div className="space-y-3 text-sm">
+                      <p className="text-orange-300">要獲取廣告API權限，您需要完成Facebook商家驗證：</p>
+                      
                       <div className="flex items-start gap-3">
-                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
+                        <div className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
                         <div>
-                          <p className="text-green-300 font-medium">創建企業應用程式</p>
-                          <p className="text-green-400/80">在開發者控制台選擇"企業"類型應用程式</p>
+                          <p className="text-orange-300 font-medium">建立商家帳戶</p>
+                          <p className="text-orange-400/80">在Meta Business Manager創建商家帳戶</p>
                         </div>
                       </div>
+                      
                       <div className="flex items-start gap-3">
-                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
+                        <div className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
                         <div>
-                          <p className="text-green-300 font-medium">添加Marketing API</p>
-                          <p className="text-green-400/80">在產品設定中添加Marketing API功能</p>
+                          <p className="text-orange-300 font-medium">提交商家驗證</p>
+                          <p className="text-orange-400/80">提供公司資料、營業執照等文件</p>
                         </div>
                       </div>
+                      
                       <div className="flex items-start gap-3">
-                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</div>
+                        <div className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</div>
                         <div>
-                          <p className="text-green-300 font-medium">獲取完整權限權杖</p>
-                          <p className="text-green-400/80">然後即可獲取包含廣告管理權限的訪問權杖</p>
+                          <p className="text-orange-300 font-medium">等待審核</p>
+                          <p className="text-orange-400/80">審核通常需要3-5個工作天</p>
                         </div>
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-3 bg-transparent border-green-600 text-green-400 hover:bg-green-600/20"
-                        onClick={() => window.open('https://developers.facebook.com', '_blank')}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        前往開發者控制台
-                      </Button>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="bg-orange-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">4</div>
+                        <div>
+                          <p className="text-orange-300 font-medium">創建廣告應用程式</p>
+                          <p className="text-orange-400/80">驗證通過後即可創建具有廣告權限的應用程式</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2 mt-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="bg-transparent border-orange-600 text-orange-400 hover:bg-orange-600/20"
+                          onClick={() => window.open('https://business.facebook.com', '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Meta Business Manager
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="bg-transparent border-orange-600 text-orange-400 hover:bg-orange-600/20"
+                          onClick={() => window.open('https://developers.facebook.com/docs/development/business-verification', '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          驗證指南
+                        </Button>
+                      </div>
                     </div>
                   </div>
 
                   <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-4">
                     <h3 className="text-blue-400 font-semibold mb-3 flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      使用現有權杖（測試基本功能）
+                      現有功能（無需廣告權限）
                     </h3>
                     <div className="space-y-3 text-sm">
-                      <p className="text-blue-400/80">如果暫時無法創建企業應用程式，您仍可以測試基本API連接功能：</p>
+                      <p className="text-blue-400/80">在等待商家驗證期間，您可以使用這些功能：</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-blue-300 text-sm">用戶基本資料</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-blue-300 text-sm">頁面信息獲取</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-blue-300 text-sm">公開貼文數據</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-400" />
+                          <span className="text-blue-300 text-sm">朋友列表管理</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-400" />
+                          <span className="text-gray-400 text-sm">廣告數據 (需驗證)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-red-400" />
+                          <span className="text-gray-400 text-sm">廣告管理 (需驗證)</span>
+                        </div>
+                      </div>
+                      
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="mt-2 bg-transparent border-blue-600 text-blue-400 hover:bg-blue-600/20"
+                        className="mt-3 bg-transparent border-blue-600 text-blue-400 hover:bg-blue-600/20"
                         onClick={() => window.open('https://developers.facebook.com/tools/explorer', '_blank')}
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        打開Graph API Explorer測試
+                        測試可用功能
                       </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
+                    <h3 className="text-green-400 font-semibold mb-3">立即可用的替代方案</h3>
+                    <div className="space-y-2 text-sm">
+                      <p className="text-green-300">我們的系統已經整合了這些功能，您現在就可以使用：</p>
+                      <ul className="space-y-1 text-green-400/80">
+                        <li>• Facebook帳號管理和批量操作</li>
+                        <li>• 公開頁面內容採集和分析</li>
+                        <li>• 朋友列表管理和互動追蹤</li>
+                        <li>• 用戶資料收集和整理</li>
+                      </ul>
+                      <p className="text-green-300 mt-2">這些功能不需要廣告權限，可以滿足大部分數據收集需求。</p>
                     </div>
                   </div>
                 </div>

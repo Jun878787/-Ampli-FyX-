@@ -1688,6 +1688,176 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // 內容提取API
+  app.post("/api/facebook/extract-page-content", async (req: Request, res: Response) => {
+    try {
+      const { pageUrl } = req.body;
+      
+      if (!pageUrl) {
+        return res.status(400).json({ error: "頁面URL是必需的" });
+      }
+
+      // 從URL提取頁面ID或用戶名
+      const pageId = extractPageIdFromUrl(pageUrl);
+      if (!pageId) {
+        return res.status(400).json({ error: "無效的Facebook頁面URL" });
+      }
+
+      // 獲取頁面基本信息
+      const pageInfo = await facebookService.getPageInfo(pageId);
+      if (!pageInfo.success) {
+        return res.status(400).json({ 
+          error: "無法獲取頁面信息", 
+          details: pageInfo.error 
+        });
+      }
+
+      // 獲取頁面貼文
+      const posts = await facebookService.getPagePosts(pageId, 25);
+      if (!posts.success) {
+        return res.status(400).json({ 
+          error: "無法獲取頁面貼文", 
+          details: posts.error 
+        });
+      }
+
+      // 格式化提取的內容
+      const extractedContents = posts.data?.data?.map((post: any) => ({
+        id: post.id,
+        title: post.story || extractTitleFromMessage(post.message),
+        content: post.message || post.story || "無內容",
+        type: determinePostType(post),
+        engagement: {
+          likes: post.likes?.summary?.total_count || 0,
+          comments: post.comments?.summary?.total_count || 0,
+          shares: post.shares?.count || 0,
+          views: post.insights?.[0]?.values?.[0]?.value || 0
+        },
+        author: pageInfo.data?.name || "未知",
+        publishedAt: post.created_time,
+        url: `https://www.facebook.com/${post.id}`
+      })) || [];
+
+      res.json({ 
+        success: true,
+        contents: extractedContents,
+        pageInfo: pageInfo.data
+      });
+
+    } catch (error) {
+      console.error("內容提取失敗:", error);
+      res.status(500).json({ 
+        error: "內容提取失敗",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.post("/api/facebook/export-extracted-content", async (req: Request, res: Response) => {
+    try {
+      const { contents, format } = req.body;
+      
+      if (!contents || !Array.isArray(contents)) {
+        return res.status(400).json({ error: "無效的內容數據" });
+      }
+
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `facebook_content_${timestamp}`;
+      
+      let exportData: string;
+      let contentType: string;
+      let fileExtension: string;
+
+      if (format === 'csv') {
+        // CSV格式導出
+        const csvHeaders = ['ID', '標題', '內容', '類型', '讚數', '留言數', '分享數', '觀看數', '作者', '發布時間', 'URL'];
+        const csvRows = contents.map((content: any) => [
+          content.id,
+          `"${(content.title || '').replace(/"/g, '""')}"`,
+          `"${(content.content || '').replace(/"/g, '""')}"`,
+          content.type,
+          content.engagement.likes,
+          content.engagement.comments,
+          content.engagement.shares,
+          content.engagement.views || 0,
+          `"${(content.author || '').replace(/"/g, '""')}"`,
+          content.publishedAt,
+          content.url
+        ]);
+        
+        exportData = [csvHeaders.join(','), ...csvRows.map(row => row.join(','))].join('\n');
+        contentType = 'text/csv';
+        fileExtension = 'csv';
+      } else {
+        // JSON格式導出
+        exportData = JSON.stringify({
+          exportDate: new Date().toISOString(),
+          totalItems: contents.length,
+          contents: contents
+        }, null, 2);
+        contentType = 'application/json';
+        fileExtension = 'json';
+      }
+
+      // 設置響應頭
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.${fileExtension}"`);
+      res.send(exportData);
+
+    } catch (error) {
+      console.error("導出失敗:", error);
+      res.status(500).json({ 
+        error: "導出失敗",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// 輔助函數
+function extractPageIdFromUrl(url: string): string | null {
+  try {
+    // 支持多種Facebook URL格式
+    const patterns = [
+      /facebook\.com\/([^\/\?]+)/,
+      /facebook\.com\/pages\/[^\/]+\/(\d+)/,
+      /facebook\.com\/profile\.php\?id=(\d+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function extractTitleFromMessage(message: string): string {
+  if (!message) return "";
+  // 提取前50個字符作為標題
+  return message.length > 50 ? message.substring(0, 50) + "..." : message;
+}
+
+function determinePostType(post: any): string {
+  if (post.attachments?.data?.[0]?.type) {
+    const type = post.attachments.data[0].type;
+    switch (type) {
+      case 'photo': return '圖片';
+      case 'video_inline': return '影片';
+      case 'share': return '分享';
+      case 'album': return '相簿';
+      default: return '貼文';
+    }
+  }
+  
+  if (post.story && !post.message) return '活動';
+  if (post.message) return '貼文';
+  return '其他';
 }
