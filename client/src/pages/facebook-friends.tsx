@@ -39,6 +39,7 @@ export default function FacebookFriends() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: accounts = [] } = useQuery({
     queryKey: ["/api/facebook/accounts"],
@@ -47,6 +48,70 @@ export default function FacebookFriends() {
   const { data: friends = [], isLoading } = useQuery({
     queryKey: ["/api/facebook/friends", selectedAccount, searchQuery],
     enabled: !!selectedAccount || !!searchQuery,
+  });
+
+  const addFriendMutation = useMutation({
+    mutationFn: async (data: AddFriendForm) => {
+      return await apiRequest("POST", "/api/facebook/friends", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/friends"] });
+      setIsAddDialogOpen(false);
+      addForm.reset();
+      toast({
+        title: "好友新增成功",
+        description: "已成功新增好友到系統中",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "新增失敗",
+        description: error.message || "無法新增好友，請檢查輸入資料",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteFriendMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest("DELETE", `/api/facebook/friends/${id}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/friends"] });
+      toast({
+        title: "好友刪除成功",
+        description: "已從好友列表中移除",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "刪除失敗", 
+        description: error.message || "無法刪除好友，請稍後再試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const searchFriendsMutation = useMutation({
+    mutationFn: async (data: SearchFriendsForm) => {
+      return await apiRequest("POST", "/api/facebook/friends/search", data);
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(["/api/facebook/friends", "search"], data);
+      setIsSearchDialogOpen(false);
+      searchForm.reset();
+      toast({
+        title: "搜尋完成",
+        description: `找到 ${data?.length || 0} 位相符的好友`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "搜尋失敗",
+        description: error.message || "無法執行好友搜尋，請稍後再試",
+        variant: "destructive",
+      });
+    },
   });
 
   const { data: searchResults = [] } = useQuery({
