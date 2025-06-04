@@ -1,288 +1,257 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Copy, CheckCircle, XCircle, ExternalLink, Key, Globe, Database } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { 
+  Key, 
+  Database, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  ExternalLink,
+  BookOpen,
+  Building,
+  User
+} from "lucide-react";
 
 export default function FacebookGraphAPITest() {
   const [accessToken, setAccessToken] = useState("");
-  const [testResults, setTestResults] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "已複製",
-      description: "內容已複製到剪貼板",
-    });
-  };
-
-  const testConnection = async () => {
-    if (!accessToken.trim()) {
-      toast({
-        title: "錯誤",
-        description: "請先輸入訪問權杖",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch('/api/facebook/test-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessToken }),
-      });
-      const result = await response.json();
-      setTestResults(result);
-    } catch (error) {
-      setTestResults({ success: false, error: '連接失敗' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const requiredPermissions = [
     "ads_read",
     "ads_management", 
     "business_management",
-    "read_insights",
-    "pages_read_engagement"
+    "pages_read_engagement",
+    "pages_show_list"
   ];
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Facebook Graph API 測試中心
-          </h1>
-          <p className="text-gray-300 text-lg">
-            測試和驗證您的Facebook API訪問權杖
-          </p>
-        </div>
+  const tokenTestResult = useQuery({
+    queryKey: ["/api/facebook/test-token", accessToken],
+    enabled: false
+  });
 
-        {/* Token Generator Guide */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Key className="h-5 w-5" />
-              如何獲取具有廣告權限的訪問權杖
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              按照以下步驟生成具有廣告管理權限的訪問權杖
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</div>
-                <div>
-                  <p className="text-white font-medium">前往Facebook Graph API Explorer</p>
-                  <p className="text-gray-400 text-sm">訪問 developers.facebook.com/tools/explorer</p>
+  const handleTestToken = () => {
+    if (accessToken) {
+      tokenTestResult.refetch();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Facebook Graph API 測試中心</h1>
+            <p className="text-gray-300">生成並測試具有廣告權限的Facebook訪問權杖</p>
+          </div>
+          
+          <div className="space-y-6">
+            {/* Step-by-step Guide */}
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Key className="h-5 w-5" />
+                  如何獲取具有廣告權限的訪問權杖
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  按照以下步驟生成具有廣告管理權限的訪問權杖
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert className="mb-4 bg-yellow-900/20 border-yellow-600">
+                  <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                  <AlertTitle className="text-yellow-400">權限不足解決方案</AlertTitle>
+                  <AlertDescription className="text-yellow-300">
+                    如果您只看到 "user_payment_tokens" 權限，需要創建企業應用程式才能獲取廣告管理權限。
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-6">
+                  <div className="bg-green-900/20 border border-green-600 rounded-lg p-4">
+                    <h3 className="text-green-400 font-semibold mb-3 flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      創建企業應用程式（獲取廣告權限）
+                    </h3>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</div>
+                        <div>
+                          <p className="text-green-300 font-medium">創建企業應用程式</p>
+                          <p className="text-green-400/80">在開發者控制台選擇"企業"類型應用程式</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</div>
+                        <div>
+                          <p className="text-green-300 font-medium">添加Marketing API</p>
+                          <p className="text-green-400/80">在產品設定中添加Marketing API功能</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</div>
+                        <div>
+                          <p className="text-green-300 font-medium">獲取完整權限權杖</p>
+                          <p className="text-green-400/80">然後即可獲取包含廣告管理權限的訪問權杖</p>
+                        </div>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3 bg-transparent border-green-600 text-green-400 hover:bg-green-600/20"
+                        onClick={() => window.open('https://developers.facebook.com', '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        前往開發者控制台
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-900/20 border border-blue-600 rounded-lg p-4">
+                    <h3 className="text-blue-400 font-semibold mb-3 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      使用現有權杖（測試基本功能）
+                    </h3>
+                    <div className="space-y-3 text-sm">
+                      <p className="text-blue-400/80">如果暫時無法創建企業應用程式，您仍可以測試基本API連接功能：</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-2 bg-transparent border-blue-600 text-blue-400 hover:bg-blue-600/20"
+                        onClick={() => window.open('https://developers.facebook.com/tools/explorer', '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        打開Graph API Explorer測試
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Token Testing */}
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Database className="h-5 w-5" />
+                  測試訪問權杖
+                </CardTitle>
+                <CardDescription className="text-gray-300">
+                  輸入您的訪問權杖以測試權限和連接
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="accessToken" className="text-white">Facebook訪問權杖</Label>
+                  <Textarea
+                    id="accessToken"
+                    placeholder="請貼上您的Facebook訪問權杖..."
+                    value={accessToken}
+                    onChange={(e) => setAccessToken(e.target.value)}
+                    className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
+                  />
+                </div>
+
+                <div className="flex gap-2">
                   <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2 bg-transparent border-gray-600 text-blue-400 hover:bg-blue-600/20"
-                    onClick={() => window.open('https://developers.facebook.com/tools/explorer', '_blank')}
+                    onClick={handleTestToken}
+                    disabled={!accessToken || tokenTestResult?.isLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    打開Graph API Explorer
+                    {tokenTestResult?.isLoading ? "測試中..." : "測試權杖"}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={() => setAccessToken("")}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  >
+                    清除
                   </Button>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</div>
-                <div>
-                  <p className="text-white font-medium">選擇您的應用程式</p>
-                  <p className="text-gray-400 text-sm">在右上角選擇您的Facebook應用程式</p>
-                </div>
-              </div>
+                {/* Test Results */}
+                {tokenTestResult && !tokenTestResult.isLoading && (
+                  <div className="space-y-4">
+                    <Separator className="bg-gray-600" />
+                    
+                    <div className="space-y-3">
+                      <h3 className="text-white font-medium">測試結果</h3>
+                      
+                      {/* Connection Status */}
+                      <div className="flex items-center gap-2">
+                        {tokenTestResult.data?.success ? (
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-400" />
+                        )}
+                        <span className={`font-medium ${tokenTestResult.data?.success ? 'text-green-400' : 'text-red-400'}`}>
+                          {tokenTestResult.data?.success ? '連接成功' : '連接失敗'}
+                        </span>
+                      </div>
 
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</div>
-                <div>
-                  <p className="text-white font-medium">獲取訪問權杖</p>
-                  <p className="text-gray-400 text-sm">點擊"獲取權杖" &gt; "獲取用戶訪問權杖"</p>
-                </div>
-              </div>
+                      {/* Error Message */}
+                      {tokenTestResult.data?.error && (
+                        <Alert className="bg-red-900/20 border-red-600">
+                          <AlertTriangle className="h-4 w-4 text-red-400" />
+                          <AlertTitle className="text-red-400">錯誤</AlertTitle>
+                          <AlertDescription className="text-red-300">
+                            {tokenTestResult.data.error}
+                          </AlertDescription>
+                        </Alert>
+                      )}
 
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">4</div>
-                <div>
-                  <p className="text-white font-medium">選擇所需權限</p>
-                  <p className="text-gray-400 text-sm mb-2">請勾選以下權限：</p>
-                  <div className="flex flex-wrap gap-2">
-                    {requiredPermissions.map(permission => (
-                      <Badge key={permission} variant="outline" className="border-blue-400 text-blue-400">
-                        {permission}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                      {/* User Information */}
+                      {tokenTestResult.data?.data && (
+                        <div className="bg-gray-700/30 rounded-lg p-4">
+                          <h4 className="text-white font-medium mb-2">用戶信息</h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="text-gray-300">
+                              <span className="text-gray-400">用戶ID:</span> {tokenTestResult.data.data.id}
+                            </p>
+                            <p className="text-gray-300">
+                              <span className="text-gray-400">姓名:</span> {tokenTestResult.data.data.name}
+                            </p>
+                            {tokenTestResult.data.data.email && (
+                              <p className="text-gray-300">
+                                <span className="text-gray-400">郵箱:</span> {tokenTestResult.data.data.email}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
-              <div className="flex items-start gap-3">
-                <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">5</div>
-                <div>
-                  <p className="text-white font-medium">生成權杖</p>
-                  <p className="text-gray-400 text-sm">點擊"生成訪問權杖"並複製生成的權杖</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Token Testing */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Database className="h-5 w-5" />
-              測試訪問權杖
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              輸入您的訪問權杖以測試權限和連接
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="accessToken" className="text-white">Facebook訪問權杖</Label>
-              <Textarea
-                id="accessToken"
-                placeholder="請貼上您的Facebook訪問權杖..."
-                value={accessToken}
-                onChange={(e) => setAccessToken(e.target.value)}
-                className="bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 min-h-[100px]"
-              />
-            </div>
-
-            <Button 
-              onClick={testConnection} 
-              disabled={loading || !accessToken.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              {loading ? "測試中..." : "測試連接"}
-            </Button>
-
-            {testResults && (
-              <div className="space-y-4">
-                <Separator className="bg-gray-600" />
-                
-                {testResults.success ? (
-                  <Alert className="border-green-500 bg-green-500/10">
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                    <AlertDescription className="text-green-300">
-                      <strong>連接成功！</strong>
-                      <br />
-                      用戶: {testResults.user?.name}
-                      <br />
-                      ID: {testResults.user?.id}
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <Alert className="border-red-500 bg-red-500/10">
-                    <XCircle className="h-4 w-4 text-red-400" />
-                    <AlertDescription className="text-red-300">
-                      <strong>連接失敗:</strong> {testResults.error}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {testResults.permissions && (
-                  <div>
-                    <h3 className="text-white font-medium mb-2">當前權限:</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {testResults.permissions.map((permission: string) => (
-                        <Badge 
-                          key={permission} 
-                          variant={requiredPermissions.includes(permission) ? "default" : "secondary"}
-                          className={requiredPermissions.includes(permission) 
-                            ? "bg-green-600 text-white" 
-                            : "bg-gray-600 text-gray-300"
-                          }
-                        >
-                          {permission}
-                        </Badge>
-                      ))}
+                      {/* Available Permissions */}
+                      {tokenTestResult.data?.success && (
+                        <div className="bg-gray-700/30 rounded-lg p-4">
+                          <h4 className="text-white font-medium mb-2">權限狀態</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {requiredPermissions.map((permission) => (
+                              <div key={permission} className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                                <span className="text-gray-300 text-sm">{permission}</span>
+                                <Badge variant="outline" className="text-xs border-yellow-400 text-yellow-400">
+                                  需要驗證
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-gray-400 text-sm mt-2">
+                            注意：如果您只有基本權限，某些廣告功能可能無法使用。
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
-
-                {testResults.missingPermissions && testResults.missingPermissions.length > 0 && (
-                  <div>
-                    <h3 className="text-red-400 font-medium mb-2">缺少權限:</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {testResults.missingPermissions.map((permission: string) => (
-                        <Badge key={permission} variant="destructive">
-                          {permission}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {testResults.adAccounts && (
-                  <div>
-                    <h3 className="text-white font-medium mb-2">廣告帳戶:</h3>
-                    <div className="bg-gray-700/30 p-3 rounded-lg">
-                      <pre className="text-gray-300 text-sm overflow-auto">
-                        {JSON.stringify(testResults.adAccounts, null, 2)}
-                      </pre>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Sample Token for Testing */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Globe className="h-5 w-5" />
-              測試用權杖範例
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              如果您需要快速測試，可以使用應用程式權杖（僅限公開數據）
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-white">應用程式權杖（僅限公開數據）</Label>
-              <div className="flex gap-2">
-                <Input
-                  value="1030636252513639|rrA9s8oe5V9Ttl0LAl3m6aOlyHk"
-                  readOnly
-                  className="bg-gray-700/50 border-gray-600 text-gray-300"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard("1030636252513639|rrA9s8oe5V9Ttl0LAl3m6aOlyHk")}
-                  className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-600/20"
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-              <p className="text-gray-400 text-sm">
-                注意：應用程式權杖只能訪問公開數據，無法獲取私人廣告數據
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
