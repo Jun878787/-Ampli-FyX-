@@ -1060,9 +1060,13 @@ function simulateCollectionProgress(taskId: number) {
 
   app.get("/api/facebook/ads", async (req: Request, res: Response) => {
     try {
-      const { facebookAccountData } = await import('./facebook-account-data');
-      const ads = await facebookAccountData.getAccountAds();
-      res.json(ads);
+      const result = await facebookService.getAds();
+      if (result.success) {
+        res.json(result.data?.ads || []);
+      } else {
+        console.error("Facebook API error:", result.error);
+        res.status(500).json({ error: result.error || "Failed to fetch ads from Facebook API" });
+      }
     } catch (error) {
       console.error("Error fetching ads:", error);
       res.status(500).json({ error: "Failed to fetch ads" });
@@ -1071,9 +1075,13 @@ function simulateCollectionProgress(taskId: number) {
 
   app.get("/api/facebook/insights", async (req: Request, res: Response) => {
     try {
-      const { facebookAccountData } = await import('./facebook-account-data');
-      const insights = await facebookAccountData.getAdInsights();
-      res.json(insights);
+      const result = await facebookService.getInsights();
+      if (result.success) {
+        res.json(result.data?.insights || []);
+      } else {
+        console.error("Facebook API error:", result.error);
+        res.status(500).json({ error: result.error || "Failed to fetch insights from Facebook API" });
+      }
     } catch (error) {
       console.error("Error fetching insights:", error);
       res.status(500).json({ error: "Failed to fetch insights" });
@@ -1082,9 +1090,13 @@ function simulateCollectionProgress(taskId: number) {
 
   app.get("/api/facebook/activity-log", async (req: Request, res: Response) => {
     try {
-      const { facebookAccountData } = await import('./facebook-account-data');
-      const activityLog = await facebookAccountData.getActivityLog();
-      res.json(activityLog);
+      const result = await facebookService.getActivityLog();
+      if (result.success) {
+        res.json(result.data || []);
+      } else {
+        console.error("Facebook API error:", result.error);
+        res.status(500).json({ error: result.error || "Failed to fetch activity log from Facebook API" });
+      }
     } catch (error) {
       console.error("Error fetching activity log:", error);
       res.status(500).json({ error: "Failed to fetch activity log" });
