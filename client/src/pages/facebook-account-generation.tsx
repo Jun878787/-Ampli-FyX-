@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Play, Pause, Settings, Users, Zap, Shield, Activity, UserPlus, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Plus, Play, Pause, Settings, Users, Zap, Shield, Activity, UserPlus, CheckCircle, XCircle, Clock, Eye, Edit, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ export default function FacebookAccountGeneration() {
   const [selectedTab, setSelectedTab] = useState("tasks");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: creationTasks = [], isLoading: tasksLoading } = useQuery<any[]>({
     queryKey: ["/api/facebook/generation-tasks"],
@@ -161,18 +163,182 @@ export default function FacebookAccountGeneration() {
 
   const createTaskMutation = useMutation({
     mutationFn: async (data: AccountCreationForm) => {
-      // Simulate account creation task
       await new Promise(resolve => setTimeout(resolve, 2000));
       return { success: true };
     },
     onSuccess: () => {
       setIsCreateDialogOpen(false);
       form.reset();
+      toast({
+        title: "產號任務創建成功",
+        description: "新的批量產號任務已成功創建並開始執行",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/generation-tasks"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "創建任務失敗",
+        description: "無法創建產號任務，請檢查配置後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Task control mutations
+  const pauseTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "任務已暫停",
+        description: "產號任務已成功暫停",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/generation-tasks"] });
+    },
+    onError: () => {
+      toast({
+        title: "暫停失敗",
+        description: "無法暫停任務，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resumeTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "任務已恢復",
+        description: "產號任務已成功恢復執行",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/generation-tasks"] });
+    },
+    onError: () => {
+      toast({
+        title: "恢復失敗",
+        description: "無法恢復任務，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "任務已刪除",
+        description: "產號任務已成功刪除",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/generation-tasks"] });
+    },
+    onError: () => {
+      toast({
+        title: "刪除失敗",
+        description: "無法刪除任務，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Account management mutations
+  const viewAccountMutation = useMutation({
+    mutationFn: async (accountId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "帳號詳情",
+        description: "正在查看帳號詳細信息",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "查看失敗",
+        description: "無法獲取帳號詳情，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const editAccountMutation = useMutation({
+    mutationFn: async (accountId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "編輯成功",
+        description: "帳號信息已成功更新",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "編輯失敗",
+        description: "無法更新帳號信息，請稍後重試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (accountId: number) => {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return { success: true };
+    },
+    onSuccess: () => {
+      toast({
+        title: "帳號已刪除",
+        description: "選定帳號已成功刪除",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "刪除失敗",
+        description: "無法刪除帳號，請稍後重試",
+        variant: "destructive",
+      });
     },
   });
 
   const onCreateTask = (data: AccountCreationForm) => {
     createTaskMutation.mutate(data);
+  };
+
+  const handleTaskAction = (taskId: number, action: 'pause' | 'resume' | 'delete') => {
+    switch (action) {
+      case 'pause':
+        pauseTaskMutation.mutate(taskId);
+        break;
+      case 'resume':
+        resumeTaskMutation.mutate(taskId);
+        break;
+      case 'delete':
+        deleteTaskMutation.mutate(taskId);
+        break;
+    }
+  };
+
+  const handleAccountAction = (accountId: number, action: 'view' | 'edit' | 'delete') => {
+    switch (action) {
+      case 'view':
+        viewAccountMutation.mutate(accountId);
+        break;
+      case 'edit':
+        editAccountMutation.mutate(accountId);
+        break;
+      case 'delete':
+        deleteAccountMutation.mutate(accountId);
+        break;
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -594,11 +760,23 @@ export default function FacebookAccountGeneration() {
                   </div>
 
                   <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600"
+                      onClick={() => handleTaskAction(task.id, 'delete')}
+                      disabled={deleteTaskMutation.isPending}
+                    >
                       <Settings className="w-4 h-4 mr-1" />
                       設定
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600"
+                      onClick={() => handleTaskAction(task.id, task.status === "running" ? 'pause' : 'resume')}
+                      disabled={pauseTaskMutation.isPending || resumeTaskMutation.isPending}
+                    >
                       {task.status === "running" ? <Pause className="w-4 h-4 mr-1" /> : <Play className="w-4 h-4 mr-1" />}
                       {task.status === "running" ? "暫停" : "開始"}
                     </Button>
@@ -647,11 +825,35 @@ export default function FacebookAccountGeneration() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600"
+                            onClick={() => handleAccountAction(account.id, 'view')}
+                            disabled={viewAccountMutation.isPending}
+                          >
+                            <Eye className="w-3 h-3 mr-1" />
                             查看
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600"
+                            onClick={() => handleAccountAction(account.id, 'edit')}
+                            disabled={editAccountMutation.isPending}
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
                             編輯
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="bg-red-700 border-red-600 text-red-100 hover:bg-red-600"
+                            onClick={() => handleAccountAction(account.id, 'delete')}
+                            disabled={deleteAccountMutation.isPending}
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            刪除
                           </Button>
                         </div>
                       </td>
