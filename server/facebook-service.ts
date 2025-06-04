@@ -416,6 +416,221 @@ class FacebookService {
     
     return Math.min(score, 100).toString();
   }
+
+  async getCampaigns(adAccountId?: string): Promise<FacebookAPIResponse> {
+    try {
+      if (!adAccountId) {
+        const adAccountsResponse = await this.getAdAccounts();
+        if (!adAccountsResponse.success || !adAccountsResponse.data?.accounts?.length) {
+          return {
+            success: false,
+            error: '無法找到廣告帳戶'
+          };
+        }
+        adAccountId = adAccountsResponse.data.accounts[0].id;
+      }
+
+      const response = await fetch(`${this.baseUrl}/act_${adAccountId}/campaigns?fields=id,name,status,objective,created_time,updated_time&access_token=${this.apiKey}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          success: true,
+          data: {
+            campaigns: data.data || [],
+            total: data.data?.length || 0
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || '獲取廣告活動失敗'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '網絡錯誤獲取廣告活動'
+      };
+    }
+  }
+
+  async getAdAccounts(): Promise<FacebookAPIResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/me/adaccounts?fields=id,name,account_status,currency,timezone_name&access_token=${this.apiKey}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          success: true,
+          data: {
+            accounts: data.data || [],
+            total: data.data?.length || 0
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || '獲取廣告帳戶失敗'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '網絡錯誤獲取廣告帳戶'
+      };
+    }
+  }
+
+  async getAds(adAccountId?: string): Promise<FacebookAPIResponse> {
+    try {
+      if (!adAccountId) {
+        const adAccountsResponse = await this.getAdAccounts();
+        if (!adAccountsResponse.success || !adAccountsResponse.data?.accounts?.length) {
+          return {
+            success: false,
+            error: '無法找到廣告帳戶'
+          };
+        }
+        adAccountId = adAccountsResponse.data.accounts[0].id;
+      }
+
+      const response = await fetch(`${this.baseUrl}/act_${adAccountId}/ads?fields=id,name,status,created_time,updated_time,campaign{name}&access_token=${this.apiKey}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          success: true,
+          data: {
+            ads: data.data || [],
+            total: data.data?.length || 0
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || '獲取廣告失敗'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '網絡錯誤獲取廣告'
+      };
+    }
+  }
+
+  async getInsights(adAccountId?: string): Promise<FacebookAPIResponse> {
+    try {
+      if (!adAccountId) {
+        const adAccountsResponse = await this.getAdAccounts();
+        if (!adAccountsResponse.success || !adAccountsResponse.data?.accounts?.length) {
+          return {
+            success: false,
+            error: '無法找到廣告帳戶'
+          };
+        }
+        adAccountId = adAccountsResponse.data.accounts[0].id;
+      }
+
+      // Get insights for the last 6 months to include January data
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      const fromDate = sixMonthsAgo.toISOString().split('T')[0];
+      const toDate = new Date().toISOString().split('T')[0];
+
+      const response = await fetch(`${this.baseUrl}/act_${adAccountId}/insights?fields=impressions,clicks,spend,ctr,cpc,reach,frequency&time_range={'since':'${fromDate}','until':'${toDate}'}&access_token=${this.apiKey}`);
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          success: true,
+          data: {
+            insights: data.data || [],
+            total: data.data?.length || 0
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || '獲取洞察數據失敗'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '網絡錯誤獲取洞察數據'
+      };
+    }
+  }
+
+  async getActivityLog(): Promise<FacebookAPIResponse> {
+    try {
+      // Try to get user activities first
+      const response = await fetch(`${this.baseUrl}/me?fields=id,name&access_token=${this.apiKey}`);
+      const userData = await response.json();
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          error: userData.error?.message || '無法獲取用戶信息'
+        };
+      }
+
+      // Get ad account activities
+      const adAccountsResponse = await this.getAdAccounts();
+      if (!adAccountsResponse.success || !adAccountsResponse.data?.accounts?.length) {
+        return {
+          success: false,
+          error: '無法找到廣告帳戶以獲取活動紀錄'
+        };
+      }
+
+      const adAccountId = adAccountsResponse.data.accounts[0].id;
+      
+      // Get ad account activities
+      const activitiesResponse = await fetch(`${this.baseUrl}/act_${adAccountId}/activities?fields=event_type,event_time,extra_data&limit=50&access_token=${this.apiKey}`);
+      const activitiesData = await activitiesResponse.json();
+      
+      if (activitiesResponse.ok) {
+        const activities = (activitiesData.data || []).map((activity: any, index: number) => ({
+          id: `activity_${index}`,
+          timestamp: activity.event_time,
+          action: this.getActivityAction(activity.event_type),
+          details: activity.extra_data ? JSON.stringify(activity.extra_data).substring(0, 100) + '...' : '廣告帳戶活動',
+          status: 'completed'
+        }));
+
+        return {
+          success: true,
+          data: activities
+        };
+      } else {
+        return {
+          success: false,
+          error: activitiesData.error?.message || '獲取活動紀錄失敗'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '獲取活動紀錄失敗'
+      };
+    }
+  }
+
+  private getActivityAction(type: string): string {
+    const actionMap: { [key: string]: string } = {
+      'ad_account_create': '創建廣告帳戶',
+      'campaign_create': '創建廣告活動',
+      'campaign_update': '更新廣告活動',
+      'ad_create': '創建廣告',
+      'ad_update': '更新廣告',
+      'payment': '付款',
+      'unknown': '其他活動'
+    };
+    return actionMap[type] || '未知活動';
+  }
 }
 
 export const facebookService = new FacebookService();

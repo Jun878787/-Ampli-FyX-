@@ -1045,9 +1045,13 @@ function simulateCollectionProgress(taskId: number) {
 
   app.get("/api/facebook/campaigns", async (req: Request, res: Response) => {
     try {
-      const { facebookAccountData } = await import('./facebook-account-data');
-      const campaigns = await facebookAccountData.getAccountCampaigns();
-      res.json(campaigns);
+      const result = await facebookService.getCampaigns();
+      if (result.success) {
+        res.json(result.data?.campaigns || []);
+      } else {
+        console.error("Facebook API error:", result.error);
+        res.status(500).json({ error: result.error || "Failed to fetch campaigns from Facebook API" });
+      }
     } catch (error) {
       console.error("Error fetching campaigns:", error);
       res.status(500).json({ error: "Failed to fetch campaigns" });

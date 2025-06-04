@@ -34,7 +34,6 @@ const navigation = [
 ];
 
 const facebookNavigation = [
-  { name: "我的FB帳號", href: "/my-facebook-account", icon: SiFacebook },
   { name: "帳號管理", href: "/facebook-account-manager", icon: User },
   { name: "批量產號", href: "/facebook-account-generation", icon: UserPlus },
   { name: "批量養號", href: "/facebook-batch-management", icon: Zap },
