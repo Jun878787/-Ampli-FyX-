@@ -45,6 +45,7 @@ const securitySettingsSchema = z.object({
 });
 
 const adminPasswordChangeSchema = z.object({
+  currentPassword: z.string().min(1, "請輸入現在密碼"),
   newPassword: z.string().min(6, "管理員密碼至少6位數"),
   confirmPassword: z.string().min(6, "確認密碼至少6位數"),
 }).refine((data) => data.newPassword === data.confirmPassword, {
@@ -112,6 +113,7 @@ export default function Settings() {
   const passwordChangeForm = useForm<AdminPasswordChangeForm>({
     resolver: zodResolver(adminPasswordChangeSchema),
     defaultValues: {
+      currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
@@ -139,6 +141,11 @@ export default function Settings() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: AdminPasswordChangeForm) => {
+      // 先驗證現有密碼
+      if (data.currentPassword !== adminPassword) {
+        throw new Error("現在密碼輸入錯誤");
+      }
+      
       return await apiRequest("/api/admin/change-password", {
         method: "POST",
         data,
@@ -154,10 +161,14 @@ export default function Settings() {
       setIsPasswordDialogOpen(false);
       passwordChangeForm.reset();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const errorMessage = error.message === "現在密碼輸入錯誤" 
+        ? "現在密碼輸入錯誤，請重新輸入" 
+        : "密碼修改失敗，請重試";
+      
       toast({
         title: "錯誤", 
-        description: "密碼修改失敗，請重試",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -888,6 +899,25 @@ export default function Settings() {
 
           <Form {...passwordChangeForm}>
             <form onSubmit={passwordChangeForm.handleSubmit(onChangePassword)} className="space-y-4">
+              <FormField
+                control={passwordChangeForm.control}
+                name="currentPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-slate-200">請輸入現在密碼</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        {...field}
+                        placeholder="輸入現在密碼"
+                        className="bg-slate-700 border-slate-600 text-slate-100 rounded-lg"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={passwordChangeForm.control}
                 name="newPassword"
