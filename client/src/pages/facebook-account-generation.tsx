@@ -277,17 +277,24 @@ export default function FacebookAccountGeneration() {
     },
   });
 
+  // Password verification function
+  const verifyAdminPassword = (password: string) => {
+    return password === adminPasswordConfig;
+  };
+
   // Account management mutations
   const viewAccountMutation = useMutation({
     mutationFn: async (accountId: number) => {
+      const account = generatedAccounts.find((acc: any) => acc.id === accountId);
+      if (!account) throw new Error("帳號不存在");
       await new Promise(resolve => setTimeout(resolve, 500));
-      return { success: true };
+      return account;
     },
-    onSuccess: () => {
-      toast({
-        title: "帳號詳情",
-        description: "正在查看帳號詳細信息",
-      });
+    onSuccess: (account) => {
+      setSelectedAccount(account);
+      setIsViewAccountOpen(true);
+      setIsAdminVerified(false);
+      setShowPassword(false);
     },
     onError: () => {
       toast({
@@ -300,19 +307,20 @@ export default function FacebookAccountGeneration() {
 
   const editAccountMutation = useMutation({
     mutationFn: async (accountId: number) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return { success: true };
+      const account = generatedAccounts.find((acc: any) => acc.id === accountId);
+      if (!account) throw new Error("帳號不存在");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return account;
     },
-    onSuccess: () => {
-      toast({
-        title: "編輯成功",
-        description: "帳號信息已成功更新",
-      });
+    onSuccess: (account) => {
+      setSelectedAccount(account);
+      setIsEditAccountOpen(true);
+      setIsAdminVerified(false);
     },
     onError: () => {
       toast({
         title: "編輯失敗",
-        description: "無法更新帳號信息，請稍後重試",
+        description: "無法打開編輯介面，請稍後重試",
         variant: "destructive",
       });
     },
@@ -977,6 +985,16 @@ export default function FacebookAccountGeneration() {
                       <label>失敗重試次數</label>
                       <Input type="number" defaultValue="3" className="w-20" />
                     </div>
+                    <div className="flex items-center justify-between">
+                      <label>管理員密碼</label>
+                      <Input 
+                        type="password" 
+                        value={adminPasswordConfig}
+                        onChange={(e) => setAdminPasswordConfig(e.target.value)}
+                        className="w-32" 
+                        placeholder="設定管理員密碼"
+                      />
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -1007,6 +1025,282 @@ export default function FacebookAccountGeneration() {
           </Card>
         </TabsContent>
         </Tabs>
+
+        {/* Account View Dialog */}
+        <Dialog open={isViewAccountOpen} onOpenChange={setIsViewAccountOpen}>
+          <DialogContent className="max-w-2xl bg-slate-800 border-slate-700 text-slate-100">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Eye className="w-5 h-5 mr-2 text-blue-400" />
+                帳號詳情查看
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                查看選定Facebook帳號的詳細信息和活動記錄
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAccount && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">用戶名</label>
+                      <div className="font-medium">{selectedAccount.username}</div>
+                    </div>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">郵箱</label>
+                      <div className="font-medium">{selectedAccount.email}</div>
+                    </div>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">Facebook ID</label>
+                      <div className="font-medium">{selectedAccount.fbUserId}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">狀態</label>
+                      <div className="mt-1">{getAccountStatusBadge(selectedAccount.status)}</div>
+                    </div>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">登錄次數</label>
+                      <div className="font-medium">{selectedAccount.loginCount}</div>
+                    </div>
+                    <div className="p-3 bg-slate-700 rounded-lg">
+                      <label className="text-sm text-slate-400">最後登錄</label>
+                      <div className="font-medium">
+                        {selectedAccount.lastLogin ? new Date(selectedAccount.lastLogin).toLocaleString() : "未登錄"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-sm text-slate-400">帳號密碼</label>
+                    {!isAdminVerified ? (
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          type="password"
+                          placeholder="輸入管理員密碼"
+                          value={adminPassword}
+                          onChange={(e) => setAdminPassword(e.target.value)}
+                          className="w-32 h-8 bg-slate-600 border-slate-500"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            if (verifyAdminPassword(adminPassword)) {
+                              setIsAdminVerified(true);
+                              setAdminPassword("");
+                              toast({
+                                title: "驗證成功",
+                                description: "管理員身份已確認，可查看密碼",
+                              });
+                            } else {
+                              toast({
+                                title: "密碼錯誤",
+                                description: "管理員密碼不正確",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          className="h-8"
+                        >
+                          <Key className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="h-8"
+                      >
+                        {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        {showPassword ? "隱藏" : "顯示"}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="font-mono bg-slate-800 p-2 rounded border">
+                    {isAdminVerified && showPassword ? selectedAccount.password : "••••••••••••"}
+                  </div>
+                </div>
+
+                <div className="p-3 bg-slate-700 rounded-lg">
+                  <label className="text-sm text-slate-400 mb-3 block">最近活動記錄</label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    <div className="flex justify-between text-sm">
+                      <span>登錄成功</span>
+                      <span className="text-slate-400">2024-06-04 14:32</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>更新個人資料</span>
+                      <span className="text-slate-400">2024-06-04 09:15</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>發布動態</span>
+                      <span className="text-slate-400">2024-06-03 21:45</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>添加好友</span>
+                      <span className="text-slate-400">2024-06-03 16:22</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Account Edit Dialog */}
+        <Dialog open={isEditAccountOpen} onOpenChange={setIsEditAccountOpen}>
+          <DialogContent className="max-w-2xl bg-slate-800 border-slate-700 text-slate-100">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <Edit className="w-5 h-5 mr-2 text-green-400" />
+                編輯帳號信息
+              </DialogTitle>
+              <DialogDescription className="text-slate-400">
+                修改選定Facebook帳號的基本信息
+              </DialogDescription>
+            </DialogHeader>
+            
+            {selectedAccount && (
+              <div className="space-y-6">
+                {!isAdminVerified ? (
+                  <div className="p-4 bg-slate-700 rounded-lg text-center">
+                    <div className="flex items-center justify-center space-x-3">
+                      <Key className="w-5 h-5 text-yellow-400" />
+                      <span className="text-slate-300">需要管理員密碼驗證才能編輯帳號</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-2 mt-3">
+                      <Input
+                        type="password"
+                        placeholder="輸入管理員密碼"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        className="w-40 bg-slate-600 border-slate-500"
+                      />
+                      <Button
+                        onClick={() => {
+                          if (verifyAdminPassword(adminPassword)) {
+                            setIsAdminVerified(true);
+                            setAdminPassword("");
+                            toast({
+                              title: "驗證成功",
+                              description: "管理員身份已確認，可編輯帳號",
+                            });
+                          } else {
+                            toast({
+                              title: "密碼錯誤",
+                              description: "管理員密碼不正確",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        驗證
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-slate-400 mb-2 block">用戶名</label>
+                        <Input
+                          defaultValue={selectedAccount.username}
+                          className="bg-slate-700 border-slate-600"
+                          disabled
+                        />
+                        <span className="text-xs text-slate-500">用戶名無法修改</span>
+                      </div>
+                      <div>
+                        <label className="text-sm text-slate-400 mb-2 block">郵箱地址</label>
+                        <Input
+                          type="email"
+                          defaultValue={selectedAccount.email}
+                          className="bg-slate-700 border-slate-600"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="text-sm text-slate-400 mb-2 block">新密碼</label>
+                      <div className="flex items-center space-x-2">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="輸入新密碼（留空表示不修改）"
+                          className="bg-slate-700 border-slate-600"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="px-3"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-slate-400 mb-2 block">備註名稱</label>
+                        <Input
+                          placeholder="為此帳號添加備註"
+                          className="bg-slate-700 border-slate-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm text-slate-400 mb-2 block">標籤</label>
+                        <Select>
+                          <SelectTrigger className="bg-slate-700 border-slate-600">
+                            <SelectValue placeholder="選擇標籤" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-700 border-slate-600">
+                            <SelectItem value="marketing">營銷帳號</SelectItem>
+                            <SelectItem value="testing">測試帳號</SelectItem>
+                            <SelectItem value="backup">備用帳號</SelectItem>
+                            <SelectItem value="vip">VIP帳號</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditAccountOpen(false);
+                          setIsAdminVerified(false);
+                        }}
+                        className="bg-slate-700 border-slate-600 hover:bg-slate-600"
+                      >
+                        取消
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          toast({
+                            title: "更新成功",
+                            description: "帳號信息已成功更新",
+                          });
+                          setIsEditAccountOpen(false);
+                          setIsAdminVerified(false);
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        保存更改
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
