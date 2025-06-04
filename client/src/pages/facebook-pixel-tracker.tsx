@@ -68,10 +68,11 @@ export default function FacebookPixelTracker() {
   const fetchPixelDataMutation = useMutation({
     mutationFn: async (pixelId: string) => {
       setIsLoading(true);
-      return apiRequest('/api/facebook/pixel-data-fixed', {
+      const response = await apiRequest('/api/facebook/pixel-data-fixed', {
         method: 'POST',
         data: { pixelId }
       });
+      return response.json();
     },
     onSuccess: (data: any) => {
       console.log('API Response:', data);
