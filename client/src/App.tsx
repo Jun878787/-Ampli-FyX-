@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -20,11 +21,17 @@ import AdManager from "@/pages/ad-manager";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 overflow-auto">
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
+      <div className="flex-1 flex flex-col min-h-0">
+        <main className="flex-1 overflow-auto">
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/data-collection" component={DataCollection} />
@@ -40,7 +47,7 @@ function Router() {
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />
           </Switch>
-        </div>
+        </main>
         <Footer />
       </div>
     </div>

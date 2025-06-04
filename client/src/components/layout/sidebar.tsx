@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { 
   Gauge, 
@@ -13,10 +14,13 @@ import {
   Globe,
   UserPlus,
   Megaphone,
-  Zap
+  Zap,
+  Menu,
+  ChevronLeft
 } from "lucide-react";
 import { SiFacebook } from "react-icons/si";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: "控制台", href: "/", icon: Gauge },
@@ -35,28 +39,53 @@ const facebookNavigation = [
   { name: "廣告管理", href: "/ad-manager", icon: Megaphone },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}
+
+export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const [location] = useLocation();
 
   return (
-    <div className="w-64 bg-card shadow-lg flex-shrink-0">
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <SiFacebook className="text-primary-foreground text-lg" />
+    <div className={cn(
+      "bg-slate-800 shadow-lg flex-shrink-0 transition-all duration-300 flex flex-col h-full",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
+      <div className={cn("p-6 border-b border-slate-700", isCollapsed && "p-4")}>
+        <div className="flex items-center justify-between relative">
+          <div className={cn("flex items-center space-x-3", isCollapsed && "justify-center")}>
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <SiFacebook className="text-white text-lg" />
+            </div>
+            {!isCollapsed && (
+              <div>
+                <h1 className="text-lg font-bold text-slate-100">North™Sea</h1>
+                <p className="text-sm text-slate-400">北金國際 數據採集</p>
+              </div>
+            )}
           </div>
-          <div>
-            <h1 className="text-lg font-bold text-card-foreground">North™Sea</h1>
-            <p className="text-sm text-muted-foreground">北金國際 數據採集</p>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+            className={cn(
+              "hover:bg-slate-700 text-slate-400 hover:text-slate-100",
+              isCollapsed ? "absolute -right-2 top-0" : "ml-auto"
+            )}
+          >
+            {isCollapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
       </div>
       
-      <nav className="p-4 space-y-6">
+      <nav className="p-4 space-y-6 flex-1 overflow-y-auto">
         <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            系統功能
-          </h3>
+          {!isCollapsed && (
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              系統功能
+            </h3>
+          )}
           <ul className="space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
@@ -65,13 +94,14 @@ export default function Sidebar() {
               return (
                 <li key={item.name}>
                   <Link href={item.href} className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    "flex items-center px-3 py-2 rounded-lg font-medium transition-colors",
+                    isCollapsed ? "justify-center" : "space-x-3",
                     isActive 
                       ? "bg-accent text-accent-foreground" 
                       : "text-muted-foreground hover:bg-muted"
                   )}>
                     <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
+                    {!isCollapsed && <span>{item.name}</span>}
                   </Link>
                 </li>
               );
@@ -80,9 +110,11 @@ export default function Sidebar() {
         </div>
 
         <div>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-            Facebook 管理
-          </h3>
+          {!isCollapsed && (
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              Facebook 管理
+            </h3>
+          )}
           <ul className="space-y-2">
             {facebookNavigation.map((item) => {
               const Icon = item.icon;
@@ -91,13 +123,14 @@ export default function Sidebar() {
               return (
                 <li key={item.name}>
                   <Link href={item.href} className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg font-medium transition-colors",
+                    "flex items-center px-3 py-2 rounded-lg font-medium transition-colors",
+                    isCollapsed ? "justify-center" : "space-x-3",
                     isActive 
                       ? "bg-accent text-accent-foreground" 
                       : "text-muted-foreground hover:bg-muted"
                   )}>
                     <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
+                    {!isCollapsed && <span>{item.name}</span>}
                   </Link>
                 </li>
               );

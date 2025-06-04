@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
-    <footer className="bg-background border-t border-border px-6 py-4">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+    <footer className="bg-slate-800 border-t border-slate-700 px-6 py-4 mt-auto flex-shrink-0">
+      <div className="flex items-center justify-between text-sm text-slate-400">
         <div className="flex items-center space-x-4">
           <span>© 2024 北金國際 North™Sea</span>
           <span>•</span>
