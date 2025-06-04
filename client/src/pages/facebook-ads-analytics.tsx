@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter } from "lucide-react";
+import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter, Search, FileSpreadsheet, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -338,6 +338,9 @@ export default function FacebookAdsAnalytics() {
             <TabsTrigger value="audience" className="data-[state=active]:bg-gray-700">
               受眾洞察
             </TabsTrigger>
+            <TabsTrigger value="ad-details" className="data-[state=active]:bg-gray-700">
+              廣告詳情
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="trends" className="space-y-4">
@@ -488,8 +491,364 @@ export default function FacebookAdsAnalytics() {
               </Card>
             </div>
           </TabsContent>
+
+          <TabsContent value="ad-details" className="space-y-4">
+            <AdContentExtractor />
+          </TabsContent>
         </Tabs>
       </div>
+    </div>
+  );
+}
+
+// 廣告內容提取組件 - 嵌入到廣告分析頁面
+function AdContentExtractor() {
+  const [selectedAccount, setSelectedAccount] = useState<string>("all");
+  const [selectedCampaign, setSelectedCampaign] = useState<string>("all");
+  const [contentType, setContentType] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({
+    from: addDays(new Date(), -30),
+    to: new Date(),
+  });
+  const [selectedAd, setSelectedAd] = useState<any>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // 獲取廣告帳號
+  const { data: adAccounts = [], isLoading: loadingAccounts } = useQuery({
+    queryKey: ["/api/facebook/ad-accounts"],
+  });
+
+  // 獲取廣告活動
+  const { data: campaigns = [], isLoading: loadingCampaigns } = useQuery({
+    queryKey: ["/api/facebook/campaigns", selectedAccount],
+  });
+
+  // 獲取廣告內容
+  const { data: adContents = [], isLoading: loadingAdContents } = useQuery({
+    queryKey: ["/api/facebook/ad-contents", {
+      accountId: selectedAccount,
+      campaignId: selectedCampaign,
+      contentType,
+      searchQuery,
+      dateRange: {
+        from: format(dateRange.from, "yyyy-MM-dd"),
+        to: format(dateRange.to, "yyyy-MM-dd")
+      }
+    }],
+  });
+
+  // 提取廣告內容
+  const extractContentsMutation = useMutation({
+    mutationFn: async (params: any) => {
+      return await apiRequest("/api/facebook/extract-ad-contents", {
+        method: "POST",
+        data: params
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook/ad-contents"] });
+      toast({
+        title: "提取成功",
+        description: "廣告內容已成功提取並分析",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "提取失敗",
+        description: error.message || "提取廣告內容時發生錯誤",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // 導出數據
+  const exportDataMutation = useMutation({
+    mutationFn: async (format: string) => {
+      return await apiRequest(`/api/facebook/export-ad-contents?format=${format}`, {
+        method: "GET",
+      });
+    },
+    onSuccess: (data) => {
+      // 創建下載鏈接
+      const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `fb_ad_contents_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "導出成功",
+        description: `廣告內容數據已導出為 ${format.toUpperCase()} 格式`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "導出失敗",
+        description: error.message || "導出數據時發生錯誤",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleExtractContents = () => {
+    extractContentsMutation.mutate({
+      accountId: selectedAccount !== "all" ? selectedAccount : undefined,
+      campaignId: selectedCampaign !== "all" ? selectedCampaign : undefined,
+      contentType: contentType !== "all" ? contentType : undefined,
+      searchQuery: searchQuery || undefined,
+      dateRange
+    });
+  };
+
+  const handleExportData = (format: string) => {
+    exportDataMutation.mutate(format);
+  };
+
+  const handleViewDetails = (ad: any) => {
+    setSelectedAd(ad);
+    setIsDialogOpen(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* 篩選控制面板 */}
+      <Card className="bg-gray-800/50 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            廣告內容提取與分析
+          </CardTitle>
+          <CardDescription className="text-gray-400">
+            提取並分析Facebook廣告的詳細內容，包括文章標題、內容、花費、受眾分析等
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {/* 廣告帳號選擇 */}
+            <div className="space-y-2">
+              <label className="text-sm text-gray-300">廣告帳號</label>
+              <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue placeholder="選擇廣告帳號" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="all">所有帳號</SelectItem>
+                  {Array.isArray(adAccounts) && adAccounts.map((account: any) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 廣告活動選擇 */}
+            <div className="space-y-2">
+              <label className="text-sm text-gray-300">廣告活動</label>
+              <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue placeholder="選擇廣告活動" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="all">所有活動</SelectItem>
+                  {Array.isArray(campaigns) && campaigns.map((campaign: any) => (
+                    <SelectItem key={campaign.id} value={campaign.id}>
+                      {campaign.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 內容類型選擇 */}
+            <div className="space-y-2">
+              <label className="text-sm text-gray-300">內容類型</label>
+              <Select value={contentType} onValueChange={setContentType}>
+                <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                  <SelectValue placeholder="選擇內容類型" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectItem value="all">所有類型</SelectItem>
+                  <SelectItem value="image">圖片廣告</SelectItem>
+                  <SelectItem value="video">影片廣告</SelectItem>
+                  <SelectItem value="carousel">輪播廣告</SelectItem>
+                  <SelectItem value="collection">精選集廣告</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 搜索查詢 */}
+            <div className="space-y-2">
+              <label className="text-sm text-gray-300">關鍵詞搜索</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="搜索廣告內容..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-gray-700 border-gray-600 text-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 日期範圍和操作按鈕 */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-sm text-gray-300">日期範圍:</span>
+                <Input
+                  type="date"
+                  value={format(dateRange.from, "yyyy-MM-dd")}
+                  onChange={(e) => setDateRange({
+                    ...dateRange,
+                    from: new Date(e.target.value)
+                  })}
+                  className="bg-gray-700 border-gray-600 text-white w-40"
+                />
+                <span className="text-gray-400">至</span>
+                <Input
+                  type="date"
+                  value={format(dateRange.to, "yyyy-MM-dd")}
+                  onChange={(e) => setDateRange({
+                    ...dateRange,
+                    to: new Date(e.target.value)
+                  })}
+                  className="bg-gray-700 border-gray-600 text-white w-40"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={handleExtractContents}
+                disabled={extractContentsMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {extractContentsMutation.isPending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    提取中...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    提取內容
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={() => handleExportData("xlsx")}
+                disabled={exportDataMutation.isPending}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                {exportDataMutation.isPending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    導出中...
+                  </>
+                ) : (
+                  <>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    導出Excel
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 廣告內容數據表格 */}
+      <Card className="bg-gray-800/50 border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">廣告內容分析結果</CardTitle>
+          <CardDescription className="text-gray-400">
+            找到 {Array.isArray(adContents) ? adContents.length : 0} 條廣告內容記錄
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingAdContents ? (
+            <div className="flex items-center justify-center py-8">
+              <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
+              <span className="ml-2 text-gray-400">載入廣告內容中...</span>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-gray-700">
+                    <TableHead className="text-gray-300">文章標題</TableHead>
+                    <TableHead className="text-gray-300">內容類型</TableHead>
+                    <TableHead className="text-gray-300">花費</TableHead>
+                    <TableHead className="text-gray-300">曝光數</TableHead>
+                    <TableHead className="text-gray-300">點擊數</TableHead>
+                    <TableHead className="text-gray-300">CTR</TableHead>
+                    <TableHead className="text-gray-300">質量分數</TableHead>
+                    <TableHead className="text-gray-300">操作</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.isArray(adContents) && adContents.map((ad: any, index: number) => (
+                    <TableRow key={index} className="border-gray-700">
+                      <TableCell className="text-white font-medium max-w-xs truncate">
+                        {ad.headline || ad.title || "未知標題"}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        <Badge variant="outline" className="border-gray-600 text-gray-300">
+                          {ad.contentType || "圖片"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        ${(ad.spend || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {(ad.impressions || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {(ad.clicks || 0).toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {((ad.clicks || 0) / (ad.impressions || 1) * 100).toFixed(2)}%
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={
+                            (ad.qualityScore || 0) >= 80 ? "default" : 
+                            (ad.qualityScore || 0) >= 60 ? "secondary" : "destructive"
+                          }
+                        >
+                          {ad.qualityScore || 0}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewDetails(ad)}
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                        >
+                          查看詳情
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

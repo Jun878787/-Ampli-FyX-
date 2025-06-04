@@ -48,7 +48,7 @@ function Router() {
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
             <Route path="/facebook-api-test" component={FacebookApiTest} />
             <Route path="/facebook-ads-analytics" component={FacebookAdsAnalytics} />
-            <Route path="/facebook-ad-content-extractor" component={FacebookAdContentExtractor} />
+            <Route path="/facebook-ads-analytics/ad-details" component={FacebookAdContentExtractor} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />
