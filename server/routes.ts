@@ -899,36 +899,13 @@ async function simulateFacebookAccountGeneration(taskId: number) {
         let emailStatus = 'template_generated';
         
         if (emailStrategy === 'auto_create_gmail') {
-          try {
-            // Check if Gmail API key is available
-            if (!process.env.GMAIL_API_KEY) {
-              emailStatus = 'gmail_api_missing';
-              console.log(`Gmail API key not configured for ${username}, using template email`);
-              email = `${username}@gmail.com`;
-            } else {
-              const result = await gmailService.createAccount({
-                username: username,
-                password: password,
-                firstName: settings?.firstName,
-                lastName: settings?.lastName
-              });
-              
-              if (result.success) {
-                email = result.email!;
-                emailCreated = true;
-                emailStatus = 'gmail_created';
-                console.log(`Gmail account created: ${email}`);
-              } else {
-                emailStatus = 'gmail_failed';
-                email = `${username}@gmail.com`;
-                console.log(`Gmail creation failed for ${username}: ${result.error}, using template`);
-              }
-            }
-          } catch (error) {
-            emailStatus = 'gmail_error';
-            email = `${username}@gmail.com`;
-            console.error(`Gmail API error for ${username}, using template:`, error);
-          }
+          // 為防止IP被鎖定，暫停真實Gmail帳號創建
+          emailStatus = 'creation_suspended';
+          email = `${username}@gmail.com`;
+          console.log(`Gmail account creation suspended for security - using template email: ${email}`);
+          
+          // 模擬創建過程但不執行真實API調用
+          await new Promise(resolve => setTimeout(resolve, 1000));
         } else if (emailStrategy === 'temp_email') {
           emailStatus = 'temp_email_used';
           email = `${username}@10minutemail.com`;
@@ -941,7 +918,9 @@ async function simulateFacebookAccountGeneration(taskId: number) {
         
         // Determine account status based on email creation result
         let accountStatus = 'active';
-        if (emailStatus === 'gmail_api_missing') {
+        if (emailStatus === 'creation_suspended') {
+          accountStatus = 'suspended';
+        } else if (emailStatus === 'gmail_api_missing') {
           accountStatus = 'pending_verification';
         } else if (emailStatus === 'gmail_failed' || emailStatus === 'gmail_error') {
           accountStatus = 'suspended';

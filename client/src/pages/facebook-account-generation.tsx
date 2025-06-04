@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { PlayCircle, Settings, Users, Clock, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
+import { PlayCircle, Settings, Users, Clock, CheckCircle, AlertCircle, Trash2, Shield } from "lucide-react";
 
 interface FacebookGenerationTask {
   id: number;
@@ -203,11 +203,25 @@ export default function FacebookAccountGeneration() {
 
           {/* 創建任務頁面 */}
           <TabsContent value="create" className="space-y-6">
+            {/* IP安全警告 */}
+            <Card className="bg-red-900/20 border-red-600">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-red-400" />
+                  <CardTitle className="text-red-400 text-sm">IP安全保護已啟用</CardTitle>
+                </div>
+                <CardDescription className="text-red-300 text-sm">
+                  為防止IP被Facebook封鎖，系統已暫停真實帳號創建功能。
+                  目前僅生成模擬帳號數據，不會執行真實API調用。
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="text-white">創建新的生成任務</CardTitle>
                 <CardDescription className="text-gray-400">
-                  配置 Facebook 帳號生成參數和設定
+                  配置 Facebook 帳號生成參數和設定（安全模式）
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
