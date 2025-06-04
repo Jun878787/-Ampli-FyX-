@@ -252,11 +252,11 @@ export default function AdCreation() {
                   受眾設定
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-white">年齡範圍</Label>
                     <div className="flex items-center gap-2">
-                      <Select value={formData.audience.ageMin} onValueChange={(value) => handleAudienceChange('ageMin', value)}>
+                      <Select value={formData.ageRange.min} onValueChange={(value) => handleAgeRangeChange('min', value)}>
                         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                           <SelectValue placeholder="最小" />
                         </SelectTrigger>
@@ -267,7 +267,7 @@ export default function AdCreation() {
                         </SelectContent>
                       </Select>
                       <span className="text-white">-</span>
-                      <Select value={formData.audience.ageMax} onValueChange={(value) => handleAudienceChange('ageMax', value)}>
+                      <Select value={formData.ageRange.max} onValueChange={(value) => handleAgeRangeChange('max', value)}>
                         <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                           <SelectValue placeholder="最大" />
                         </SelectTrigger>
@@ -282,7 +282,7 @@ export default function AdCreation() {
 
                   <div>
                     <Label className="text-white">性別</Label>
-                    <Select value={formData.audience.gender} onValueChange={(value) => handleAudienceChange('gender', value)}>
+                    <Select value={formData.gender} onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}>
                       <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                         <SelectValue placeholder="選擇性別" />
                       </SelectTrigger>
@@ -295,28 +295,44 @@ export default function AdCreation() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <div>
-                    <Label className="text-white">地區</Label>
-                    <Select value={formData.audience.location} onValueChange={(value) => handleAudienceChange('location', value)}>
-                      <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                        <SelectValue placeholder="選擇地區" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-700 border-gray-600">
-                        {TAIWAN_CITIES.map((city) => (
-                          <SelectItem key={city} value={city}>{city}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="interests" className="text-white">受眾標籤</Label>
+                  <Label className="text-white">地區 (可複選)</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2 max-h-40 overflow-y-auto bg-gray-800 p-3 rounded border border-gray-600">
+                    {REGIONS.map((region) => (
+                      <div key={region.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`region-${region.value}`}
+                          checked={formData.regions.includes(region.value)}
+                          onCheckedChange={() => handleRegionToggle(region.value)}
+                          className="border-gray-500"
+                        />
+                        <Label
+                          htmlFor={`region-${region.value}`}
+                          className="text-sm text-white cursor-pointer"
+                        >
+                          {region.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {formData.regions.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-300">
+                      已選擇: {formData.regions.map(r => REGIONS.find(reg => reg.value === r)?.label).join(', ')}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="audienceTags" className="text-white">受眾標籤</Label>
                   <Input
-                    id="interests"
-                    value={formData.audience.interests}
-                    onChange={(e) => handleAudienceChange('interests', e.target.value)}
+                    id="audienceTags"
+                    value={formData.audienceTags.join(', ')}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      audienceTags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+                    }))}
                     className="bg-gray-700 border-gray-600 text-white"
                     placeholder="例如：科技、購物、旅遊（用逗號分隔）"
                   />
@@ -331,19 +347,30 @@ export default function AdCreation() {
                 </h2>
                 
                 <div>
-                  <Label className="text-white">版面</Label>
-                  <Select value={formData.placement} onValueChange={(value) => setFormData(prev => ({ ...prev, placement: value }))}>
-                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                      <SelectValue placeholder="選擇廣告版面" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-700 border-gray-600">
-                      {PLACEMENTS.map((placement) => (
-                        <SelectItem key={placement.value} value={placement.value}>
+                  <Label className="text-white">版面 (可複選)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 bg-gray-800 p-3 rounded border border-gray-600">
+                    {PLACEMENTS.map((placement) => (
+                      <div key={placement.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`placement-${placement.value}`}
+                          checked={formData.placements.includes(placement.value)}
+                          onCheckedChange={() => handlePlacementToggle(placement.value)}
+                          className="border-gray-500"
+                        />
+                        <Label
+                          htmlFor={`placement-${placement.value}`}
+                          className="text-sm text-white cursor-pointer"
+                        >
                           {placement.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  {formData.placements.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-300">
+                      已選擇: {formData.placements.map(p => PLACEMENTS.find(pl => pl.value === p)?.label).join(', ')}
+                    </div>
+                  )}
                 </div>
               </div>
 

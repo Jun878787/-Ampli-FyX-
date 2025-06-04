@@ -148,12 +148,12 @@ export default function FacebookAdsAnalytics() {
               <RefreshCw className={`w-4 h-4 mr-2 ${refreshDataMutation.isPending ? 'animate-spin' : ''}`} />
               刷新數據
             </Button>
-            <Button
-              onClick={() => exportDataMutation.mutate('excel')}
-              disabled={exportDataMutation.isPending}
+            <Button 
+              onClick={goToAdCreation}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <Download className="w-4 h-4 mr-2" />
-              導出數據
+              <Plus className="h-4 w-4 mr-2" />
+              創建廣告
             </Button>
           </div>
         </div>
@@ -354,15 +354,8 @@ export default function FacebookAdsAnalytics() {
           </TabsList>
 
           <TabsContent value="trends" className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
+            <div className="mb-4">
               <h3 className="text-lg font-semibold text-white">趨勢分析</h3>
-              <Button 
-                onClick={goToAdCreation}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                創建廣告
-              </Button>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
