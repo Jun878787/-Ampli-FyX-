@@ -433,9 +433,34 @@ export default function FacebookAdsAnalytics() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {/* 顯示手動廣告數據 */}
+                    {manualAdData.map((campaign, index) => (
+                      <TableRow 
+                        key={`manual-${campaign.id}`} 
+                        className="border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors"
+                        onClick={() => goToDataInput(`manual-${campaign.id}`, campaign.campaignName)}
+                      >
+                        <TableCell className="text-white font-medium flex items-center gap-2">
+                          {campaign.campaignName}
+                          <Badge variant="outline" className="ml-2 text-xs">新建</Badge>
+                          <MousePointer className="h-4 w-4 text-gray-400" />
+                        </TableCell>
+                        <TableCell className="text-gray-300">${(campaign.spend || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-gray-300">{(campaign.impressions || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-gray-300">{(campaign.clicks || 0).toLocaleString()}</TableCell>
+                        <TableCell className="text-gray-300">{campaign.conversions || 0}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            待更新
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    
+                    {/* 顯示模擬活動數據 */}
                     {mockAnalyticsData.campaignPerformance.map((campaign, index) => (
                       <TableRow 
-                        key={index} 
+                        key={`mock-${index}`} 
                         className="border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors"
                         onClick={() => goToDataInput(campaign.id || `campaign-${index}`, campaign.name)}
                       >
