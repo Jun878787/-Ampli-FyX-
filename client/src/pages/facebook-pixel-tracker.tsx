@@ -74,11 +74,21 @@ export default function FacebookPixelTracker() {
       });
     },
     onSuccess: (data: any) => {
-      setPixelData(data.pixelData);
-      toast({
-        title: "像素數據提取成功",
-        description: `成功獲取像素 ${pixelId} 的廣告數據`,
-      });
+      console.log('API Response:', data);
+      if (data && data.pixelData) {
+        setPixelData(data.pixelData);
+        toast({
+          title: "像素數據提取成功",
+          description: `成功獲取像素 ${pixelId} 的廣告數據`,
+        });
+      } else {
+        console.error('No pixelData in response:', data);
+        toast({
+          title: "數據格式錯誤",
+          description: "API回應格式不正確",
+          variant: "destructive",
+        });
+      }
       setIsLoading(false);
     },
     onError: (error) => {
