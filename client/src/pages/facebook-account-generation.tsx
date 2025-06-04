@@ -28,14 +28,33 @@ interface FacebookGenerationTask {
 }
 
 interface TaskSettings {
+  // 基本帳號設定
+  nameTemplate: string;
+  emailTemplate: string;
+  passwordTemplate: string;
+  startingNumber: number;
+  numberPadding: number;
+  
+  // 個人資料設定
   ageRange: { min: number; max: number };
   gender: string;
   location: string;
   interests: string[];
   profilePhotoType: string;
+  coverPhotoType: string;
   bioStyle: string;
-  verificationRequired: boolean;
+  
+  // 安全與驗證設定
+  phoneVerification: boolean;
+  emailVerification: boolean;
+  proxyRequired: boolean;
+  userAgent: string;
+  
+  // 行為設定
   warmupPeriod: number;
+  dailyActivityLimit: number;
+  friendRequestDelay: number;
+  postingSchedule: string;
 }
 
 export default function FacebookAccountGeneration() {
@@ -43,14 +62,33 @@ export default function FacebookAccountGeneration() {
   const [newTaskName, setNewTaskName] = useState("");
   const [targetCount, setTargetCount] = useState(5);
   const [taskSettings, setTaskSettings] = useState<TaskSettings>({
+    // 基本帳號設定
+    nameTemplate: "User{number}",
+    emailTemplate: "{name}@gmail.com", 
+    passwordTemplate: "Pass{number}123!",
+    startingNumber: 1,
+    numberPadding: 3,
+    
+    // 個人資料設定
     ageRange: { min: 18, max: 35 },
     gender: "mixed",
     location: "taiwan",
     interests: [],
     profilePhotoType: "realistic",
+    coverPhotoType: "landscape",
     bioStyle: "casual",
-    verificationRequired: true,
-    warmupPeriod: 7
+    
+    // 安全與驗證設定
+    phoneVerification: false,
+    emailVerification: true,
+    proxyRequired: true,
+    userAgent: "auto",
+    
+    // 行為設定
+    warmupPeriod: 7,
+    dailyActivityLimit: 50,
+    friendRequestDelay: 30,
+    postingSchedule: "random"
   });
   const { toast } = useToast();
 
@@ -195,6 +233,67 @@ export default function FacebookAccountGeneration() {
                       />
                     </div>
 
+                    {/* 帳號命名設定 */}
+                    <div className="space-y-3 p-4 bg-gray-800 rounded-lg">
+                      <Label className="text-white font-semibold">帳號命名設定</Label>
+                      
+                      <div>
+                        <Label className="text-sm text-gray-300">用戶名模板</Label>
+                        <Input
+                          value={taskSettings.nameTemplate}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, nameTemplate: e.target.value}))}
+                          placeholder="例如: User{number} 或 北金{number}"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">{`{number}會被序號替換，{random}會被隨機字符替換`}</p>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">郵箱模板</Label>
+                        <Input
+                          value={taskSettings.emailTemplate}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, emailTemplate: e.target.value}))}
+                          placeholder="例如: {name}@gmail.com"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">密碼模板</Label>
+                        <Input
+                          value={taskSettings.passwordTemplate}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, passwordTemplate: e.target.value}))}
+                          placeholder="例如: Pass{number}123!"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <Label className="text-sm text-gray-300">起始序號</Label>
+                          <Input
+                            type="number"
+                            value={taskSettings.startingNumber}
+                            onChange={(e) => setTaskSettings(prev => ({...prev, startingNumber: parseInt(e.target.value) || 1}))}
+                            min="1"
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-gray-300">序號位數</Label>
+                          <Input
+                            type="number"
+                            value={taskSettings.numberPadding}
+                            onChange={(e) => setTaskSettings(prev => ({...prev, numberPadding: parseInt(e.target.value) || 3}))}
+                            min="1"
+                            max="5"
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">例如: 3位數 = 001, 002, 003</p>
+                        </div>
+                      </div>
+                    </div>
+
                     <div>
                       <Label className="text-white">年齡範圍</Label>
                       <div className="flex gap-2">
@@ -256,6 +355,114 @@ export default function FacebookAccountGeneration() {
                           <SelectItem value="malaysia">馬來西亞</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+
+                    {/* 安全與驗證設定 */}
+                    <div className="space-y-3 p-4 bg-gray-800 rounded-lg">
+                      <Label className="text-white font-semibold">安全與驗證設定</Label>
+                      
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm text-gray-300">手機號碼驗證</Label>
+                        <Switch
+                          checked={taskSettings.phoneVerification}
+                          onCheckedChange={(checked) => setTaskSettings(prev => ({...prev, phoneVerification: checked}))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm text-gray-300">郵箱驗證</Label>
+                        <Switch
+                          checked={taskSettings.emailVerification}
+                          onCheckedChange={(checked) => setTaskSettings(prev => ({...prev, emailVerification: checked}))}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm text-gray-300">代理IP要求</Label>
+                        <Switch
+                          checked={taskSettings.proxyRequired}
+                          onCheckedChange={(checked) => setTaskSettings(prev => ({...prev, proxyRequired: checked}))}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">用戶代理</Label>
+                        <Select
+                          value={taskSettings.userAgent}
+                          onValueChange={(value) => setTaskSettings(prev => ({...prev, userAgent: value}))}
+                        >
+                          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-700 border-gray-600">
+                            <SelectItem value="auto">自動檢測</SelectItem>
+                            <SelectItem value="chrome">Chrome 瀏覽器</SelectItem>
+                            <SelectItem value="firefox">Firefox 瀏覽器</SelectItem>
+                            <SelectItem value="safari">Safari 瀏覽器</SelectItem>
+                            <SelectItem value="mobile">移動設備</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* 行為設定 */}
+                    <div className="space-y-3 p-4 bg-gray-800 rounded-lg">
+                      <Label className="text-white font-semibold">行為設定</Label>
+                      
+                      <div>
+                        <Label className="text-sm text-gray-300">暖機期間 (天)</Label>
+                        <Input
+                          type="number"
+                          value={taskSettings.warmupPeriod}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, warmupPeriod: parseInt(e.target.value) || 7}))}
+                          min="1"
+                          max="30"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">每日活動限制</Label>
+                        <Input
+                          type="number"
+                          value={taskSettings.dailyActivityLimit}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, dailyActivityLimit: parseInt(e.target.value) || 50}))}
+                          min="10"
+                          max="200"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">好友請求延遲 (分鐘)</Label>
+                        <Input
+                          type="number"
+                          value={taskSettings.friendRequestDelay}
+                          onChange={(e) => setTaskSettings(prev => ({...prev, friendRequestDelay: parseInt(e.target.value) || 30}))}
+                          min="5"
+                          max="120"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm text-gray-300">發文排程</Label>
+                        <Select
+                          value={taskSettings.postingSchedule}
+                          onValueChange={(value) => setTaskSettings(prev => ({...prev, postingSchedule: value}))}
+                        >
+                          <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-700 border-gray-600">
+                            <SelectItem value="random">隨機時間</SelectItem>
+                            <SelectItem value="morning">早上時段</SelectItem>
+                            <SelectItem value="afternoon">下午時段</SelectItem>
+                            <SelectItem value="evening">晚上時段</SelectItem>
+                            <SelectItem value="peak">高峰時段</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div>
