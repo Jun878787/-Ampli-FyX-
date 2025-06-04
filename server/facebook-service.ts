@@ -25,11 +25,15 @@ interface FacebookPageInfo {
 
 class FacebookService {
   private apiKey: string;
+  private appId: string;
+  private appSecret: string;
   private baseUrl = 'https://graph.facebook.com/v18.0';
 
   constructor() {
-    // Use the user access token provided by the user for real data access
-    this.apiKey = 'EAAOpW7O5RWcBOz0CNbRNhuXlF3YwLrDWhVKVtehOX0Kq8o6tLNLEGP0OZCoKYMVN4zSzFZCPff4kWY2DHNWxifPysJuJhG9OXxZAy0ZAv2ZCUmBds9avDZBAXdDBkTlxj0H7XnmHOGcPWsgLZABCZCj7oXVIwWnL1fdA8BN45ZAilZAjwD2vG3MoyyI802AgrPaZA5xI0O2St8EzALxo3N0u4Bgtihi2wcZCJgMVyRQZD';
+    // Facebook應用程式憑證
+    this.appId = '2213169895810612';
+    this.appSecret = 'f83b0f49d07b550f65d69354659fc2dd';
+    this.apiKey = 'ce60b2899822e5d3ff02cece5048ae31';
     if (!this.apiKey) {
       console.warn('Facebook API key not found in environment variables');
     }
