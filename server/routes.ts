@@ -2107,6 +2107,11 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Test route to verify API routing works
+  app.get("/api/test", (req: Request, res: Response) => {
+    res.json({ message: "API routing works", timestamp: new Date().toISOString() });
+  });
+
   // Ad creation and management endpoints
   app.post("/api/ads/create", async (req: Request, res: Response) => {
     try {
