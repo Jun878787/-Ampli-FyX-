@@ -18,6 +18,7 @@ import FacebookBatchManagement from "@/pages/facebook-batch-management";
 import FacebookAccountGeneration from "@/pages/facebook-account-generation";
 import AutoMessaging from "@/pages/auto-messaging";
 import AdManager from "@/pages/ad-manager";
+import FacebookApiTest from "@/pages/facebook-api-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -43,6 +44,7 @@ function Router() {
 
             <Route path="/facebook-account-generation" component={FacebookAccountGeneration} />
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
+            <Route path="/facebook-api-test" component={FacebookApiTest} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />

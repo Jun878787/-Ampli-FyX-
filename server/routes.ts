@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -996,7 +996,7 @@ function simulateCollectionProgress(taskId: number) {
   }, 3000);
 
   // Facebook API routes
-  app.get("/api/facebook/test", async (req, res) => {
+  app.get("/api/facebook/test", async (req: Request, res: Response) => {
     try {
       const result = await facebookService.testConnection();
       res.json(result);
@@ -1009,7 +1009,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/validate-token", async (req, res) => {
+  app.get("/api/facebook/validate-token", async (req: Request, res: Response) => {
     try {
       const result = await facebookService.validateAccessToken();
       res.json(result);
@@ -1022,7 +1022,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/user/:userId?", async (req, res) => {
+  app.get("/api/facebook/user/:userId?", async (req: Request, res: Response) => {
     try {
       const userId = req.params.userId;
       const result = await facebookService.getUserInfo(userId);
@@ -1036,7 +1036,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/page/:pageId", async (req, res) => {
+  app.get("/api/facebook/page/:pageId", async (req: Request, res: Response) => {
     try {
       const pageId = req.params.pageId;
       const result = await facebookService.getPageInfo(pageId);
@@ -1050,7 +1050,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/search/pages", async (req, res) => {
+  app.get("/api/facebook/search/pages", async (req: Request, res: Response) => {
     try {
       const query = req.query.q as string;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -1073,7 +1073,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/page/:pageId/posts", async (req, res) => {
+  app.get("/api/facebook/page/:pageId/posts", async (req: Request, res: Response) => {
     try {
       const pageId = req.params.pageId;
       const limit = parseInt(req.query.limit as string) || 25;
