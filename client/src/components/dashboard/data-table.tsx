@@ -298,11 +298,17 @@ export default function DataTable() {
 
         <div className="px-6 py-4 border-t border-border flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            顯示 <span className="font-medium">{offset + 1}</span> 到{" "}
-            <span className="font-medium">
-              {Math.min(offset + limit, collectedData?.total || 0)}
-            </span>{" "}
-            項，共 <span className="font-medium">{collectedData?.total || 0}</span> 項結果
+            {collectedData?.total > 0 ? (
+              <>
+                顯示 <span className="font-medium">{offset + 1}</span> 到{" "}
+                <span className="font-medium">
+                  {Math.min(offset + limit, collectedData?.total || 0)}
+                </span>{" "}
+                項，共 <span className="font-medium">{collectedData?.total || 0}</span> 項結果
+              </>
+            ) : (
+              "沒有找到數據"
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -310,17 +316,19 @@ export default function DataTable() {
               size="sm"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
+              className="bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600 rounded-lg"
             >
               上一頁
             </Button>
-            <span className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded">
-              {currentPage}
+            <span className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg">
+              第 {currentPage} 頁
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={!collectedData?.data || collectedData.data.length < limit}
+              disabled={!collectedData?.data || collectedData.data.length < limit || (collectedData?.total && offset + limit >= collectedData.total)}
+              className="bg-slate-700 border-slate-600 text-slate-100 hover:bg-slate-600 rounded-lg"
             >
               下一頁
             </Button>
