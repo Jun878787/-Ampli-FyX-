@@ -117,11 +117,11 @@ export default function DataTable() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "collected":
-        return <Badge variant="secondary">已收集</Badge>;
+        return <Badge className="bg-green-600 text-green-100 border-green-600">已收集</Badge>;
       case "processing":
-        return <Badge variant="outline">處理中</Badge>;
+        return <Badge className="bg-blue-600 text-blue-100 border-blue-600">處理中</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge className="bg-slate-600 text-slate-100 border-slate-600">{status}</Badge>;
     }
   };
 
@@ -153,12 +153,12 @@ export default function DataTable() {
   }
 
   return (
-    <Card className="bg-card border-border">
-      <CardHeader className="border-b border-border">
+    <Card className="bg-slate-800/50 border-slate-700 rounded-xl">
+      <CardHeader className="border-b border-slate-700">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-card-foreground">收集數據</h3>
-            <p className="text-muted-foreground mt-1">最近收集的 Facebook 數據</p>
+            <h3 className="text-lg font-semibold text-slate-100">收集數據</h3>
+            <p className="text-slate-400 mt-1">最近收集的 Facebook 數據</p>
           </div>
           <div className="flex items-center space-x-3">
             <div className="relative">
@@ -166,14 +166,14 @@ export default function DataTable() {
                 placeholder="搜索數據..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-64"
+                className="pl-10 w-64 bg-slate-700 border-slate-600 text-slate-100 rounded-lg placeholder:text-slate-400"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             </div>
             <Button
               onClick={handleExport}
               disabled={selectedItems.size === 0 || exportMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-white rounded-lg border-0"
             >
               <Download className="mr-2 h-4 w-4" />
               {selectedItems.size > 0 ? `導出 (${selectedItems.size})` : "導出"}
@@ -185,7 +185,7 @@ export default function DataTable() {
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted border-b border-border">
+            <thead className="bg-slate-700/50 border-b border-slate-600">
               <tr>
                 <th className="px-6 py-3 text-left">
                   <Checkbox
@@ -194,66 +194,68 @@ export default function DataTable() {
                       selectedItems.size === collectedData.data.length
                     }
                     onCheckedChange={handleSelectAll}
+                    className="border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   內容
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   作者
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   發布時間
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   互動數
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   狀態
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   操作
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-card divide-y divide-border">
+            <tbody className="bg-slate-800/30 divide-y divide-slate-700">
               {collectedData?.data?.map((item: CollectedDataItem) => (
-                <tr key={item.id} className="hover:bg-muted">
+                <tr key={item.id} className="hover:bg-slate-700/30">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <Checkbox
                       checked={selectedItems.has(item.id)}
                       onCheckedChange={(checked) => handleSelectItem(item.id, checked as boolean)}
+                      className="border-slate-600 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-start space-x-3">
-                      <div className="w-12 h-12 bg-muted rounded-lg flex-shrink-0"></div>
+                      <div className="w-12 h-12 bg-slate-700 rounded-lg flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm font-medium text-card-foreground line-clamp-2">
+                        <p className="text-sm font-medium text-slate-100 line-clamp-2">
                           {item.content}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">貼文內容</p>
+                        <p className="text-xs text-slate-400 mt-1">貼文內容</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground text-sm font-medium">
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">
                           {item.author.avatar}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-card-foreground">{item.author.name}</p>
-                        <p className="text-xs text-muted-foreground">{item.author.followers} 追蹤者</p>
+                        <p className="text-sm font-medium text-slate-100">{item.author.name}</p>
+                        <p className="text-xs text-slate-400">{item.author.followers} 追蹤者</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                     {formatDate(item.publishTime)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-4 text-sm text-slate-400">
                       <span className="flex items-center">
                         <Heart className="h-4 w-4 text-red-500 mr-1" />
                         {item.interactions.likes}
@@ -273,16 +275,16 @@ export default function DataTable() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
+                      <Button variant="ghost" size="sm" className="text-blue-400 hover:text-blue-300 hover:bg-slate-700/50">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300">
+                      <Button variant="ghost" size="sm" className="text-green-400 hover:text-green-300 hover:bg-slate-700/50">
                         <Download className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-red-400 hover:text-red-300"
+                        className="text-red-400 hover:text-red-300 hover:bg-slate-700/50"
                         onClick={() => deleteDataMutation.mutate(item.id)}
                         disabled={deleteDataMutation.isPending}
                       >
