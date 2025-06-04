@@ -14,6 +14,7 @@ import {
   insertTranslationSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { gmailService, type GmailAccountRequest } from "./gmail-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // System Stats routes
@@ -830,8 +831,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // Facebook Account Generation Simulation
-function simulateFacebookAccountGeneration(taskId: number) {
-  console.log(`Starting account creation task ${taskId} for ${Math.floor(Math.random() * 10) + 5} accounts`);
+async function simulateFacebookAccountGeneration(taskId: number) {
+  const task = await storage.getFacebookGenerationTask(taskId);
+  if (!task) return;
+
+  const settings = task.settings as any;
+  const emailStrategy = settings?.emailStrategy || 'template_only';
+  
+  console.log(`Starting account creation task ${taskId} with ${task.targetCount} accounts using ${emailStrategy} strategy`);
   
   setTimeout(async () => {
     try {
@@ -840,13 +847,79 @@ function simulateFacebookAccountGeneration(taskId: number) {
         startedAt: new Date()
       });
       
-      // Simulate gradual progress
-      const targetCount = Math.floor(Math.random() * 10) + 5;
-      for (let i = 1; i <= targetCount; i++) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      // Generate accounts based on task settings
+      for (let i = 1; i <= task.targetCount; i++) {
+        const accountNumber = i;
+        const paddedNumber = accountNumber.toString().padStart(settings?.numberPadding || 3, '0');
+        
+        // Generate account details based on user settings
+        let username = settings?.nameTemplate?.replace('{number}', paddedNumber) || `user${paddedNumber}`;
+        let email = settings?.emailTemplate?.replace('{name}', username).replace('{number}', paddedNumber) || `${username}@gmail.com`;
+        let password = settings?.passwordTemplate?.replace('{number}', paddedNumber) || `Pass${paddedNumber}123!`;
+        
+        // Handle email creation based on strategy
+        let emailCreated = false;
+        let emailStatus = 'template_generated';
+        
+        if (emailStrategy === 'auto_create_gmail') {
+          try {
+            const result = await gmailService.createAccount({
+              username: username,
+              password: password,
+              firstName: settings?.firstName,
+              lastName: settings?.lastName
+            });
+            
+            if (result.success) {
+              email = result.email!;
+              emailCreated = true;
+              emailStatus = 'gmail_created';
+              console.log(`Gmail account created: ${email}`);
+            } else {
+              emailStatus = 'gmail_failed';
+              console.log(`Gmail creation failed for ${username}: ${result.error}`);
+            }
+          } catch (error) {
+            emailStatus = 'gmail_error';
+            console.error(`Gmail API error for ${username}:`, error);
+          }
+        } else if (emailStrategy === 'temp_email') {
+          emailStatus = 'temp_email_used';
+          email = `${username}@10minutemail.com`;
+        } else if (emailStrategy === 'existing_pool') {
+          emailStatus = 'pool_email_assigned';
+          const domains = settings?.emailDomains || ['gmail.com'];
+          const randomDomain = domains[Math.floor(Math.random() * domains.length)];
+          email = `${username}@${randomDomain}`;
+        }
+        
+        // Create Facebook account record
+        const accountData = {
+          accountId: `fb_${Date.now()}_${accountNumber}`,
+          username: username,
+          email: email,
+          password: password,
+          status: emailCreated ? 'email_verified' as const : 'pending_verification' as const,
+          createdAt: new Date(),
+          profileUrl: `https://facebook.com/${username}`,
+          friendsCount: 0,
+          isVerified: emailCreated,
+          notes: `Task ${taskId} | Strategy: ${emailStrategy} | Status: ${emailStatus}`,
+          lastActivity: new Date(),
+          proxy: settings?.proxyRequired ? 'proxy_required' : null,
+          cookies: null,
+          userAgent: settings?.userAgent || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        };
+        
+        await storage.createFacebookAccount(accountData);
+        
+        // Update progress
         await storage.updateFacebookGenerationTask(taskId, {
           completedCount: i
         });
+        
+        // Delay between account creations
+        await new Promise(resolve => setTimeout(resolve, emailStrategy === 'auto_create_gmail' ? 3000 : 1000));
       }
       
       await storage.updateFacebookGenerationTask(taskId, {
@@ -854,7 +927,7 @@ function simulateFacebookAccountGeneration(taskId: number) {
         completedAt: new Date()
       });
       
-      console.log(`Facebook account generation task ${taskId} completed`);
+      console.log(`Facebook account generation task ${taskId} completed with ${task.targetCount} accounts`);
     } catch (error) {
       console.error(`Error in Facebook account generation task ${taskId}:`, error);
       await storage.updateFacebookGenerationTask(taskId, {
@@ -921,4 +994,63 @@ function simulateCollectionProgress(taskId: number) {
       });
     }
   }, 3000);
+}
+
+  // Gmail API routes
+  const gmailAccountRequestSchema = z.object({
+    username: z.string().min(1),
+    password: z.string().min(6),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    recoveryEmail: z.string().email().optional()
+  });
+
+  app.post("/api/gmail/create-account", async (req, res) => {
+    try {
+      const requestData = gmailAccountRequestSchema.parse(req.body);
+      const result = await gmailService.createAccount(requestData);
+      res.json(result);
+    } catch (error) {
+      console.error("Gmail account creation error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "創建 Gmail 帳戶失敗" 
+      });
+    }
+  });
+
+  app.post("/api/gmail/verify", async (req, res) => {
+    try {
+      const { email, verificationCode } = req.body;
+      if (!email || !verificationCode) {
+        return res.status(400).json({ success: false, error: "缺少必要參數" });
+      }
+      
+      const result = await gmailService.verifyAccount(email, verificationCode);
+      res.json({ success: result });
+    } catch (error) {
+      console.error("Gmail verification error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "驗證失敗" 
+      });
+    }
+  });
+
+  app.get("/api/gmail/check-availability/:username", async (req, res) => {
+    try {
+      const { username } = req.params;
+      const available = await gmailService.checkAvailability(username);
+      res.json({ available });
+    } catch (error) {
+      console.error("Username availability check error:", error);
+      res.status(500).json({ 
+        available: false, 
+        error: error instanceof Error ? error.message : "檢查失敗" 
+      });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
 }
