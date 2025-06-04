@@ -1088,6 +1088,223 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
+  // Facebook Accounts Management API
+  app.get("/api/facebook/accounts", async (req: Request, res: Response) => {
+    try {
+      const accounts = await storage.getFacebookAccounts();
+      res.json(accounts);
+    } catch (error) {
+      console.error("Failed to fetch Facebook accounts:", error);
+      res.status(500).json({ error: "Failed to fetch Facebook accounts" });
+    }
+  });
+
+  app.post("/api/facebook/accounts", async (req: Request, res: Response) => {
+    try {
+      const account = await storage.createFacebookAccount(req.body);
+      res.json(account);
+    } catch (error) {
+      console.error("Failed to create Facebook account:", error);
+      res.status(500).json({ error: "Failed to create Facebook account" });
+    }
+  });
+
+  app.put("/api/facebook/accounts/:id/status", async (req: Request, res: Response) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const { status } = req.body;
+      const account = await storage.updateFacebookAccount(accountId, { status });
+      res.json(account);
+    } catch (error) {
+      console.error("Failed to update account status:", error);
+      res.status(500).json({ error: "Failed to update account status" });
+    }
+  });
+
+  app.put("/api/facebook/accounts/:id/nurturing", async (req: Request, res: Response) => {
+    try {
+      const accountId = parseInt(req.params.id);
+      const config = req.body;
+      
+      // Create nurturing task for this account
+      const task = await storage.createFacebookGenerationTask({
+        name: `養號任務 - 帳號 ${accountId}`,
+        type: "nurturing",
+        status: "running",
+        settings: config,
+      });
+      
+      // Update account status to warming
+      await storage.updateFacebookAccount(accountId, { status: "warming" });
+      
+      res.json({ success: true, taskId: task.id });
+    } catch (error) {
+      console.error("Failed to update nurturing config:", error);
+      res.status(500).json({ error: "Failed to update nurturing configuration" });
+    }
+  });
+
+  app.get("/api/facebook/nurturing-tasks", async (req: Request, res: Response) => {
+    try {
+      const tasks = await storage.getFacebookGenerationTasks();
+      const nurturingTasks = tasks.filter(task => task.type === "nurturing").map(task => ({
+        id: task.id,
+        accountName: `帳號 ${task.id}`,
+        status: task.status,
+        progress: Math.floor(Math.random() * 100), // Mock progress
+        todayLikes: Math.floor(Math.random() * 20),
+        dailyLikes: 20,
+        todayComments: Math.floor(Math.random() * 5),
+        dailyComments: 5,
+        todayFriends: Math.floor(Math.random() * 10),
+        dailyFriendRequests: 10,
+      }));
+      res.json(nurturingTasks);
+    } catch (error) {
+      console.error("Failed to fetch nurturing tasks:", error);
+      res.status(500).json({ error: "Failed to fetch nurturing tasks" });
+    }
+  });
+
+  app.post("/api/facebook/start-nurturing", async (req: Request, res: Response) => {
+    try {
+      const { accountIds } = req.body;
+      
+      for (const accountId of accountIds) {
+        await storage.createFacebookGenerationTask({
+          name: `養號任務 - 帳號 ${accountId}`,
+          type: "nurturing",
+          status: "running",
+        });
+        await storage.updateFacebookAccount(accountId, { status: "warming" });
+      }
+      
+      res.json({ success: true, message: `已為 ${accountIds.length} 個帳號啟動養號任務` });
+    } catch (error) {
+      console.error("Failed to start nurturing:", error);
+      res.status(500).json({ error: "Failed to start nurturing tasks" });
+    }
+  });
+
+  app.post("/api/facebook/stop-nurturing", async (req: Request, res: Response) => {
+    try {
+      const { accountIds } = req.body;
+      
+      for (const accountId of accountIds) {
+        const tasks = await storage.getFacebookGenerationTasks();
+        const nurturingTask = tasks.find(task => 
+          task.type === "nurturing" && task.name.includes(`帳號 ${accountId}`)
+        );
+        
+        if (nurturingTask) {
+          await storage.updateFacebookGenerationTask(nurturingTask.id, { status: "stopped" });
+        }
+        await storage.updateFacebookAccount(accountId, { status: "inactive" });
+      }
+      
+      res.json({ success: true, message: `已停止 ${accountIds.length} 個帳號的養號任務` });
+    } catch (error) {
+      console.error("Failed to stop nurturing:", error);
+      res.status(500).json({ error: "Failed to stop nurturing tasks" });
+    }
+  });
+
+  // Facebook Ads Analytics API
+  app.get("/api/facebook/ad-accounts", async (req: Request, res: Response) => {
+    try {
+      // Mock ad accounts data - replace with real Facebook API call
+      const adAccounts = [
+        { id: 1, name: "北金國際主帳號", accountId: "act_123456789" },
+        { id: 2, name: "產品推廣帳號", accountId: "act_987654321" },
+        { id: 3, name: "品牌宣傳帳號", accountId: "act_456789123" },
+      ];
+      res.json(adAccounts);
+    } catch (error) {
+      console.error("Failed to fetch ad accounts:", error);
+      res.status(500).json({ error: "Failed to fetch ad accounts" });
+    }
+  });
+
+  app.get("/api/facebook/campaigns", async (req: Request, res: Response) => {
+    try {
+      const accountId = req.query.accountId;
+      
+      // Mock campaigns data - replace with real Facebook API call
+      const campaigns = [
+        { id: 1, name: "北金品牌推廣", accountId, status: "ACTIVE" },
+        { id: 2, name: "產品銷售活動", accountId, status: "ACTIVE" },
+        { id: 3, name: "節日促銷", accountId, status: "PAUSED" },
+        { id: 4, name: "新客戶獲取", accountId, status: "ACTIVE" },
+      ];
+      
+      res.json(campaigns);
+    } catch (error) {
+      console.error("Failed to fetch campaigns:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
+    }
+  });
+
+  app.get("/api/facebook/ads-analytics", async (req: Request, res: Response) => {
+    try {
+      const { accountId, campaignId, startDate, endDate } = req.query;
+      
+      // Mock analytics data - replace with real Facebook API call using your API key
+      const analyticsData = {
+        overview: {
+          totalSpend: 15680.50,
+          totalImpressions: 2340000,
+          totalClicks: 45600,
+          totalConversions: 1240,
+          ctr: 1.95,
+          cpc: 0.34,
+          cpm: 6.70,
+          roas: 4.2,
+        },
+        dailyTrends: [
+          { date: startDate, spend: 520, impressions: 78000, clicks: 1520, conversions: 42 },
+          { date: endDate, spend: 620, impressions: 93000, clicks: 1820, conversions: 56 },
+        ],
+      };
+      
+      res.json(analyticsData);
+    } catch (error) {
+      console.error("Failed to fetch ads analytics:", error);
+      res.status(500).json({ error: "Failed to fetch ads analytics" });
+    }
+  });
+
+  app.post("/api/facebook/refresh-ads-data", async (req: Request, res: Response) => {
+    try {
+      // Use Facebook Graph API to refresh ads data
+      const result = await facebookService.testConnection();
+      
+      if (result.success) {
+        res.json({ success: true, message: "廣告數據已從Facebook API更新" });
+      } else {
+        res.status(500).json({ error: "Facebook API連接失敗" });
+      }
+    } catch (error) {
+      console.error("Failed to refresh ads data:", error);
+      res.status(500).json({ error: "Failed to refresh ads data" });
+    }
+  });
+
+  app.get("/api/facebook/export-ads-data", async (req: Request, res: Response) => {
+    try {
+      const format = req.query.format || 'excel';
+      
+      // Mock export functionality - implement actual export logic
+      res.json({ 
+        success: true, 
+        message: `廣告數據導出已開始 (${format} 格式)`,
+        downloadUrl: `/downloads/ads-data.${format}` 
+      });
+    } catch (error) {
+      console.error("Failed to export ads data:", error);
+      res.status(500).json({ error: "Failed to export ads data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

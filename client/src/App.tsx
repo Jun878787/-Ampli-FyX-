@@ -13,12 +13,13 @@ import ExportData from "@/pages/export-data";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import FacebookAccounts from "@/pages/facebook-accounts";
-
+import FacebookAccountManager from "@/pages/facebook-account-manager";
 import FacebookBatchManagement from "@/pages/facebook-batch-management";
 import FacebookAccountGeneration from "@/pages/facebook-account-generation";
 import AutoMessaging from "@/pages/auto-messaging";
 import AdManager from "@/pages/ad-manager";
 import FacebookApiTest from "@/pages/facebook-api-test";
+import FacebookAdsAnalytics from "@/pages/facebook-ads-analytics";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -41,10 +42,11 @@ function Router() {
             <Route path="/analytics" component={Analytics} />
             <Route path="/settings" component={Settings} />
             <Route path="/facebook-accounts" component={FacebookAccounts} />
-
+            <Route path="/facebook-account-manager" component={FacebookAccountManager} />
             <Route path="/facebook-account-generation" component={FacebookAccountGeneration} />
             <Route path="/facebook-batch-management" component={FacebookBatchManagement} />
             <Route path="/facebook-api-test" component={FacebookApiTest} />
+            <Route path="/facebook-ads-analytics" component={FacebookAdsAnalytics} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route component={NotFound} />
