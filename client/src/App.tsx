@@ -27,6 +27,8 @@ import FacebookContentExtractor from "@/pages/facebook-content-extractor";
 import FacebookPixelTracker from "@/pages/facebook-pixel-tracker";
 import MyFacebookAccount from "@/pages/my-facebook-account";
 import ManualAdData from "@/pages/manual-ad-data";
+import AdCreation from "@/pages/ad-creation";
+import AdDataInput from "@/pages/ad-data-input";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import DataDeletion from "@/pages/data-deletion";
 import TermsOfService from "@/pages/terms-of-service";
@@ -64,6 +66,8 @@ function Router() {
         <Route path="/facebook-pixel-tracker" component={FacebookPixelTracker} />
             <Route path="/my-facebook-account" component={MyFacebookAccount} />
             <Route path="/manual-ad-data" component={ManualAdData} />
+            <Route path="/ad-creation" component={AdCreation} />
+            <Route path="/ad-data-input" component={AdDataInput} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />

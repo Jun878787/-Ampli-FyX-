@@ -35,8 +35,39 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Ad campaigns table
+export const adCampaigns = pgTable("ad_campaigns", {
+  id: varchar("id").primaryKey().notNull(),
+  campaignName: varchar("campaign_name").notNull(),
+  dailyBudget: integer("daily_budget").notNull(),
+  adObjective: varchar("ad_objective").notNull(),
+  audience: jsonb("audience").notNull(),
+  placement: varchar("placement").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Daily ad data table
+export const adDailyData = pgTable("ad_daily_data", {
+  id: serial("id").primaryKey(),
+  campaignId: varchar("campaign_id").notNull().references(() => adCampaigns.id),
+  date: varchar("date").notNull(),
+  dailySpend: integer("daily_spend").notNull(),
+  views: integer("views").notNull(),
+  reach: integer("reach").notNull(),
+  interactions: integer("interactions").notNull(),
+  followers: integer("followers").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type AdCampaign = typeof adCampaigns.$inferSelect;
+export type InsertAdCampaign = typeof adCampaigns.$inferInsert;
+export type AdDailyData = typeof adDailyData.$inferSelect;
+export type InsertAdDailyData = typeof adDailyData.$inferInsert;
 
 // Collection Tasks
 export const collectionTasks = pgTable("collection_tasks", {
