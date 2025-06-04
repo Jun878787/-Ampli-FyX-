@@ -16,7 +16,7 @@ import {
   MapPin,
   Clock,
   Link as LinkIcon,
-  Avatar as AvatarIcon
+  Circle
 } from "lucide-react";
 
 interface PersonData {
@@ -213,7 +213,7 @@ export default function PersonCollection() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <AvatarIcon className="h-8 w-8 text-gray-400" />
+                        <Circle className="h-8 w-8 text-gray-400" />
                         <span className="text-gray-300 text-sm">頭像</span>
                       </div>
                     </TableCell>

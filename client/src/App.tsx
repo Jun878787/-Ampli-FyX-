@@ -33,6 +33,12 @@ import AdDataInput from "@/pages/ad-data-input";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import DataDeletion from "@/pages/data-deletion";
 import TermsOfService from "@/pages/terms-of-service";
+import FanPageCollection from "@/pages/fan-page-collection";
+import KeywordCollection from "@/pages/keyword-collection";
+import GroupCollection from "@/pages/group-collection";
+import PersonCollection from "@/pages/person-collection";
+import RegionCollection from "@/pages/region-collection";
+import AdCollection from "@/pages/ad-collection";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -72,6 +78,12 @@ function Router() {
             <Route path="/ad-data-input" component={AdDataInput} />
             <Route path="/auto-messaging" component={AutoMessaging} />
             <Route path="/ad-manager" component={AdManager} />
+            <Route path="/fan-page-collection" component={FanPageCollection} />
+            <Route path="/keyword-collection" component={KeywordCollection} />
+            <Route path="/group-collection" component={GroupCollection} />
+            <Route path="/person-collection" component={PersonCollection} />
+            <Route path="/region-collection" component={RegionCollection} />
+            <Route path="/ad-collection" component={AdCollection} />
             <Route path="/privacy-policy" component={PrivacyPolicy} />
             <Route path="/data-deletion" component={DataDeletion} />
             <Route path="/terms-of-service" component={TermsOfService} />

@@ -16,7 +16,7 @@ import {
   MapPin,
   Clock,
   Link as LinkIcon,
-  Avatar as AvatarIcon
+  Circle
 } from "lucide-react";
 
 interface FanPageData {
