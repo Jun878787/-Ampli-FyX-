@@ -117,8 +117,13 @@ export default function MyFacebookAccount() {
           <div>
             <h1 className="text-3xl font-bold text-white">我的Facebook帳號</h1>
             <p className="text-gray-300 mt-1">
-              帳號: {accountData?.email || 'nanaa.888080@Gmail.com'}
+              帳號: {selectedAccountData?.email || accountData?.email || 'nanaa.888080@Gmail.com'}
             </p>
+            {selectedAccountData && (
+              <p className="text-blue-400 text-sm mt-1">
+                帳號名稱: {selectedAccountData.accountName || selectedAccountData.profileName}
+              </p>
+            )}
           </div>
           <Button 
             onClick={handleRefreshAll}
