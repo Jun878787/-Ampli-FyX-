@@ -2124,7 +2124,7 @@ function simulateCollectionProgress(taskId: number) {
         await storage.createManualAdData({
           campaignName: campaignName,
           date: new Date().toISOString().split('T')[0],
-          spend: Math.round((parseFloat(dailyBudget) || 0) * 100), // 轉換為分
+          spend: parseFloat(dailyBudget) || 0, // 保持原始值，讓storage處理轉換
           impressions: 0,
           clicks: 0,
           conversions: 0,

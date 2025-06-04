@@ -60,6 +60,11 @@ export default function FacebookAdsAnalytics() {
     queryKey: ["/api/facebook/ads-performance", selectedAccount],
   });
 
+  // 獲取手動廣告數據
+  const { data: manualAdData = [], isLoading: loadingManualAds } = useQuery({
+    queryKey: ["/api/manual-ad-data"],
+  });
+
   // 刷新數據
   const refreshDataMutation = useMutation({
     mutationFn: async () => {
