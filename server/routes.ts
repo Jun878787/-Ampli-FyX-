@@ -900,25 +900,34 @@ async function simulateFacebookAccountGeneration(taskId: number) {
         
         if (emailStrategy === 'auto_create_gmail') {
           try {
-            const result = await gmailService.createAccount({
-              username: username,
-              password: password,
-              firstName: settings?.firstName,
-              lastName: settings?.lastName
-            });
-            
-            if (result.success) {
-              email = result.email!;
-              emailCreated = true;
-              emailStatus = 'gmail_created';
-              console.log(`Gmail account created: ${email}`);
+            // Check if Gmail API key is available
+            if (!process.env.GMAIL_API_KEY) {
+              emailStatus = 'gmail_api_missing';
+              console.log(`Gmail API key not configured for ${username}, using template email`);
+              email = `${username}@gmail.com`;
             } else {
-              emailStatus = 'gmail_failed';
-              console.log(`Gmail creation failed for ${username}: ${result.error}`);
+              const result = await gmailService.createAccount({
+                username: username,
+                password: password,
+                firstName: settings?.firstName,
+                lastName: settings?.lastName
+              });
+              
+              if (result.success) {
+                email = result.email!;
+                emailCreated = true;
+                emailStatus = 'gmail_created';
+                console.log(`Gmail account created: ${email}`);
+              } else {
+                emailStatus = 'gmail_failed';
+                email = `${username}@gmail.com`;
+                console.log(`Gmail creation failed for ${username}: ${result.error}, using template`);
+              }
             }
           } catch (error) {
             emailStatus = 'gmail_error';
-            console.error(`Gmail API error for ${username}:`, error);
+            email = `${username}@gmail.com`;
+            console.error(`Gmail API error for ${username}, using template:`, error);
           }
         } else if (emailStrategy === 'temp_email') {
           emailStatus = 'temp_email_used';
@@ -930,17 +939,27 @@ async function simulateFacebookAccountGeneration(taskId: number) {
           email = `${username}@${randomDomain}`;
         }
         
+        // Determine account status based on email creation result
+        let accountStatus = 'active';
+        if (emailStatus === 'gmail_api_missing') {
+          accountStatus = 'pending_verification';
+        } else if (emailStatus === 'gmail_failed' || emailStatus === 'gmail_error') {
+          accountStatus = 'suspended';
+        } else if (emailCreated) {
+          accountStatus = 'active';
+        }
+
         // Create Facebook account record
         const accountData = {
           accountName: username,
           email: email,
           password: password,
-          status: emailCreated ? 'email_verified' as const : 'pending_verification' as const,
+          status: accountStatus,
           createdAt: new Date(),
           profileUrl: `https://facebook.com/${username}`,
           friendsCount: 0,
           isVerified: emailCreated,
-          notes: `Task ${taskId} | Strategy: ${emailStrategy} | Status: ${emailStatus}`,
+          notes: `Task ${taskId} | Strategy: ${emailStrategy} | Email Status: ${emailStatus}`,
           lastActivity: new Date(),
           proxy: settings?.proxyRequired ? 'proxy_required' : null,
           cookies: null,
