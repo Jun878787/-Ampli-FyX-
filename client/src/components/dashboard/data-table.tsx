@@ -242,12 +242,12 @@ export default function DataTable() {
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-sm font-medium">
-                          {item.author.avatar}
+                          {item.type === 'post' ? 'P' : item.type === 'comment' ? 'C' : 'U'}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-100">{item.author.name}</p>
-                        <p className="text-xs text-slate-400">{item.author.followers} 追蹤者</p>
+                        <p className="text-sm font-medium text-slate-100">系統收集</p>
+                        <p className="text-xs text-slate-400">自動收集</p>
                       </div>
                     </div>
                   </td>
@@ -258,15 +258,15 @@ export default function DataTable() {
                     <div className="flex items-center space-x-4 text-sm text-slate-400">
                       <span className="flex items-center">
                         <Heart className="h-4 w-4 text-red-500 mr-1" />
-                        {item.interactions.likes}
+                        0
                       </span>
                       <span className="flex items-center">
                         <MessageCircle className="h-4 w-4 text-blue-500 mr-1" />
-                        {item.interactions.comments}
+                        0
                       </span>
                       <span className="flex items-center">
                         <Share className="h-4 w-4 text-green-500 mr-1" />
-                        {item.interactions.shares}
+                        0
                       </span>
                     </div>
                   </td>
