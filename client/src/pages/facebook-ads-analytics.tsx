@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter, Search, FileSpreadsheet, MessageSquare } from "lucide-react";
+import { useLocation } from "wouter";
+import { BarChart3, TrendingUp, DollarSign, Eye, Users, Target, Calendar, Download, RefreshCw, Filter, Search, FileSpreadsheet, MessageSquare, Plus, MousePointer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { addDays, format } from "date-fns";
 
 export default function FacebookAdsAnalytics() {
+  const [, setLocation] = useLocation();
   const [dateRange, setDateRange] = useState({
     from: addDays(new Date(), -30),
     to: new Date(),
@@ -24,6 +26,14 @@ export default function FacebookAdsAnalytics() {
   const [selectedAccount, setSelectedAccount] = useState<string>("all");
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const goToAdCreation = () => {
+    setLocation('/ad-creation');
+  };
+
+  const goToDataInput = (campaignId: string, campaignName: string) => {
+    setLocation(`/ad-data-input?campaignId=${campaignId}&campaignName=${encodeURIComponent(campaignName)}`);
+  };
 
   // 獲取廣告帳號數據
   const { data: adAccounts = [], isLoading: loadingAccounts } = useQuery({
@@ -344,6 +354,16 @@ export default function FacebookAdsAnalytics() {
           </TabsList>
 
           <TabsContent value="trends" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-white">趨勢分析</h3>
+              <Button 
+                onClick={goToAdCreation}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                創建廣告
+              </Button>
+            </div>
             <div className="grid gap-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
@@ -416,8 +436,15 @@ export default function FacebookAdsAnalytics() {
                   </TableHeader>
                   <TableBody>
                     {mockAnalyticsData.campaignPerformance.map((campaign, index) => (
-                      <TableRow key={index} className="border-gray-700">
-                        <TableCell className="text-white font-medium">{campaign.name}</TableCell>
+                      <TableRow 
+                        key={index} 
+                        className="border-gray-700 hover:bg-gray-700/50 cursor-pointer transition-colors"
+                        onClick={() => goToDataInput(campaign.id || `campaign-${index}`, campaign.name)}
+                      >
+                        <TableCell className="text-white font-medium flex items-center gap-2">
+                          {campaign.name}
+                          <MousePointer className="h-4 w-4 text-gray-400" />
+                        </TableCell>
                         <TableCell className="text-gray-300">${campaign.spend.toLocaleString()}</TableCell>
                         <TableCell className="text-gray-300">{campaign.impressions.toLocaleString()}</TableCell>
                         <TableCell className="text-gray-300">{campaign.clicks.toLocaleString()}</TableCell>
