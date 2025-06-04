@@ -49,8 +49,8 @@ export async function getPixelData(req: Request, res: Response) {
 
     console.log(`正在獲取像素 ${pixelId} 的數據...`);
 
-    // 使用您提供的真實Facebook用戶權杖
-    const accessToken = "EAAOpW7O5RWcBOz0CNbRNhuXlF3YwLrDWhVKVtehOX0Kq8o6tLNLEGP0OZCoKYMVN4zSzFZCPff4kWY2DHNWxifPysJuJhG9OXxZAy0ZAv2ZCUmBds9avDZBAXdDBkTlxj0H7XnmHOGcPWsgLZABCZCj7oXVIwWnL1fdA8BN45ZAilZAjwD2vG3MoyyI802AgrPaZA5xI0O2St8EzALxo3N0u4Bgtihi2wcZCJgMVyRQZD";
+    // 使用您提供的最新Facebook用戶權杖
+    const accessToken = "EAARPnnowvhYBO1AZASMTauZBlYx3eh6YCNuI641CdVF3NR1ZCo9y1p1ysmLmRCFkSwXWD3JHFNkG1jB4jQVeUcMzLKhFXZAHcUKpvMf4WjvZBCQRdy6orloVqCgzc0icPidCrdiVm415gfBq4EfviTfk5UoWPUQgW3FcrgkWZBqclIZA0FyeJYYYERlZA1geIasIItrQrkZCZC9rJeiAnUyeo0ZB7npF7sspQNiy54ZD";
     
     const pixelData: PixelData = {
       pixelId,
