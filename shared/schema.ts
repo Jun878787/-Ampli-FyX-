@@ -72,6 +72,8 @@ export const insertSystemStatsSchema = createInsertSchema(systemStats).omit({
   updatedAt: true,
 });
 
+
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -85,6 +87,12 @@ export type InsertCollectedData = z.infer<typeof insertCollectedDataSchema>;
 export type SystemStats = typeof systemStats.$inferSelect;
 export type InsertSystemStats = z.infer<typeof insertSystemStatsSchema>;
 
+export type FacebookGenerationTask = typeof facebookGenerationTasks.$inferSelect;
+export type InsertFacebookGenerationTask = z.infer<typeof insertFacebookGenerationTaskSchema>;
+
+export type FacebookAccount = typeof facebookAccounts.$inferSelect;
+export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
+
 // Relations
 export const collectionTasksRelations = relations(collectionTasks, ({ many }) => ({
   collectedData: many(collectedData),
@@ -97,13 +105,37 @@ export const collectedDataRelations = relations(collectedData, ({ one }) => ({
   }),
 }));
 
+// Facebook 帳號生成任務
+export const facebookGenerationTasks = pgTable("facebook_generation_tasks", {
+  id: serial("id").primaryKey(),
+  taskName: varchar("task_name").notNull(),
+  nameTemplate: varchar("name_template").default("User{random}"),
+  emailTemplate: varchar("email_template").default("{name}@{domain}"),
+  passwordTemplate: varchar("password_template").default("{random}Pass123!"),
+  randomAvatar: boolean("random_avatar").default(true),
+  randomCover: boolean("random_cover").default(true),
+  minAge: integer("min_age").default(18),
+  maxAge: integer("max_age").default(65),
+  targetCount: integer("target_count").notNull(),
+  completedCount: integer("completed_count").default(0),
+  status: varchar("status").default("pending"), // pending, running, completed, paused, failed
+  createdAt: timestamp("created_at").defaultNow(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+});
+
 // Facebook 帳號管理
 export const facebookAccounts = pgTable("facebook_accounts", {
   id: serial("id").primaryKey(),
+  generationTaskId: integer("generation_task_id").references(() => facebookGenerationTasks.id),
   accountName: varchar("account_name").notNull(),
   email: varchar("email").notNull(),
+  password: varchar("password").notNull(),
   accessToken: varchar("access_token"),
   userId: varchar("user_id"),
+  age: integer("age"),
+  avatarUrl: varchar("avatar_url"),
+  coverUrl: varchar("cover_url"),
   status: varchar("status").default("active"), // active, inactive, suspended
   lastLogin: timestamp("last_login"),
   friendsCount: integer("friends_count").default(0),
