@@ -20,6 +20,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { z } from "zod";
 import { gmailService, type GmailAccountRequest } from "./gmail-service";
 import { facebookService } from "./facebook-service";
+import { facebookDataCollector } from "./facebook-data-collector";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Facebook Pixel Data API - Priority routing to avoid conflicts
@@ -1173,6 +1174,98 @@ function simulateCollectionProgress(taskId: number) {
     } catch (error) {
       console.error("Error testing token:", error);
       res.status(500).json({ success: false, error: "測試權杖時發生錯誤" });
+    }
+  });
+
+  // Real Facebook Data Collection Routes
+  app.get("/api/facebook/search/pages", async (req: Request, res: Response) => {
+    try {
+      const { keyword, limit = 50 } = req.query;
+      if (!keyword) {
+        return res.status(400).json({ error: "Keyword is required" });
+      }
+      
+      const results = await facebookDataCollector.searchPages(keyword as string, Number(limit));
+      res.json({
+        success: true,
+        data: results,
+        count: results.length,
+        keyword: keyword as string
+      });
+    } catch (error) {
+      console.error("Error searching pages:", error);
+      res.status(500).json({ error: "Failed to search pages" });
+    }
+  });
+
+  app.get("/api/facebook/search/groups", async (req: Request, res: Response) => {
+    try {
+      const { keyword, limit = 50 } = req.query;
+      if (!keyword) {
+        return res.status(400).json({ error: "Keyword is required" });
+      }
+      
+      const results = await facebookDataCollector.searchGroups(keyword as string, Number(limit));
+      res.json({
+        success: true,
+        data: results,
+        count: results.length,
+        keyword: keyword as string
+      });
+    } catch (error) {
+      console.error("Error searching groups:", error);
+      res.status(500).json({ error: "Failed to search groups" });
+    }
+  });
+
+  app.get("/api/facebook/search/users", async (req: Request, res: Response) => {
+    try {
+      const { keyword, limit = 50 } = req.query;
+      if (!keyword) {
+        return res.status(400).json({ error: "Keyword is required" });
+      }
+      
+      const results = await facebookDataCollector.searchUsers(keyword as string, Number(limit));
+      res.json({
+        success: true,
+        data: results,
+        count: results.length,
+        keyword: keyword as string
+      });
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ error: "Failed to search users" });
+    }
+  });
+
+  app.get("/api/facebook/search/location", async (req: Request, res: Response) => {
+    try {
+      const { keyword, location, limit = 50 } = req.query;
+      if (!keyword || !location) {
+        return res.status(400).json({ error: "Keyword and location are required" });
+      }
+      
+      const results = await facebookDataCollector.getPagesByLocation(location as string, keyword as string, Number(limit));
+      res.json({
+        success: true,
+        data: results,
+        count: results.length,
+        keyword: keyword as string,
+        location: location as string
+      });
+    } catch (error) {
+      console.error("Error searching by location:", error);
+      res.status(500).json({ error: "Failed to search by location" });
+    }
+  });
+
+  app.get("/api/facebook/test-connection", async (req: Request, res: Response) => {
+    try {
+      const result = await facebookDataCollector.testApiConnection();
+      res.json(result);
+    } catch (error) {
+      console.error("Error testing API connection:", error);
+      res.status(500).json({ error: "Failed to test API connection" });
     }
   });
 
