@@ -48,16 +48,12 @@ export default function AdCollection() {
   // 搜索廣告
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/ad-collection/search", {
-        method: "POST",
-        data: { 
-          keyword: searchKeyword,
-          adUrl: adUrl
-        },
-      });
+      const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+      setDisplayData(response.data || []);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/ad-collection"] });
+      setIsSearched(true);
     },
   });
 

@@ -54,16 +54,12 @@ export default function RegionCollection() {
   // 搜索地區
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/region-collection/search", {
-        method: "POST",
-        data: { 
-          keyword: searchKeyword,
-          region: selectedRegion
-        },
-      });
+      const response = await apiRequest(`/api/facebook/search/location?keyword=${encodeURIComponent(searchKeyword)}&location=${encodeURIComponent(selectedRegion)}&limit=100`);
+      setDisplayData(response.data || []);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/region-collection"] });
+      setIsSearched(true);
     },
   });
 

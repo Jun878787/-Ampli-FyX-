@@ -46,16 +46,12 @@ export default function PersonCollection() {
   // 搜索人物
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/person-collection/search", {
-        method: "POST",
-        data: { 
-          keyword: searchKeyword,
-          profileUrl: profileUrl
-        },
-      });
+      const response = await apiRequest(`/api/facebook/search/users?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+      setDisplayData(response.data || []);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/person-collection"] });
+      setIsSearched(true);
     },
   });
 
