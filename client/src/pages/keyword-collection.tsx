@@ -34,6 +34,8 @@ interface KeywordData {
 export default function KeywordCollection() {
   const [keywords, setKeywords] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [displayData, setDisplayData] = useState<any[]>([]);
+  const [isSearched, setIsSearched] = useState(false);
   const queryClient = useQueryClient();
 
   // 獲取關鍵詞採集數據
@@ -122,7 +124,8 @@ export default function KeywordCollection() {
     }
   ];
 
-  const displayData = keywordData.length > 0 ? keywordData : mockKeywordData;
+  // Use displayData state for search results, fallback to keywordData if not searched
+  const dataToShow = isSearched ? displayData : (keywordData.length > 0 ? keywordData : mockKeywordData);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -187,7 +190,7 @@ export default function KeywordCollection() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayData.map((item: KeywordData) => (
+                {dataToShow.map((item: any) => (
                   <TableRow key={item.id} className="border-gray-700">
                     <TableCell>
                       <Badge variant="outline" className="border-green-600 text-green-300">
