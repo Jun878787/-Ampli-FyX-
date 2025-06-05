@@ -26,6 +26,7 @@ class FacebookAPIManager {
   private apiConfigs: Map<string, FacebookAPIConfig> = new Map();
   private activeConfigId: string = '';
   private baseUrl = 'https://graph.facebook.com/v18.0';
+  private tokenRefreshCallbacks: ((configId: string, newToken: string) => void)[] = [];
 
   constructor() {
     this.initializeConfigs();
@@ -198,6 +199,22 @@ class FacebookAPIManager {
     }
     
     return config?.accessToken || config?.apiKey || '';
+  }
+  
+  // 註冊令牌刷新回調
+  registerTokenRefreshCallback(callback: (configId: string, newToken: string) => void): void {
+    this.tokenRefreshCallbacks.push(callback);
+  }
+  
+  // 通知令牌已刷新
+  notifyTokenRefreshed(configId: string, newToken: string): void {
+    this.tokenRefreshCallbacks.forEach(callback => {
+      try {
+        callback(configId, newToken);
+      } catch (error) {
+        console.error('令牌刷新回調執行錯誤:', error);
+      }
+    });
   }
 
   // 檢查API配置狀態

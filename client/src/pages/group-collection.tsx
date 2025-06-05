@@ -37,6 +37,9 @@ export default function GroupCollection() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [groupUrl, setGroupUrl] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [displayData, setDisplayData] = useState<any[]>([]);
+  const [isSearched, setIsSearched] = useState(false);
   const queryClient = useQueryClient();
 
   // 獲取社團採集數據
@@ -47,13 +50,41 @@ export default function GroupCollection() {
   // 搜索社團
   const searchMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest(`/api/facebook/search/groups?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
-      setDisplayData(response.data || []);
-      return response;
+      setLogs(prev => [...prev, `正在搜索關鍵字: ${searchKeyword}`]);
+      try {
+        const response = await apiRequest(`/api/facebook/search/groups?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+        try {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setDisplayData(data.data);
+            setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
+          } else {
+            setLogs(prev => [...prev, `搜索失敗: ${data.error || '未知錯誤'}`]);
+          }
+          return response;
+        } catch (jsonError) {
+          // 處理JSON解析錯誤
+          console.error('JSON解析錯誤:', jsonError);
+          setLogs(prev => [
+            ...prev, 
+            `搜索失敗: 伺服器返回了無效的JSON響應`,
+            `可能原因: Facebook API密鑰已過期或無效，請聯繫管理員更新API密鑰`
+          ]);
+          throw new Error(`JSON解析錯誤: ${jsonError.message}`);
+        }
+      } catch (fetchError) {
+        console.error('請求錯誤:', fetchError);
+        setLogs(prev => [...prev, `搜索失敗: ${fetchError.message}`]);
+        throw fetchError;
+      }
     },
     onSuccess: () => {
       setIsSearched(true);
+      setLogs(prev => [...prev, "搜索完成"]);
     },
+    onError: (error: Error) => {
+      setLogs(prev => [...prev, `採集失敗: ${error.message}`]);
+    }
   });
 
   // 導出數據

@@ -55,13 +55,31 @@ export default function KeywordCollection() {
       
       for (const keyword of keywordList) {
         setLogs(prev => [...prev, `正在搜索關鍵字: ${keyword}`]);
-        const response = await apiRequest(`/api/facebook/search/pages?q=${encodeURIComponent(keyword)}&limit=50`);
-        const data = await response.json();
-        if (data.success && data.data) {
-          allResults = [...allResults, ...data.data];
-          setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
-        } else {
-          setLogs(prev => [...prev, `搜索失敗: ${keyword}`]);
+        try {
+          const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(keyword)}&limit=50`);
+          try {
+            const data = await response.json();
+            if (data.success && data.data) {
+              allResults = [...allResults, ...data.data];
+              setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
+            } else {
+              setLogs(prev => [...prev, `搜索失敗: ${data.error || '未知錯誤'}`]);
+            }
+          } catch (jsonError) {
+            // 處理JSON解析錯誤
+            console.error('JSON解析錯誤:', jsonError);
+            setLogs(prev => [
+              ...prev, 
+              `搜索失敗: 伺服器返回了無效的JSON響應`,
+              `可能原因: Facebook API密鑰已過期或無效，請聯繫管理員更新API密鑰`
+            ]);
+            throw new Error(`JSON解析錯誤: ${jsonError.message}`);
+          }
+        } catch (fetchError) {
+          console.error('請求錯誤:', fetchError);
+          setLogs(prev => [...prev, `搜索失敗: ${fetchError.message}`]);
+          // 繼續處理下一個關鍵詞，而不是中斷整個過程
+          continue;
         }
       }
       
@@ -72,6 +90,9 @@ export default function KeywordCollection() {
       setIsSearched(true);
       setLogs(prev => [...prev, "搜索完成"]);
     },
+    onError: (error: Error) => {
+      setLogs(prev => [...prev, `採集失敗: ${error.message}`]);
+    }
   });
 
   // 導出數據

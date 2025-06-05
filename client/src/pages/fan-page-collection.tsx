@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,20 +50,40 @@ export default function FanPageCollection() {
   const searchMutation = useMutation({
     mutationFn: async () => {
       setLogs(prev => [...prev, `正在搜索關鍵字: ${searchKeyword}`]);
-      const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
-      const data = await response.json();
-      if (data.success && data.data) {
-        setDisplayData(data.data);
-        setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
-      } else {
-        setLogs(prev => [...prev, `搜索失敗: ${searchKeyword}`]);
+      try {
+        const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+        try {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setDisplayData(data.data);
+            setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
+          } else {
+            setLogs(prev => [...prev, `搜索失敗: ${data.error || '未知錯誤'}`]);
+          }
+          return response;
+        } catch (jsonError) {
+          // 處理JSON解析錯誤
+          console.error('JSON解析錯誤:', jsonError);
+          setLogs(prev => [
+            ...prev, 
+            `搜索失敗: 伺服器返回了無效的JSON響應`,
+            `可能原因: Facebook API密鑰已過期或無效，請聯繫管理員更新API密鑰`
+          ]);
+          throw new Error(`JSON解析錯誤: ${jsonError.message}`);
+        }
+      } catch (fetchError) {
+        console.error('請求錯誤:', fetchError);
+        setLogs(prev => [...prev, `搜索失敗: ${fetchError.message}`]);
+        throw fetchError;
       }
-      return response;
     },
     onSuccess: () => {
       setIsSearched(true);
       setLogs(prev => [...prev, "搜索完成"]);
     },
+    onError: (error: Error) => {
+      setLogs(prev => [...prev, `採集失敗: ${error.message}`]);
+    }
   });
 
   // 導出數據
@@ -135,7 +155,14 @@ export default function FanPageCollection() {
     }
   ];
 
-  const displayData = fanPageData.length > 0 ? fanPageData : mockFanPageData;
+  // 使用 useEffect 來更新 displayData
+  useEffect(() => {
+    if (fanPageData.length > 0 && !isSearched) {
+      setDisplayData(fanPageData);
+    } else if (fanPageData.length === 0 && !isSearched && displayData.length === 0) {
+      setDisplayData(mockFanPageData);
+    }
+  }, [fanPageData, isSearched]);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">

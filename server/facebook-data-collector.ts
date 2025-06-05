@@ -27,7 +27,7 @@ class FacebookDataCollector {
 
   constructor() {
     this.appId = '2213169895810612';
-    this.apiKey = '2213169895810612|nj63XA8h7UYZkKbU_EPrkynNBQY';
+    this.apiKey = 'EAAfc3cV3pjQBO2VcefM704jkOe4DptOucFGZCVi0AB0luQHkCPmSUR3yQQCkZAajI7iHkynIHZAupmNYGbl6T5DRUedDlTScAi1OUZCkY9PYUxrkuj2Dv6NdboE8cjqOGo47OGo5cFqKN98qCcL8Ir0bwgjbxDkLpDuCrG7F7YY34m4rIstYXEfaCqIMrsTIfjsaqZAqesw3AcRD9tJLbLEGbuZBTxXmiHfSZBnOTtDhW4Bf851GDBF';
   }
 
   async searchPages(keyword: string, limit: number = 50): Promise<CollectedData[]> {
@@ -35,14 +35,35 @@ class FacebookDataCollector {
       const url = `${this.baseUrl}/search?q=${encodeURIComponent(keyword)}&type=page&access_token=${this.apiKey}&limit=${limit}&fields=id,name,category,location,fan_count,link,picture,about,created_time`;
       
       const response = await fetch(url);
+      
+      // 檢查HTTP響應狀態
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Facebook API HTTP Error: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Facebook API 請求失敗: ${response.status} ${response.statusText}`);
+      }
+      
+      // 檢查內容類型
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const errorText = await response.text();
+        console.error(`Facebook API 返回了非JSON響應:`, contentType, errorText.substring(0, 200));
+        throw new Error(`Facebook API 返回了非JSON響應: ${contentType}`);
+      }
+      
       const data = await response.json();
 
       if (data.error) {
         console.error('Facebook API Error:', data.error);
-        return [];
+        throw new Error(`Facebook API 錯誤: ${data.error.message || JSON.stringify(data.error)}`);
       }
 
-      return data.data?.map((page: any) => ({
+      if (!data.data || !Array.isArray(data.data)) {
+        console.error('Facebook API 返回了意外的數據格式:', data);
+        throw new Error('Facebook API 返回了意外的數據格式，可能是API密鑰已過期或無效');
+      }
+
+      return data.data.map((page: any) => ({
         id: page.id,
         name: page.name,
         category: page.category,
@@ -54,8 +75,8 @@ class FacebookDataCollector {
         description: page.about
       })) || [];
     } catch (error) {
-      console.error('Network error:', error);
-      return [];
+      console.error('Facebook API 錯誤:', error);
+      throw error; // 將錯誤傳播到上層，而不是返回空數組
     }
   }
 
@@ -64,14 +85,35 @@ class FacebookDataCollector {
       const url = `${this.baseUrl}/search?q=${encodeURIComponent(keyword)}&type=user&access_token=${this.apiKey}&limit=${limit}&fields=id,name,location,link,picture`;
       
       const response = await fetch(url);
+      
+      // 檢查HTTP響應狀態
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Facebook API HTTP Error: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Facebook API 請求失敗: ${response.status} ${response.statusText}`);
+      }
+      
+      // 檢查內容類型
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const errorText = await response.text();
+        console.error(`Facebook API 返回了非JSON響應:`, contentType, errorText.substring(0, 200));
+        throw new Error(`Facebook API 返回了非JSON響應: ${contentType}`);
+      }
+      
       const data = await response.json();
 
       if (data.error) {
         console.error('Facebook API Error:', data.error);
-        return [];
+        throw new Error(`Facebook API 錯誤: ${data.error.message || JSON.stringify(data.error)}`);
       }
 
-      return data.data?.map((user: any) => ({
+      if (!data.data || !Array.isArray(data.data)) {
+        console.error('Facebook API 返回了意外的數據格式:', data);
+        throw new Error('Facebook API 返回了意外的數據格式，可能是API密鑰已過期或無效');
+      }
+
+      return data.data.map((user: any) => ({
         id: user.id,
         name: user.name,
         location: user.location?.name || '未知',
@@ -79,8 +121,8 @@ class FacebookDataCollector {
         profile_picture_url: user.picture?.data?.url
       })) || [];
     } catch (error) {
-      console.error('Network error:', error);
-      return [];
+      console.error('Facebook API 錯誤:', error);
+      throw error; // 將錯誤傳播到上層，而不是返回空數組
     }
   }
 
@@ -89,14 +131,35 @@ class FacebookDataCollector {
       const url = `${this.baseUrl}/search?q=${encodeURIComponent(keyword)}&type=group&access_token=${this.apiKey}&limit=${limit}&fields=id,name,description,privacy,member_count,link`;
       
       const response = await fetch(url);
+      
+      // 檢查HTTP響應狀態
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Facebook API HTTP Error: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Facebook API 請求失敗: ${response.status} ${response.statusText}`);
+      }
+      
+      // 檢查內容類型
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const errorText = await response.text();
+        console.error(`Facebook API 返回了非JSON響應:`, contentType, errorText.substring(0, 200));
+        throw new Error(`Facebook API 返回了非JSON響應: ${contentType}`);
+      }
+      
       const data = await response.json();
 
       if (data.error) {
         console.error('Facebook API Error:', data.error);
-        return [];
+        throw new Error(`Facebook API 錯誤: ${data.error.message || JSON.stringify(data.error)}`);
       }
 
-      return data.data?.map((group: any) => ({
+      if (!data.data || !Array.isArray(data.data)) {
+        console.error('Facebook API 返回了意外的數據格式:', data);
+        throw new Error('Facebook API 返回了意外的數據格式，可能是API密鑰已過期或無效');
+      }
+
+      return data.data.map((group: any) => ({
         id: group.id,
         name: group.name,
         description: group.description,
@@ -105,8 +168,8 @@ class FacebookDataCollector {
         category: group.privacy
       })) || [];
     } catch (error) {
-      console.error('Network error:', error);
-      return [];
+      console.error('Facebook API 錯誤:', error);
+      throw error; // 將錯誤傳播到上層，而不是返回空數組
     }
   }
 

@@ -33,10 +33,22 @@ class FacebookService {
     // Facebook應用程式憑證
     this.appId = '2213169895810612';
     this.appSecret = 'f83b0f49d07b550f65d69354659fc2dd';
-    this.apiKey = '2213169895810612|nj63XA8h7UYZkKbU_EPrkynNBQY';
+    this.apiKey = 'EAAfc3cV3pjQBO2VcefM704jkOe4DptOucFGZCVi0AB0luQHkCPmSUR3yQQCkZAajI7iHkynIHZAupmNYGbl6T5DRUedDlTScAi1OUZCkY9PYUxrkuj2Dv6NdboE8cjqOGo47OGo5cFqKN98qCcL8Ir0bwgjbxDkLpDuCrG7F7YY34m4rIstYXEfaCqIMrsTIfjsaqZAqesw3AcRD9tJLbLEGbuZBTxXmiHfSZBnOTtDhW4Bf851GDBF';
     if (!this.apiKey) {
       console.warn('Facebook API key not found in environment variables');
     }
+    
+    // 注册令牌刷新回调，当令牌刷新时更新服务中的apiKey
+    import('./facebook-api-manager.js').then(({ facebookAPIManager }) => {
+      facebookAPIManager.registerTokenRefreshCallback((configId, newToken) => {
+        if (configId === 'main') {
+          this.apiKey = newToken;
+          console.log('[FacebookService] 已更新主要API令牌');
+        }
+      });
+    }).catch(err => {
+      console.error('[FacebookService] 无法注册令牌刷新回调:', err);
+    });
   }
 
   async testConnection(): Promise<FacebookAPIResponse> {
@@ -187,12 +199,19 @@ class FacebookService {
       const data = await response.json();
       
       if (response.ok && data.data) {
+        const expiresAt = data.data.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        const expiresIn = expiresAt ? expiresAt - now : 0;
+        const expiresInDays = expiresIn > 0 ? (expiresIn / (24 * 60 * 60)).toFixed(1) : '未知';
+        
         return {
           success: true,
           data: {
             valid: data.data.is_valid || false,
             app_id: data.data.app_id,
             expires_at: data.data.expires_at,
+            expires_in: expiresIn,
+            expires_in_days: expiresInDays,
             scopes: data.data.scopes || [],
             user_id: data.data.user_id
           }
@@ -207,6 +226,47 @@ class FacebookService {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Network error validating token'
+      };
+    }
+  }
+  
+  /**
+   * 获取长期访问令牌
+   */
+  async getLongLivedToken(shortLivedToken?: string): Promise<FacebookAPIResponse> {
+    try {
+      const tokenToExchange = shortLivedToken || this.apiKey;
+      
+      const response = await fetch(
+        `${this.baseUrl}/oauth/access_token?grant_type=fb_exchange_token&client_id=${this.appId}&client_secret=${this.appSecret}&fb_exchange_token=${tokenToExchange}`
+      );
+      
+      const data = await response.json();
+      
+      if (response.ok && data.access_token) {
+        // 如果没有提供短期令牌，则更新当前服务的apiKey
+        if (!shortLivedToken) {
+          this.apiKey = data.access_token;
+        }
+        
+        return {
+          success: true,
+          data: {
+            access_token: data.access_token,
+            token_type: data.token_type || 'bearer',
+            expires_in: data.expires_in
+          }
+        };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || '获取长期令牌失败'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '获取长期令牌时发生网络错误'
       };
     }
   }
@@ -373,19 +433,145 @@ class FacebookService {
     }
   }
 
-  async exportAdContents(format: string): Promise<FacebookAPIResponse> {
+  async exportAdContents(format: string, params?: { accountId?: string; campaignId?: string; startDate?: string; endDate?: string; }): Promise<FacebookAPIResponse> {
     try {
-      // 模擬導出功能 - 在實際應用中會生成真實的導出文件
-      const timestamp = Date.now();
-      const downloadUrl = `/downloads/facebook-ad-contents-${timestamp}.${format}`;
+      // 獲取廣告內容數據
+      const accountId = params?.accountId || '';
+      const campaignId = params?.campaignId || 'all';
+      const startDate = params?.startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const endDate = params?.endDate || new Date().toISOString().split('T')[0];
       
-      return {
-        success: true,
-        data: {
-          downloadUrl,
-          estimatedTime: '1-2分鐘'
-        }
-      };
+      // 獲取廣告內容數據
+      const adContentsResult = await this.getAdContents({
+        accountId,
+        campaignId,
+        contentType: 'all',
+        searchQuery: '',
+        startDate,
+        endDate
+      });
+      
+      if (!adContentsResult.success) {
+        return {
+          success: false,
+          error: adContentsResult.error || '獲取廣告內容數據失敗'
+        };
+      }
+      
+      // 確保數據存在
+      if (!adContentsResult.data || adContentsResult.data.length === 0) {
+        return {
+          success: false,
+          error: '沒有找到廣告內容數據'
+        };
+      }
+      
+      // 創建臨時JSON文件
+      const fs = require('fs');
+      const path = require('path');
+      const { spawn } = require('child_process');
+      const os = require('os');
+      
+      // 創建下載目錄
+      const downloadsDir = path.join(__dirname, '..', 'public', 'downloads');
+      if (!fs.existsSync(downloadsDir)) {
+        fs.mkdirSync(downloadsDir, { recursive: true });
+      }
+      
+      // 創建臨時目錄
+      const tempDir = path.join(os.tmpdir(), 'fbdataminer');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // 生成臨時文件名
+      const timestamp = Date.now();
+      const tempJsonFile = path.join(tempDir, `ad_contents_${timestamp}.json`);
+      
+      // 寫入JSON數據
+      fs.writeFileSync(tempJsonFile, JSON.stringify(adContentsResult.data), 'utf8');
+      
+      // 準備Python腳本路徑
+      const scriptPath = path.join(__dirname, '..', 'export_ad_contents.py');
+      
+      // 執行Python腳本
+      return new Promise((resolve) => {
+        const exportFormat = format.toLowerCase() === 'csv' ? 'csv' : 'excel';
+        const pythonProcess = spawn('python', [
+          scriptPath,
+          '--input', tempJsonFile,
+          '--format', exportFormat,
+          '--output', downloadsDir
+        ]);
+        
+        let outputData = '';
+        let errorData = '';
+        
+        pythonProcess.stdout.on('data', (data) => {
+          outputData += data.toString();
+        });
+        
+        pythonProcess.stderr.on('data', (data) => {
+          errorData += data.toString();
+        });
+        
+        pythonProcess.on('close', (code) => {
+          // 刪除臨時JSON文件
+          try {
+            fs.unlinkSync(tempJsonFile);
+          } catch (e) {
+            console.error('刪除臨時文件失敗:', e);
+          }
+          
+          if (code !== 0) {
+            console.error(`Python腳本執行失敗，退出碼: ${code}`);
+            console.error(`錯誤輸出: ${errorData}`);
+            
+            resolve({
+              success: false,
+              error: `導出廣告內容失敗: Python腳本執行錯誤 (${errorData.trim()})`
+            });
+            return;
+          }
+          
+          try {
+            // 解析Python腳本輸出的JSON
+            const result = JSON.parse(outputData);
+            
+            if (result.success) {
+              // 獲取相對路徑
+              const relativePath = path.relative(
+                path.join(__dirname, '..', 'public'),
+                result.file_path
+              ).replace(/\\/g, '/');
+              
+              resolve({
+                success: true,
+                data: {
+                  downloadUrl: `/${relativePath}`,
+                  estimatedTime: '已完成',
+                  format: exportFormat,
+                  rowCount: result.row_count,
+                  columnCount: result.column_count
+                }
+              });
+            } else {
+              resolve({
+                success: false,
+                error: `導出廣告內容失敗: ${result.error}`
+              });
+            }
+          } catch (error) {
+            console.error('解析Python輸出失敗:', error);
+            console.error('Python輸出:', outputData);
+            
+            resolve({
+              success: false,
+              error: `導出廣告內容失敗: 無法解析Python腳本輸出`
+            });
+          }
+        });
+      });
     } catch (error) {
       return {
         success: false,

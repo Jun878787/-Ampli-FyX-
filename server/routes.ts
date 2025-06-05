@@ -21,8 +21,13 @@ import { z } from "zod";
 import { gmailService, type GmailAccountRequest } from "./gmail-service";
 import { facebookService } from "./facebook-service";
 import { facebookDataCollector } from "./facebook-data-collector";
+import { facebookTokenManager } from "./facebook-token-manager.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 启动Facebook令牌自动刷新监控
+  facebookTokenManager.startTokenMonitoring(360); // 每6小时检查一次令牌状态
+  console.log('[Server] Facebook令牌自动刷新监控已启动');
+  
   // Facebook Pixel Data API - Priority routing to avoid conflicts
   app.post("/api/facebook/pixel-data-fixed", async (req: Request, res: Response) => {
     const { getPixelData } = await import("./facebook-pixel-service");
@@ -1182,7 +1187,7 @@ function simulateCollectionProgress(taskId: number) {
     try {
       const { keyword, limit = 50 } = req.query;
       if (!keyword) {
-        return res.status(400).json({ error: "Keyword is required" });
+        return res.status(400).json({ success: false, error: "Keyword is required" });
       }
       
       const results = await facebookDataCollector.searchPages(keyword as string, Number(limit));
@@ -1193,8 +1198,11 @@ function simulateCollectionProgress(taskId: number) {
         keyword: keyword as string
       });
     } catch (error) {
-      console.error("Error searching pages:", error);
-      res.status(500).json({ error: "Failed to search pages" });
+      console.error("Error searching Facebook pages:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: error instanceof Error ? error.message : "Failed to search Facebook pages" 
+      });
     }
   });
 
@@ -1324,7 +1332,7 @@ function simulateCollectionProgress(taskId: number) {
     }
   });
 
-  app.get("/api/facebook/search/pages", async (req: Request, res: Response) => {
+  app.get("/api/facebook/search/pages-v2", async (req: Request, res: Response) => {
     try {
       const query = req.query.q as string;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -1342,7 +1350,7 @@ function simulateCollectionProgress(taskId: number) {
       console.error("Facebook page search error:", error);
       res.status(500).json({ 
         success: false, 
-        error: "Failed to search Facebook pages" 
+        error: error instanceof Error ? error.message : "Failed to search Facebook pages" 
       });
     }
   });
@@ -1642,23 +1650,42 @@ function simulateCollectionProgress(taskId: number) {
   app.get("/api/facebook/export-ad-contents", async (req: Request, res: Response) => {
     try {
       const format = req.query.format as string || 'excel';
+      const accountId = req.query.accountId as string;
+      const campaignId = req.query.campaignId as string;
+      const startDate = req.query.startDate as string;
+      const endDate = req.query.endDate as string;
       
       // 使用Facebook服務導出廣告內容
-      const result = await facebookService.exportAdContents(format);
+      const result = await facebookService.exportAdContents(format, {
+        accountId,
+        campaignId,
+        startDate,
+        endDate
+      });
 
       if (result.success) {
         res.json({
           success: true,
-          message: `廣告內容導出 (${format.toUpperCase()}) 已開始`,
+          message: `廣告內容導出 (${format.toUpperCase()}) ${result.data?.estimatedTime === '已完成' ? '已完成' : '已開始'}`,
           downloadUrl: result.data?.downloadUrl,
-          estimatedTime: "1-2分鐘"
+          estimatedTime: result.data?.estimatedTime || "1-2分鐘",
+          format: result.data?.format,
+          rowCount: result.data?.rowCount,
+          columnCount: result.data?.columnCount
         });
       } else {
-        res.status(500).json({ message: result.error || "導出廣告內容失敗" });
+        res.status(500).json({ 
+          success: false,
+          message: result.error || "導出廣告內容失敗" 
+        });
       }
     } catch (error) {
       console.error("Error exporting ad contents:", error);
-      res.status(500).json({ message: "導出廣告內容失敗" });
+      res.status(500).json({ 
+        success: false,
+        message: "導出廣告內容失敗",
+        error: error instanceof Error ? error.message : '未知錯誤'
+      });
     }
   });
 
@@ -1796,6 +1823,97 @@ function simulateCollectionProgress(taskId: number) {
     } catch (error) {
       console.error("Error validating all configs:", error);
       res.status(500).json({ message: "批量驗證失敗" });
+    }
+  });
+
+  // Facebook令牌管理API
+  app.get("/api/facebook/token-status", async (req: Request, res: Response) => {
+    try {
+      const results = await facebookTokenManager.checkAllTokens();
+      const statusArray = Array.from(results.entries()).map(([configId, status]) => ({
+        configId,
+        ...status,
+        expiresInDays: status.expiresIn ? (status.expiresIn / (24 * 60 * 60)).toFixed(1) : undefined
+      }));
+      res.json(statusArray);
+    } catch (error) {
+      console.error("Error checking token status:", error);
+      res.status(500).json({ message: "檢查令牌狀態失敗" });
+    }
+  });
+  
+  app.post("/api/facebook/refresh-token/:configId", async (req: Request, res: Response) => {
+    try {
+      const { configId } = req.params;
+      const result = await facebookTokenManager.refreshToken(configId);
+      if (result.success) {
+        res.json({
+          success: true,
+          message: "令牌刷新成功",
+          data: result
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.error || "令牌刷新失敗",
+          data: result
+        });
+      }
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      res.status(500).json({ message: "令牌刷新過程中發生錯誤" });
+    }
+  });
+  
+  app.post("/api/facebook/token-settings", async (req: Request, res: Response) => {
+    try {
+      const { autoRefreshEnabled, notificationThresholdDays, checkIntervalMinutes } = req.body;
+      
+      if (autoRefreshEnabled !== undefined) {
+        facebookTokenManager.setAutoRefreshEnabled(autoRefreshEnabled);
+      }
+      
+      if (notificationThresholdDays !== undefined) {
+        facebookTokenManager.setNotificationThreshold(notificationThresholdDays);
+      }
+      
+      if (checkIntervalMinutes !== undefined && checkIntervalMinutes > 0) {
+        facebookTokenManager.stopTokenMonitoring();
+        facebookTokenManager.startTokenMonitoring(checkIntervalMinutes);
+      }
+      
+      res.json({ success: true, message: "令牌管理設置已更新" });
+    } catch (error) {
+      console.error("Error updating token settings:", error);
+      res.status(500).json({ message: "更新令牌管理設置失敗" });
+    }
+  });
+  
+  app.post("/api/facebook/get-long-lived-token", async (req: Request, res: Response) => {
+    try {
+      const { shortLivedToken, appId, appSecret } = req.body;
+      
+      if (!shortLivedToken || !appId || !appSecret) {
+        return res.status(400).json({ message: "缺少必要參數" });
+      }
+      
+      const result = await facebookTokenManager.getLongLivedToken(shortLivedToken, appId, appSecret);
+      if (result.success) {
+        res.json({
+          success: true,
+          message: "獲取長期令牌成功",
+          token: result.token,
+          expiresIn: result.expiresIn
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: result.error || "獲取長期令牌失敗"
+        });
+      }
+    } catch (error) {
+      console.error("Error getting long-lived token:", error);
+      res.status(500).json({ message: "獲取長期令牌過程中發生錯誤" });
     }
   });
 
