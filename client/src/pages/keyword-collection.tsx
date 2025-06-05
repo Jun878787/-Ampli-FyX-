@@ -16,8 +16,10 @@ import {
   MessageSquare,
   User,
   Clock,
-  Hash
+  Hash,
+  Info
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface KeywordData {
   id: number;
@@ -32,10 +34,12 @@ interface KeywordData {
 }
 
 export default function KeywordCollection() {
+  const { toast } = useToast();
   const [keywords, setKeywords] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [displayData, setDisplayData] = useState<any[]>([]);
   const [isSearched, setIsSearched] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   // 獲取關鍵詞採集數據
@@ -50,9 +54,14 @@ export default function KeywordCollection() {
       let allResults: any[] = [];
       
       for (const keyword of keywordList) {
+        setLogs(prev => [...prev, `正在搜索關鍵字: ${keyword}`]);
         const response = await apiRequest(`/api/facebook/search/pages?q=${encodeURIComponent(keyword)}&limit=50`);
-        if (response.success && response.data) {
-          allResults = [...allResults, ...response.data];
+        const data = await response.json();
+        if (data.success && data.data) {
+          allResults = [...allResults, ...data.data];
+          setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
+        } else {
+          setLogs(prev => [...prev, `搜索失敗: ${keyword}`]);
         }
       }
       
@@ -61,30 +70,35 @@ export default function KeywordCollection() {
     },
     onSuccess: () => {
       setIsSearched(true);
+      setLogs(prev => [...prev, "搜索完成"]);
     },
   });
 
   // 導出數據
   const exportMutation = useMutation({
     mutationFn: async (type: 'all' | 'current') => {
+      setLogs(prev => [...prev, `正在導出數據: ${type}`]);
       const response = await apiRequest(`/api/keyword-collection/export?type=${type}`, {
         method: "GET",
       });
-      const blob = new Blob([response], { type: 'text/csv' });
+      const blob = new Blob([await response.text()], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `keywords_${type}_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
+      setLogs(prev => [...prev, `導出完成: ${type}`]);
     },
   });
 
   // 清空數據
   const clearDataMutation = useMutation({
     mutationFn: async () => {
+      setLogs(prev => [...prev, "正在清空數據"]);
       await apiRequest("/api/keyword-collection", {
         method: "DELETE",
       });
+      setLogs(prev => [...prev, "數據已清空"]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/keyword-collection"] });
@@ -92,12 +106,43 @@ export default function KeywordCollection() {
   });
 
   const refreshData = () => {
+    setLogs(prev => [...prev, "正在刷新數據"]);
     queryClient.invalidateQueries({ queryKey: ["/api/keyword-collection"] });
+    setLogs(prev => [...prev, "數據已刷新"]);
   };
 
   const handleSearch = () => {
     if (keywords.trim()) {
       searchMutation.mutate();
+    }
+  };
+
+  const handleKeywordCollection = async () => {
+    if (!keywords.trim()) {
+      toast({
+        title: "錯誤",
+        description: "請輸入關鍵字",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      setLogs(prev => [...prev, "開始關鍵詞彙採集"]);
+      const response = await apiRequest(`/api/keyword-collection/start`, { method: "POST", data: { keywords: keywords.split('\n').filter(k => k.trim()) } });
+      const result = await response.json();
+      toast({
+        title: "開始關鍵詞彙採集",
+        description: "採集任務已啟動",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/keyword-collection"] });
+      setLogs(prev => [...prev, "採集任務已啟動"]);
+    } catch (error: any) {
+      toast({
+        title: "啟動失敗",
+        description: error.message || "無法啟動關鍵詞彙採集",
+        variant: "destructive",
+      });
+      setLogs(prev => [...prev, `採集失敗: ${error.message || "未知錯誤"}`]);
     }
   };
 
@@ -127,7 +172,7 @@ export default function KeywordCollection() {
   ];
 
   // Use displayData state for search results, fallback to keywordData if not searched
-  const dataToShow = isSearched ? displayData : (keywordData.length > 0 ? keywordData : mockKeywordData);
+  const dataToShow = isSearched ? displayData : (Array.isArray(keywordData) ? keywordData : mockKeywordData);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -159,13 +204,32 @@ export default function KeywordCollection() {
             </div>
             <div className="flex justify-center">
               <Button 
-                onClick={handleSearch}
-                disabled={searchMutation.isPending || !keywords.trim()}
+                onClick={handleKeywordCollection}
+                disabled={!keywords.trim()}
                 className="bg-green-600 hover:bg-green-700 text-white px-8"
               >
                 <Search className="h-4 w-4 mr-2" />
                 開始採集
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 日誌區域 */}
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              採集日誌
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-700 p-4 rounded-lg max-h-40 overflow-y-auto">
+              {logs.map((log, index) => (
+                <div key={index} className="text-gray-300 text-sm mb-1">
+                  {log}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -199,100 +263,16 @@ export default function KeywordCollection() {
                         {item.keyword}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-white font-medium">
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-gray-400" />
-                        {item.publisherName}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300 font-mono text-sm">
-                      {item.publisherId}
-                    </TableCell>
-                    <TableCell className="text-gray-300 max-w-xs">
-                      <div className="truncate" title={item.content}>
-                        {item.content}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{item.publishTime}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{item.collectTime}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">
-                      <Badge variant="secondary" className="bg-purple-900/30 text-purple-300">
-                        {item.engagementCount || 0}
-                      </Badge>
-                    </TableCell>
+                    <TableCell className="text-gray-300">{item.publisherName}</TableCell>
+                    <TableCell className="text-gray-300">{item.publisherId}</TableCell>
+                    <TableCell className="text-gray-300">{item.content}</TableCell>
+                    <TableCell className="text-gray-300">{item.publishTime}</TableCell>
+                    <TableCell className="text-gray-300">{item.collectTime}</TableCell>
+                    <TableCell className="text-gray-300">{item.engagementCount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-
-            {displayData.length === 0 && !isLoading && (
-              <div className="text-center py-8 text-gray-400">
-                暫無採集數據，請輸入關鍵字開始採集
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 操作按鈕 */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardContent className="py-4">
-            <div className="flex flex-wrap gap-3 justify-between items-center">
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => exportMutation.mutate('all')}
-                  disabled={exportMutation.isPending}
-                  variant="outline" 
-                  className="border-green-600 text-green-400 hover:bg-green-900/20"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  導出所有數據
-                </Button>
-                <Button 
-                  onClick={() => exportMutation.mutate('current')}
-                  disabled={exportMutation.isPending}
-                  variant="outline" 
-                  className="border-blue-600 text-blue-400 hover:bg-blue-900/20"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  導出本頁
-                </Button>
-                <Button 
-                  onClick={() => clearDataMutation.mutate()}
-                  disabled={clearDataMutation.isPending}
-                  variant="outline" 
-                  className="border-red-600 text-red-400 hover:bg-red-900/20"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  清空數據
-                </Button>
-                <Button 
-                  onClick={refreshData}
-                  variant="outline" 
-                  className="border-gray-600 text-gray-400 hover:bg-gray-700"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  刷新
-                </Button>
-              </div>
-              <Button 
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                variant="outline" 
-                className="border-gray-600 text-gray-400 hover:bg-gray-700"
-              >
-                下一頁
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

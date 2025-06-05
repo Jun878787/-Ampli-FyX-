@@ -16,7 +16,8 @@ import {
   MapPin,
   Clock,
   Link as LinkIcon,
-  Circle
+  Circle,
+  Info
 } from "lucide-react";
 
 interface FanPageData {
@@ -35,47 +36,61 @@ export default function FanPageCollection() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [pageUrl, setPageUrl] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [logs, setLogs] = useState<string[]>([]);
   const queryClient = useQueryClient();
+  const [displayData, setDisplayData] = useState<FanPageData[]>([]);
+  const [isSearched, setIsSearched] = useState(false);
 
   // 獲取粉絲團採集數據
-  const { data: fanPageData = [], isLoading } = useQuery({
+  const { data: fanPageData = [], isLoading } = useQuery<FanPageData[]>({
     queryKey: ["/api/fan-page-collection", currentPage],
   });
 
   // 搜索粉絲團
   const searchMutation = useMutation({
     mutationFn: async () => {
+      setLogs(prev => [...prev, `正在搜索關鍵字: ${searchKeyword}`]);
       const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
-      setDisplayData(response.data || []);
+      const data = await response.json();
+      if (data.success && data.data) {
+        setDisplayData(data.data);
+        setLogs(prev => [...prev, `成功獲取 ${data.data.length} 條數據`]);
+      } else {
+        setLogs(prev => [...prev, `搜索失敗: ${searchKeyword}`]);
+      }
       return response;
     },
     onSuccess: () => {
       setIsSearched(true);
+      setLogs(prev => [...prev, "搜索完成"]);
     },
   });
 
   // 導出數據
   const exportMutation = useMutation({
     mutationFn: async (type: 'all' | 'current') => {
+      setLogs(prev => [...prev, `正在導出數據: ${type}`]);
       const response = await apiRequest(`/api/fan-page-collection/export?type=${type}`, {
         method: "GET",
       });
-      // 創建下載連結
-      const blob = new Blob([response], { type: 'text/csv' });
+      const blob = new Blob([await response.text()], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `fan_pages_${type}_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
+      setLogs(prev => [...prev, `導出完成: ${type}`]);
     },
   });
 
   // 清空數據
   const clearDataMutation = useMutation({
     mutationFn: async () => {
+      setLogs(prev => [...prev, "正在清空數據"]);
       await apiRequest("/api/fan-page-collection", {
         method: "DELETE",
       });
+      setLogs(prev => [...prev, "數據已清空"]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/fan-page-collection"] });
@@ -84,7 +99,9 @@ export default function FanPageCollection() {
 
   // 刷新數據
   const refreshData = () => {
+    setLogs(prev => [...prev, "正在刷新數據"]);
     queryClient.invalidateQueries({ queryKey: ["/api/fan-page-collection"] });
+    setLogs(prev => [...prev, "數據已刷新"]);
   };
 
   const handleSearch = () => {
@@ -171,6 +188,25 @@ export default function FanPageCollection() {
           </CardContent>
         </Card>
 
+        {/* 日誌區域 */}
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              採集日誌
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-700 p-4 rounded-lg max-h-40 overflow-y-auto">
+              {logs.map((log, index) => (
+                <div key={index} className="text-gray-300 text-sm mb-1">
+                  {log}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* 數據表格 */}
         <Card className="bg-gray-800/50 border-gray-700">
           <CardHeader>
@@ -200,104 +236,22 @@ export default function FanPageCollection() {
                         {item.keyword}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-white font-medium">
-                      {item.username}
+                    <TableCell className="text-gray-300">{item.username}</TableCell>
+                    <TableCell className="text-gray-300">
+                      <img src={item.avatar} alt={item.username} className="w-10 h-10 rounded-full" />
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Circle className="h-8 w-8 text-gray-400" />
-                        <span className="text-gray-300 text-sm">頭像</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <a 
-                        href={item.fbAccountLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                      >
-                        <LinkIcon className="h-4 w-4" />
-                        查看頁面
+                    <TableCell className="text-gray-300">
+                      <a href={item.fbAccountLink} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                        {item.fbAccountLink}
                       </a>
                     </TableCell>
-                    <TableCell className="text-gray-300">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {item.collectTime}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {item.city}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-gray-300">
-                      {item.followerCount?.toLocaleString() || 'N/A'}
-                    </TableCell>
+                    <TableCell className="text-gray-300">{item.collectTime}</TableCell>
+                    <TableCell className="text-gray-300">{item.city}</TableCell>
+                    <TableCell className="text-gray-300">{item.followerCount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
-
-            {displayData.length === 0 && !isLoading && (
-              <div className="text-center py-8 text-gray-400">
-                暫無採集數據，請開始搜索
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 操作按鈕 */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardContent className="py-4">
-            <div className="flex flex-wrap gap-3 justify-between items-center">
-              <div className="flex gap-3">
-                <Button 
-                  onClick={() => exportMutation.mutate('all')}
-                  disabled={exportMutation.isPending}
-                  variant="outline" 
-                  className="border-green-600 text-green-400 hover:bg-green-900/20"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  導出所有數據
-                </Button>
-                <Button 
-                  onClick={() => exportMutation.mutate('current')}
-                  disabled={exportMutation.isPending}
-                  variant="outline" 
-                  className="border-blue-600 text-blue-400 hover:bg-blue-900/20"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  導出本頁
-                </Button>
-                <Button 
-                  onClick={() => clearDataMutation.mutate()}
-                  disabled={clearDataMutation.isPending}
-                  variant="outline" 
-                  className="border-red-600 text-red-400 hover:bg-red-900/20"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  清空數據
-                </Button>
-                <Button 
-                  onClick={refreshData}
-                  variant="outline" 
-                  className="border-gray-600 text-gray-400 hover:bg-gray-700"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  刷新
-                </Button>
-              </div>
-              <Button 
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                variant="outline" 
-                className="border-gray-600 text-gray-400 hover:bg-gray-700"
-              >
-                下一頁
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

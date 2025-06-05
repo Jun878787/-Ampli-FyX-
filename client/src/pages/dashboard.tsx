@@ -20,31 +20,30 @@ export default function Dashboard() {
     queryKey: ["/api/tasks"],
   });
 
-  const startCollectionMutation = useMutation({
-    mutationFn: async () => {
-      // Find the most recent pending task and start it
+  const handleDataCollection = async () => {
+    try {
       const pendingTask = Array.isArray(tasks) ? tasks.find((task: any) => task.status === "pending") : null;
       if (!pendingTask) {
         throw new Error("沒有待執行的任務");
       }
-      
       const response = await apiRequest("POST", `/api/tasks/${pendingTask.id}/start`);
-      return response.json();
-    },
-    onSuccess: () => {
+      const result = await response.json();
       toast({
         title: "開始數據採集",
         description: "數據採集任務已啟動",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "啟動失敗",
         description: error.message || "無法啟動數據採集",
         variant: "destructive",
       });
-    },
+    }
+  };
+
+  const startCollectionMutation = useMutation({
+    mutationFn: handleDataCollection,
   });
 
   const isCollecting = Array.isArray(tasks) ? tasks.some((task: any) => task.status === "running") : false;

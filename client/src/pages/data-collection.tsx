@@ -10,8 +10,15 @@ import {
   Database,
   ArrowRight,
   Target,
-  TrendingUp
+  TrendingUp,
+  Info
 } from "lucide-react";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 const collectionModules = [
   {
@@ -110,6 +117,49 @@ const colorClasses = {
 };
 
 export default function DataCollection() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isCollecting, setIsCollecting] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const [logs, setLogs] = useState<string[]>([]);
+
+  const startCollectionMutation = useMutation({
+    mutationFn: async (moduleId: string) => {
+      setLogs(prev => [...prev, `開始採集模組: ${moduleId}`]);
+      const response = await apiRequest(`/api/collection/${moduleId}/start`, { method: "POST", data: { keyword } });
+      const result = await response.json();
+      setLogs(prev => [...prev, `採集任務已啟動: ${moduleId}`]);
+      return result;
+    },
+    onSuccess: () => {
+      toast({
+        title: "開始數據採集",
+        description: "數據採集任務已啟動",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/collection"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "啟動失敗",
+        description: error.message || "無法啟動數據採集",
+        variant: "destructive",
+      });
+      setLogs(prev => [...prev, `採集失敗: ${error.message || "未知錯誤"}`]);
+    },
+  });
+
+  const handleStartCollection = (moduleId: string) => {
+    if (!keyword) {
+      toast({
+        title: "錯誤",
+        description: "請輸入關鍵字",
+        variant: "destructive",
+      });
+      return;
+    }
+    startCollectionMutation.mutate(moduleId);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -123,6 +173,17 @@ export default function DataCollection() {
             專業的 Facebook 數據採集平台，提供 6 種精準採集模組，
             助您獲取競爭對手受眾數據，制定精準廣告投放策略
           </p>
+        </div>
+
+        {/* 關鍵字輸入 */}
+        <div className="flex justify-center">
+          <Input
+            type="text"
+            placeholder="請輸入關鍵字"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            className="max-w-md"
+          />
         </div>
 
         {/* 業務說明 */}
@@ -197,15 +258,14 @@ export default function DataCollection() {
                     </div>
                   </div>
 
-                  <Link href={module.route}>
-                    <Button 
-                      className={`w-full ${colors.bg} ${colors.border} ${colors.text} border ${colors.hover} hover:text-white`}
-                      variant="outline"
-                    >
-                      開始採集
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
+                  <Button 
+                    className={`w-full ${colors.bg} ${colors.border} ${colors.text} border ${colors.hover} hover:text-white`}
+                    variant="outline"
+                    onClick={() => handleStartCollection(module.id)}
+                  >
+                    開始採集
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
                 </CardContent>
               </Card>
             );
@@ -238,6 +298,25 @@ export default function DataCollection() {
                 <div className="text-2xl font-bold text-orange-400">892</div>
                 <div className="text-sm text-gray-300">廣告分析</div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 日誌區域 */}
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              採集日誌
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-gray-700 p-4 rounded-lg max-h-40 overflow-y-auto">
+              {logs.map((log, index) => (
+                <div key={index} className="text-gray-300 text-sm mb-1">
+                  {log}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
