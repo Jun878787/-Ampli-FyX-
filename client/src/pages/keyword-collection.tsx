@@ -50,8 +50,10 @@ export default function KeywordCollection() {
       let allResults: any[] = [];
       
       for (const keyword of keywordList) {
-        const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(keyword)}&limit=50`);
-        allResults = [...allResults, ...(response.data || [])];
+        const response = await apiRequest(`/api/facebook/search/pages?q=${encodeURIComponent(keyword)}&limit=50`);
+        if (response.success && response.data) {
+          allResults = [...allResults, ...response.data];
+        }
       }
       
       setDisplayData(allResults);
