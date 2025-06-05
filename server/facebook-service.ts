@@ -33,7 +33,7 @@ class FacebookService {
     // Facebook應用程式憑證
     this.appId = '2213169895810612';
     this.appSecret = 'f83b0f49d07b550f65d69354659fc2dd';
-    this.apiKey = 'ce60b2899822e5d3ff02cece5048ae31';
+    this.apiKey = '2213169895810612|nj63XA8h7UYZkKbU_EPrkynNBQY';
     if (!this.apiKey) {
       console.warn('Facebook API key not found in environment variables');
     }
