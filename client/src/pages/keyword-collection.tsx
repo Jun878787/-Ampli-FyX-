@@ -44,15 +44,19 @@ export default function KeywordCollection() {
   // 搜索關鍵詞
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/keyword-collection/search", {
-        method: "POST",
-        body: JSON.stringify({ 
-          keywords: keywords.split('\n').filter(k => k.trim())
-        }),
-      });
+      const keywordList = keywords.split('\n').filter(k => k.trim());
+      let allResults: any[] = [];
+      
+      for (const keyword of keywordList) {
+        const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(keyword)}&limit=50`);
+        allResults = [...allResults, ...(response.data || [])];
+      }
+      
+      setDisplayData(allResults);
+      return { data: allResults };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/keyword-collection"] });
+      setIsSearched(true);
     },
   });
 

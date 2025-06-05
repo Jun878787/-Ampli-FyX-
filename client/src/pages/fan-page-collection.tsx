@@ -45,16 +45,12 @@ export default function FanPageCollection() {
   // 搜索粉絲團
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/fan-page-collection/search", {
-        method: "POST",
-        body: JSON.stringify({ 
-          keyword: searchKeyword,
-          pageUrl: pageUrl
-        }),
-      });
+      const response = await apiRequest(`/api/facebook/search/pages?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+      setDisplayData(response.data || []);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/fan-page-collection"] });
+      setIsSearched(true);
     },
   });
 

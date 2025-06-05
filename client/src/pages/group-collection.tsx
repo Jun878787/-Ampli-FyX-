@@ -47,16 +47,12 @@ export default function GroupCollection() {
   // 搜索社團
   const searchMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("/api/group-collection/search", {
-        method: "POST",
-        body: JSON.stringify({ 
-          keyword: searchKeyword,
-          groupUrl: groupUrl
-        }),
-      });
+      const response = await apiRequest(`/api/facebook/search/groups?keyword=${encodeURIComponent(searchKeyword)}&limit=100`);
+      setDisplayData(response.data || []);
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/group-collection"] });
+      setIsSearched(true);
     },
   });
 
