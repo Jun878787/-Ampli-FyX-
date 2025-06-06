@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -151,13 +151,14 @@ export default function GroupCollection() {
     }
   ];
 
-  // 使用已經存在的 displayData 狀態，而不是重新聲明
-  // 如果 groupData 有內容則使用 groupData，否則使用 mockGroupData
-  if (groupData.length > 0 && !isSearched) {
-    setDisplayData(groupData);
-  } else if (!isSearched && displayData.length === 0) {
-    setDisplayData(mockGroupData);
-  }
+  // 使用 useEffect 處理 displayData 的初始化和更新
+  useEffect(() => {
+    if (groupData.length > 0 && !isSearched) {
+      setDisplayData(groupData);
+    } else if (!isSearched && displayData.length === 0) {
+      setDisplayData(mockGroupData);
+    }
+  }, [groupData, isSearched]);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
