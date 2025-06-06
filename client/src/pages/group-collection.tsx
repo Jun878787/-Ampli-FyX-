@@ -151,7 +151,13 @@ export default function GroupCollection() {
     }
   ];
 
-  const displayData = groupData.length > 0 ? groupData : mockGroupData;
+  // 使用已經存在的 displayData 狀態，而不是重新聲明
+  // 如果 groupData 有內容則使用 groupData，否則使用 mockGroupData
+  if (groupData.length > 0 && !isSearched) {
+    setDisplayData(groupData);
+  } else if (!isSearched && displayData.length === 0) {
+    setDisplayData(mockGroupData);
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
