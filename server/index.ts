@@ -57,13 +57,11 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 8080
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 8080;
+  // Use PORT from environment variable or default to 8080
+  const port = process.env.PORT || 8080;
   server.listen({
     port,
-    host: "127.0.0.1"
+    host: "0.0.0.0"  // Changed from 127.0.0.1 to allow external connections
   }, () => {
     log(`serving on port ${port}`);
   });

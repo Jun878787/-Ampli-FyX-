@@ -24,6 +24,11 @@ import { facebookDataCollector } from "./facebook-data-collector";
 import { facebookTokenManager } from "./facebook-token-manager.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 添加健康檢查路由
+  app.get("/", (req, res) => {
+    res.status(200).json({ status: "ok", message: "Server is running" });
+  });
+
   // 启动Facebook令牌自动刷新监控
   facebookTokenManager.startTokenMonitoring(360); // 每6小时检查一次令牌状态
   console.log('[Server] Facebook令牌自动刷新监控已启动');
