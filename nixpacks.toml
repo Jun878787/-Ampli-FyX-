@@ -1,4 +1,4 @@
-# nixpacks.toml configuration file
+﻿# nixpacks.toml configuration file
 # Custom install phase to fallback to npm install if npm ci fails
 
 [phases.install]
