@@ -1,7 +1,7 @@
 ﻿# nixpacks.toml configuration file
-# Custom install phase to fallback to npm install if npm ci fails
+# Custom install phase to directly use npm install instead of npm ci
 
 [phases.install]
 # Override default install command
-# Use bash -c to execute conditional command: try npm ci, if it fails then run npm install
-cmds = ["bash -c 'npm ci || npm install'"]
+# Directly use npm install to avoid package-lock.json sync issues
+cmds = ["npm install"]
