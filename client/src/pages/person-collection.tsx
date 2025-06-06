@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -150,7 +150,14 @@ export default function PersonCollection() {
     }
   ];
 
-  const displayData = personData.length > 0 ? personData : mockPersonData;
+  // 使用 useEffect 更新 displayData 狀態
+  useEffect(() => {
+    if (personData.length > 0 && !isSearched) {
+      setDisplayData(personData);
+    } else if (!isSearched && displayData.length === 0) {
+      setDisplayData(mockPersonData);
+    }
+  }, [personData, isSearched]);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
